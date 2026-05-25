@@ -142,6 +142,9 @@ STATIC_URL = '/static/'
 STATIC_ROOT=BASE_DIR/ 'staticfiles'
 STATICFILES_STORAGE='whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+AUTHENTICATION_BACKENDS=[
+        'users.authentication.CustomAuthentication','django.contrib.auth.backends.ModelBackend'
+        ]
 
 CACHE={
         'default':{

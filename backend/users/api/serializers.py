@@ -1,5 +1,8 @@
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model,authenticate
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer 
+from rest_framework.exceptions import AuthenticationFailed
+from typing import Any
 
 
 User=get_user_model()
@@ -15,4 +18,15 @@ class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user=User.objects.create_user(**validated_data)
         return user
+
+
+class LoginSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs: dict[str, Any]) -> dict[str, str]:
+        user=authenticate(request=self.context['request'],**attrs)
+        if not user:
+            raise AuthenticationFailed('Invalid credentials')
+        refresh=self.get_token(user)
+        user=UserSerializer(user).data
+        return {'refresh':str(refresh),'access':str(refresh.access_token),'user':user}
+
    

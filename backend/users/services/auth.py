@@ -4,6 +4,8 @@ from django.core.cache import cache
 from django.core.mail import send_mail
 from rest_framework.exceptions import ValidationError
 
+
+
 def verify_email(model,request):
     query={}
     if 'phone' in request.data and len(request.data['phone']) == 15:
@@ -32,3 +34,4 @@ def verify_otp(key,value):
     cache.set(f'confirm:{key}',True,timeout=300)
     return {'status':'otp is confirmed'}
 
+    

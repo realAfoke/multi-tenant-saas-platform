@@ -1,9 +1,14 @@
 from rest_framework.response import Response
+from rest_framework.request import Request
 from rest_framework.decorators import api_view
-from users.services.email_auth import verify_email,verify_otp
+from users.services.auth import verify_email,verify_otp
 from users.services.register import create_user
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
+from .serializers import LoginSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
+from typing import cast
+
 # Create your views here.
 
 
@@ -53,11 +58,31 @@ def confirm_otp(request):
     return Response(result)
 
 
-
-
-
-
-
+class LoginView(TokenObtainPairView):
+    serializer_class=LoginSerializer
+    def post(self, request: Request, *args, **kwargs) -> Response:
+        data=super().post(request, *args, **kwargs)
+        login_data=data.data or {}
+        response=Response(login_data.pop('user','successful'))
+        response.set_cookie(
+                key='access',
+                value=str(login_data.get('access')),
+                path='/',
+                secure=True,
+                samesite='None',
+                httponly=True,
+                max_age=60*5
+                )
+        response.set_cookie(
+                key='access',
+                value=str(login_data.get('access')),
+                path='/',
+                secure=True,
+                samesite='None',
+                httponly=True,
+                max_age=60*5
+                )
+        return response
 
 
 

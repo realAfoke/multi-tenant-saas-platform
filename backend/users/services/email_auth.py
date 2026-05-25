@@ -12,7 +12,7 @@ def verify_email(model,request):
         pattern=r'^[a-zA-Z0-9.%_+-]+@[a-zA-Z0-9.%+_-]+\.[a-zA-Z]{2,}$'
         match =re.match(pattern,request.data.get('email'))
         if not match:
-            raise ValidationError('invalid crendentials') 
+            raise ValidationError('invalid email') 
         query['email']=request.data.get('email')
     is_used=model.objects.filter(**query).exists()
     if is_used:
@@ -25,9 +25,12 @@ def verify_email(model,request):
     return {"status":"otp sent to provided email"}
 
 def verify_otp(key,value):
+    otp_code=int(value)
     otp_key=f'otp:{key}'
     otp=cache.get(otp_key)
-    if otp != value:
+    if not otp:
+        raise ValidationError('otp has expired')
+    if otp != otp_code:
         raise ValidationError('otp is invalid')
     cache.set(f'confirm:{key}',True,timeout=300)
     return {'status':'otp is confirmed'}

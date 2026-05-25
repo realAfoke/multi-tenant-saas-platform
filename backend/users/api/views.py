@@ -44,11 +44,8 @@ def send_otp(request):
 
 @api_view(['POST'])
 def confirm_otp(request):
-    try:
-        key=request.data.get('key')
-        value=request.data.get('otp') 
-    except ValueError as e:
-        return Response(str(e))
+    key=request.data.get('key')
+    value=request.data.get('otp') 
     result=verify_otp(key,value)
     return Response(result)
 

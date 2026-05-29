@@ -27,7 +27,7 @@ def create_account(request):
             secure=True,
             samesite='None',
             httponly=True,
-            max_age=5*60
+            max_age=60*60*24*7
             )
     response.set_cookie(
             key='refresh',
@@ -62,11 +62,13 @@ class LoginView(TokenObtainPairView):
     serializer_class=LoginSerializer
     def post(self, request: Request, *args, **kwargs) -> Response:
         data=super().post(request, *args, **kwargs)
-        login_data=data.data or {}
-        response=Response(login_data.pop('user','successful'))
+        data=data.data or {}
+        access=data.pop('access','')
+        refresh=data.pop('refresh','')
+        response=Response(data)
         response.set_cookie(
                 key='access',
-                value=str(login_data.get('access')),
+                value=str(access),
                 path='/',
                 secure=True,
                 samesite='None',
@@ -74,13 +76,13 @@ class LoginView(TokenObtainPairView):
                 max_age=60*5
                 )
         response.set_cookie(
-                key='access',
-                value=str(login_data.get('access')),
+                key='refresh',
+                value=str(refresh),
                 path='/',
                 secure=True,
                 samesite='None',
                 httponly=True,
-                max_age=60*5
+                max_age=60*60*24*7
                 )
         return response
 

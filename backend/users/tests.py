@@ -10,12 +10,12 @@ from django.contrib.auth import get_user_model
 
 User=get_user_model()
 
-# Create your tests here.
+# Create yor tests here.
 
 class TestEmailVerification(APITestCase):
     def test_invalid_email_format(self):
         client=APIClient()
-        response=cast(Response,client.post('/users/verify-details/',{'email':'userexample.com'},format='json'))
+        response=cast(Response,client.post('/sers/verify-details/',{'email':'userexample.com'},format='json'))
         self.assertEqual(response.status_code,400)
         self.assertEqual(response.data[0] if response.data else response,'invalid email')
 

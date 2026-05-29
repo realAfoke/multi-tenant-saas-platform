@@ -41,6 +41,7 @@ INSTALLED_APPS = [
         'rest_framework_simplejwt',
         'rest_framework_simplejwt.token_blacklist',
         'users',
+        'workspace',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -101,7 +102,8 @@ DATABASES = {
 
 REST_FRAMEWORK={
         'DEFAULT_AUTHENTICATION_CLASSES':[
-            'rest_framework_simplejwt.authentication.JWTAuthentication',
+            'users.authentication.CustomJWTAuthentication',
+            # 'rest_framework_simplejwt.authentication.JWTAuthentication',
             ] 
         }
 

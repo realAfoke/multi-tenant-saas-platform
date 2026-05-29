@@ -47,61 +47,6 @@ class CustomUser(AbstractUser):
 
 
 
-class Choices(models.TextChoices):
-    IN_PROGRESS='in_progress' 'in progress'
-    DONE='done'
-    CANCELLED='cancelled'
-
-
-class WorkSpace(models.Model):
-    name=models.CharField(max_length=150)
-    super_admin=models.ForeignKey(CustomUser,related_name='workspace_super_admin',on_delete=models.CASCADE)
-    admins=models.ManyToManyField(CustomUser,related_name='workspace_admins')
-    member=models.ManyToManyField(CustomUser,related_name='workspace_member')
-    description=models.TextField()
-    slug=models.SlugField(null=True,blank=True)
-    projects=models.ManyToManyField('Project',related_name='workspace_project')
-    created_at=models.DateTimeField(auto_now_add=True)
-    updated_at=models.DateTimeField(auto_now=True)
-
-
-class Project(models.Model):
-    name=models.CharField(max_length=100)
-    work_space=models.ForeignKey(WorkSpace,related_name='project_workspace',on_delete=models.CASCADE)
-    created_by=models.ForeignKey(CustomUser,related_name='project_creator',on_delete=models.CASCADE)
-    description=models.TextField()
-    created_at=models.DateTimeField(auto_now_add=True)
-    updated_at=models.DateTimeField(auto_now=True)
-
-class Task(models.Model):
-    title=models.CharField(max_length=250)
-    project=models.ForeignKey(Project,related_name='task_project',on_delete=models.CASCADE)
-    work_space=models.ForeignKey(WorkSpace,related_name='task_workspace',on_delete=models.CASCADE)
-    description=models.TextField()
-    status=models.CharField(max_length=200,choices=Choices.choices,default=Choices.IN_PROGRESS)
-    created_by=models.ForeignKey(CustomUser,related_name='task_creator',on_delete=models.CASCADE)
-    members=models.ManyToManyField(CustomUser,related_name='task_members')
-    created_at=models.DateTimeField(auto_now_add=True)
-    updated_at=models.DateTimeField(auto_now=True)
-
-
-class Comment(models.Model):
-    content=models.TextField()
-    user=models.ForeignKey(CustomUser,related_name='commentor',on_delete=models.CASCADE)
-    work_space=models.ForeignKey(WorkSpace,related_name='comment_workspace',on_delete=models.CASCADE)
-    project=models.ForeignKey(Project,related_name='comment_project',on_delete=models.CASCADE)
-    Task=models.ForeignKey(Task,related_name='comment_task',on_delete=models.CASCADE)
-    created_at=models.DateTimeField(auto_now_add=True)
-    updated_at=models.DateTimeField(auto_now=True)
-
-class FileAttachment(models.Model):
-    file=models.FileField(upload_to='task_attachment/')
-    task=models.ForeignKey(Task,related_name='task_attachment',on_delete=models.CASCADE)
-    uploader=models.ForeignKey(CustomUser,related_name='file_uploader',on_delete=models.CASCADE)
-    created_at=models.DateTimeField(auto_now_add=True)
-    updated_at=models.DateTimeField(auto_now=True)
-
-
 
 
 

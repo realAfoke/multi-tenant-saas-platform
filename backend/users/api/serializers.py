@@ -27,6 +27,8 @@ class LoginSerializer(TokenObtainPairSerializer):
             raise AuthenticationFailed('Invalid credentials')
         refresh=self.get_token(user)
         user=UserSerializer(user).data
-        return {'refresh':str(refresh),'access':str(refresh.access_token),'user':user}
+        user['refresh']=str(refresh)
+        user['access']=str(refresh.access_token)
+        return user
 
    

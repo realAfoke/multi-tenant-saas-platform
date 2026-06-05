@@ -1,4 +1,3 @@
-from django.contrib import auth
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from django.core.exceptions import PermissionDenied
@@ -23,7 +22,6 @@ class CommentSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         user=self.context['request'].user
-        print('ATTRS:',attrs)
         workspace=attrs['work_space']
         project=attrs['project']
         task=attrs['task']
@@ -64,7 +62,6 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     
     def validate(self, attrs):
-        print('ATTRS:',attrs)
         current_user=self.context['request'].user
         workspace=attrs['work_space']
         if current_user != workspace.super_admin and not workspace.admins.filter(id=current_user.id).exists():
@@ -72,6 +69,25 @@ class ProjectSerializer(serializers.ModelSerializer):
         return attrs
 
 
+class InviteTokenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=models.InviteToken
+        fields=['id','token','work_space']
+
+    def create(self, validated_data):
+        if '_existing_token' in validated_data:
+            return validated_data['_existing_token']
+        user=self.context['request'].user
+        token=models.InviteToken.objects.create(**validated_data)
+        log=models.InviteTokenAuditLog.objects.create(user=user,token=token)
+        return token
+
+    def validate(self, attrs):
+        user=self.context['request'].user
+        log=models.InviteTokenAuditLog.objects.filter(user=user,action='token created').first()
+        if log and not log.token.revoked:
+            attrs['_existing_token']=log.token
+        return attrs
 
 class BaseWorkSpace(serializers.ModelSerializer):
     class Meta:
@@ -81,10 +97,12 @@ class BaseWorkSpace(serializers.ModelSerializer):
 class WorkSpaceSerializer(serializers.ModelSerializer):
     # projects=serializers.SerializerMethodField()
     workspace_project=BaseProject(many=True,read_only=True)
+    members=UserSerializer(many=True,read_only=True)
+    # teams=serializers.ListField(child=serializers.IntegerField(),write_only=True,default=list)
     class Meta:
         model=models.WorkSpace
-        fields=['id','name','workspace_project','description','created_at','updated_at']
-        read_only_fields=['workspace_project']
+        fields=['id','name','workspace_project','members','description','created_at','updated_at',]
+        read_only_fields=['workspace_project''members']
 
 
     def create(self, validated_data):
@@ -93,7 +111,13 @@ class WorkSpaceSerializer(serializers.ModelSerializer):
         workspace=models.WorkSpace.objects.create(**validated_data)
         workspace.members.add(validated_data['super_admin'].id)
         return workspace
-    
+
+    # def update(self, instance, validated_data):
+        # print('Validated:',validated_data)
+        # return validated_data
+
+
+
     def validate(self, attrs):
         current_user=self.context['request'].user
         if not self.instance:
@@ -145,6 +169,28 @@ class FileSerializer(serializers.ModelSerializer):
             raise PermissionDenied('you dont have permission to perform this operation')
 
 
+class TokenAuditTrailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=models.InviteTokenAuditLog
+        fields=['id','token','action']
 
 
+class InviteRequestSerializer(serializers.ModelSerializer):
+    pending_user=UserSerializer(read_only=True)
+    class Meta:
+        model=models.InviteRequest
+        fields='__all__'
+
+    
+    def update(self, instance, validated_data):
+        if validated_data.get('status') == 'accept':
+            project=getattr(self.instance,'project')
+            project.members.add(instance.pending_user)
+            project.work_space.members.add(instance.pending_user)
+            project.work_space.save()
+            instance.status=validated_data.get('status')
+            project.save()
+            instance.save()
+        return instance
+            
 

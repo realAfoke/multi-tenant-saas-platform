@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-from django.utils.text import slugify
+# from django.utils.text import slugify
+
 
 
 # Create your models here.
@@ -108,5 +109,53 @@ class FileAttachment(models.Model):
         return self.file
 
 
+class InviteToken(models.Model):
+    token=models.CharField(max_length=200,null=True,blank=True)
+    work_space=models.ForeignKey(WorkSpace,related_name='invite_token',on_delete=models.CASCADE)
+    revoked=models.BooleanField(default=False)
+    no_used=models.IntegerField(default=0)
+    created_at=models.DateTimeField(auto_now_add=True)
+    updated_at=models.DateTimeField(auto_now=True)
 
+    class Meta:
+        db_table='invite_token'
+
+    def __str__(self):
+        return str(self.token) 
+
+class InviteTokenActions(models.TextChoices):
+    TOKEN_CREATED='token created'
+    TOKEN_USED='token used'
+    TOKEN_REVOKED='token revoked'
+    
+class InviteTokenAuditLog(models.Model):
+    user=models.ForeignKey(UserModel,related_name='invite_token_user',on_delete=models.CASCADE)
+    action=models.CharField(max_length=200,choices=InviteTokenActions.choices,default=InviteTokenActions.TOKEN_CREATED)
+    token=models.ForeignKey(InviteToken,related_name='token_log',on_delete=models.CASCADE)
+    time=models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table='audit_log'
+
+    def __str__(self):
+        return str(self.action)
+
+class InviteRequest(models.Model):
+    pending_user=models.ForeignKey(UserModel,related_name='pending_user',on_delete=models.CASCADE)
+    status=models.CharField(max_length=200,default='pending',)
+    project=models.ForeignKey(Project,related_name='request_project',on_delete=models.CASCADE)
+    workspace=models.ForeignKey(WorkSpace,related_name='workspace_request',on_delete=models.CASCADE)
+    timestamp=models.DateTimeField(auto_now_add=True)
+    updated_at=models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table='invite_request'
+        constraints=[
+                models.UniqueConstraint(
+                    fields=['pending_user','workspace'],name='unique_workspace_request'
+                    )
+                ]
+
+    def __str__(self):
+        return str(self.pending_user)
 

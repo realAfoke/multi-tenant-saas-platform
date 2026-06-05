@@ -1,11 +1,15 @@
 from rest_framework import generics
-from .serializers import CommentSerializer, FileSerializer, TaskSerializer, WorkSpaceSerializer,ProjectSerializer
+from rest_framework.views import APIView
+from workspace.permission import IsSuperAdminORIsAdmin
+from .serializers import CommentSerializer, FileSerializer, InviteRequestSerializer, TaskSerializer, WorkSpaceSerializer,ProjectSerializer
 from .serializers import UserModel,UserWorkSpacesSerializer,WorkSpaceSerializer
 from rest_framework.response import Response
 from workspace import models
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework import permissions
 from workspace.services.workspace import create_work_space
 from channels.layers import get_channel_layer
+from workspace.services.invite import send_invite,accept_invite
 
 
 
@@ -50,11 +54,16 @@ class WorkSpaceDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class=WorkSpaceSerializer
     permission_classes=[permissions.IsAuthenticated]
 
+    def perform_update(self, serializer):
+        serializer.is_valid(raise_exception=True)
+        serializer.save(members=self.request.data.get('members'))
+
 
 class Project(Base):
     queryset=models.Project.objects.all()
     serializer_class=ProjectSerializer
     instance_model=models.Project 
+
 
 class ProjectDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset=models.Project
@@ -94,4 +103,27 @@ class File(generics.ListCreateAPIView):
     def get_queryset(self):
         return self.instance_model.object.all()
 
+
+class ProcessInvite(APIView):
+    permission_classes=[permissions.IsAuthenticated]
+    def post(self,request,*args,**kwargs):
+        link=send_invite(request)
+        return Response(link)
+    def get(self,request,*args,**kwargs):
+        resp=accept_invite(request,*args,**kwargs)
+        return Response(resp)
+
+class GetInviteRequest(generics.ListAPIView):
+    permission_classes=[IsSuperAdminORIsAdmin]
+    serializer_class=InviteRequestSerializer
+
+    def get_queryset(self):
+        return models.InviteRequest.objects.filter(workspace=self.kwargs.get('wk'),status='pending')
+
+class AcceptInviteRequest(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes=[IsSuperAdminORIsAdmin]
+    serializer_class=InviteRequestSerializer
+
+    def get_object(self):
+        return models.InviteRequest.objects.filter(id=self.kwargs.get('pk')).first()
 

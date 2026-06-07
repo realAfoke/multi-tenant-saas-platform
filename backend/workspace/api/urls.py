@@ -14,5 +14,6 @@ urlpatterns=[
         path('api/invite/',views.ProcessInvite.as_view(),name='procees_invite'),
         path('api/invite/<str:token>/<int:pk>/',views.ProcessInvite.as_view(),name='process_invite'),
         path('api/pending-requests/<int:wk>/',views.GetInviteRequest.as_view(),name='pending_requesst'),
-        path('api/request/<int:wk>/<int:pk>/',views.AcceptInviteRequest.as_view(),name='accept_request')
+        path('api/request/<int:pk>/',views.AcceptInviteRequest.as_view(),name='accept_request'),
+        path('api/tasks/',views.CreateTask.as_view(),name='task_view'),
         ]

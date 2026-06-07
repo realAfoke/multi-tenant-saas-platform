@@ -127,6 +127,7 @@ class WorkSpaceSerializer(serializers.ModelSerializer):
             if existing:
                 attrs['_existing']=existing
             return attrs
+        return super().has_object_permission(request, view, obj)
         else:
             if current_user != self.instance.super_admin and current_user not in self.instance.members.all():
                 raise PermissionDenied('you dont have permission to perform this operation')

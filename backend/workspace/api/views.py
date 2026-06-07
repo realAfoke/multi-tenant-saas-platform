@@ -1,6 +1,6 @@
 from rest_framework import generics
 from rest_framework.views import APIView
-from workspace.permission import IsSuperAdminORIsAdmin
+from workspace.permission import IsSuperAdminOrAdmin, IsCreatorOrAdmin
 from .serializers import CommentSerializer, FileSerializer, InviteRequestSerializer, TaskSerializer, WorkSpaceSerializer,ProjectSerializer
 from .serializers import UserModel,UserWorkSpacesSerializer,WorkSpaceSerializer
 from rest_framework.response import Response
@@ -52,7 +52,7 @@ class CreateWorkSpace(generics.CreateAPIView):
 class WorkSpaceDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset=models.WorkSpace.objects.all()
     serializer_class=WorkSpaceSerializer
-    permission_classes=[permissions.IsAuthenticated]
+    permission_classes=[IsSuperAdminOrAdmin]
 
     def perform_update(self, serializer):
         serializer.is_valid(raise_exception=True)
@@ -68,18 +68,19 @@ class Project(Base):
 class ProjectDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset=models.Project
     serializer_class=ProjectSerializer
-    permission_classes=[permissions.IsAuthenticated]
+    permission_classes=[IsCreatorOrAdmin]
 
 class Task(Base):
     queryset=models.Task.objects.all()
     serializer_class=TaskSerializer
+    permission_classes=[permissions.IsAuthenticated]
     instance_model=models.Task 
 
 
 class TaskDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset=models.Task
     serializer_class=TaskSerializer
-    permission_classes=[permissions.IsAuthenticated]
+    permission_classes=[IsCreatorOrAdmin]
 
 
 
@@ -95,7 +96,7 @@ class Comment(Base):
         return self.instance_model.objects.all()
 
 
-class File(generics.ListCreateAPIView):
+class File(Base):
     queryset=models.FileAttachment.objects.all()
     serializer_class=FileSerializer
     instance_model=models.FileAttachment 
@@ -114,16 +115,28 @@ class ProcessInvite(APIView):
         return Response(resp)
 
 class GetInviteRequest(generics.ListAPIView):
-    permission_classes=[IsSuperAdminORIsAdmin]
+    permission_classes=[IsSuperAdminOrAdmin]
     serializer_class=InviteRequestSerializer
 
     def get_queryset(self):
         return models.InviteRequest.objects.filter(workspace=self.kwargs.get('wk'),status='pending')
 
 class AcceptInviteRequest(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes=[IsSuperAdminORIsAdmin]
+    permission_classes=[IsSuperAdminOrAdmin]
     serializer_class=InviteRequestSerializer
 
     def get_object(self):
         return models.InviteRequest.objects.filter(id=self.kwargs.get('pk')).first()
+
+
+class CreateTask(generics.ListCreateAPIView):
+    queryset=models.Task.objects.all()
+    serializer_class=TaskSerializer
+    permission_classes=[permissions.IsAuthenticated]
+
+class TaskDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset=models.Task.objects.all()
+    serializer_class=TaskSerializer
+    permission_classes=[permissions.IsAuthenticated]
+
 

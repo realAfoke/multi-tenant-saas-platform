@@ -1,13 +1,12 @@
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.decorators import api_view
+from rest_framework import generics
 from users.services.auth import verify_email,verify_otp
-from users.services.register import create_user
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import LoginSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
-from typing import cast
+from users.api.serializers import UserSerializer,LoginSerializer
 
 # Create your views here.
 
@@ -15,31 +14,33 @@ from typing import cast
 User=get_user_model()
 
 
-@api_view(['POST'])
-def create_account(request):
-    user=create_user(request)
-    refresh=RefreshToken.for_user(user['user'])
-    response=Response({'user':user['data']})
-    response.set_cookie(
-            key='access',
-            value=str(refresh.access_token),
-            path='/',
-            secure=True,
-            samesite='None',
-            httponly=True,
-            max_age=60*60*24*7
+class SignUpView(generics.CreateAPIView):
+    serializer_class=UserSerializer
+    def create(self, request, *args, **kwargs):
+        serializer=self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user=serializer.save()
+        refresh=RefreshToken.for_user(user)
+        response=Response(serializer.data)
+        response.set_cookie(
+                key='access',
+                value=str(refresh.access_token),
+                path='/',
+                secure=True,
+                samesite='None',
+                httponly=True,
+                max_age=60*60*24*7
+                )
+        response.set_cookie(
+                key='refresh',
+                value=str(refresh),
+                path='/',
+                secure=True,
+                samesite='None',
+                httponly=True,
+                max_age=60*60*24*7
             )
-    response.set_cookie(
-            key='refresh',
-            value=str(refresh),
-            path='/',
-            secure=True,
-            samesite='None',
-            httponly=True,
-            max_age=60*60*24*7
-            )
-
-    return response
+        return response
 
 @api_view(['POST'])
 def send_otp(request):

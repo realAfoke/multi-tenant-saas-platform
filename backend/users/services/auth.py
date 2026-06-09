@@ -5,7 +5,6 @@ from django.core.mail import send_mail
 from rest_framework.exceptions import ValidationError
 
 
-
 def verify_email(model,request):
     query={}
     if 'phone' in request.data and len(request.data['phone']) == 15:
@@ -28,6 +27,7 @@ def verify_email(model,request):
 
 def verify_otp(key,value):
     otp_key=f'otp:{key}'
+    print('OTP:',otp_key)
     otp=cache.get(otp_key)
     if otp != value:
         raise ValidationError('otp is invalid')

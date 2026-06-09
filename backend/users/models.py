@@ -2,11 +2,12 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.base_user import BaseUserManager
+from django.core.exceptions import ValidationError
 
 # Create your models here.
 
 
-class UserManger(BaseUserManager):
+class UserManager(BaseUserManager):
     use_in_migrations=True
 
     def create_user(self,email,password,phone=None,**extra_fields):
@@ -29,21 +30,25 @@ class UserManger(BaseUserManager):
             raise ValueError('super user must have is_staff set=True')
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('superuser must have is_supersuer set=True')
-        return self.create_user(email,phone,password,**extra_fields)
+        return self.create_user(email,password,phone,**extra_fields)
 
 
 
 class CustomUser(AbstractUser):
     phone=models.CharField(max_length=17,null=True,blank=True)
-    email=models.EmailField(_('email address'),unique=True,help_text=_('Required.valid email domain are allowed'),error_messages={'unique':'A user with that username already exist'})
+    email=models.EmailField(_('email address'),unique=True,help_text=_('Required: valid email domain are allowed'),error_messages={'unique':'A user with that username already exist'})
     username=models.CharField(max_length=200,unique=False,blank=True,null=True)
 
-
-    objects=UserManger()
-
+    objects=UserManager()
 
     USERNAME_FIELD='email'
     REQUIRED_FIELDS=[]
+
+    class Meta:
+        db_table='usermodel'
+
+    def __str__(self):
+        return str(self.email)
 
 
 

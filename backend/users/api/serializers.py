@@ -3,6 +3,8 @@ from django.contrib.auth import get_user_model,authenticate
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer 
 from rest_framework.exceptions import AuthenticationFailed
 from typing import Any
+from django.core.cache import cache
+from rest_framework.exceptions import ValidationError
 
 
 User=get_user_model()
@@ -13,11 +15,19 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model=User
         fields=['id','password','email','phone','first_name','last_name','username']
-        read_only_fields=['email','phone','first_name','last_name','username']
+        read_only_fields=['phone','first_name','last_name','username']
 
     def create(self, validated_data):
         user=User.objects.create_user(**validated_data)
         return user
+
+    def validate(self, attrs):
+        if 'email' not in attrs and 'phone' not in attrs:
+            raise ValueError('credentials not provided')
+        user_detail=attrs.get('email') or attrs.get('phone')
+        if not cache.get(f'confirm:{user_detail}'): 
+            raise ValidationError(f'{user_detail} is not verified ')
+        return attrs
 
 
 class LoginSerializer(TokenObtainPairSerializer):
@@ -31,4 +41,4 @@ class LoginSerializer(TokenObtainPairSerializer):
         user['access']=str(refresh.access_token)
         return user
 
-   
+

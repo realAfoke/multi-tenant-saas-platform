@@ -1,34 +1,33 @@
 # from rest_framework.permissions import IsAdminUser
-from rest_framework.permissions import BasePermission
-import workspace
-from workspace.models import WorkSpace
-
-class IsSuperAdminOrAdmin(BasePermission):
-
-    def has_permission(self, request, view):
-        wrk_id=view.kwargs.get('pk')
-        workspace=WorkSpace.objects.filter(id=wrk_id).first()
-        return bool(workspace.super_admin==request.user or workspace.admins==request.user)
-
-    
-    def has_object_permission(self, request, view, obj):
-        if hasattr(obj,'work_space'):
-            workspace=obj.workspace
-            return bool(workspace.super_admin==request.user or workspace.admins.filter(id=request.user).exits())
-
-        return bool(obj.super_admin == request.user or obj.admins == request.user)
-
-class IsCreatorOrAdmin(BasePermission):
-    def has_object_permission(self, request, view, obj):
-        return bool(obj.created_by == request.user or obj.project_admins.filter(id=request.user).exist())
-
+from django.contrib.auth import PermissionDenied
+from rest_framework.permissions import SAFE_METHODS, BasePermission
+from django.db.models import Q
 
 class IsWorkspaceMemeber(BasePermission):
+   def has_object_permission(self, request, view, obj):
+        if not request.user.is_authenticated:
+            raise PermissionDenied('You\' not authenticated')
+        if hasattr(obj,'workspace'):
+            obj=obj.workspace
+        is_member=obj.membership.filter(role__in=['admin','owner','member'],user=request.user).exists()
+        is_admin_or_owner=obj.membership.filter(role__in=['owner','admin'],user=request.user).exists()
+        if request.method in SAFE_METHODS:
+            return is_member
+        return is_admin_or_owner
+
+
+class IsWorkspaceAdminOrSuperAdmin(IsWorkspaceMemeber):
     def has_permission(self, request, view):
         wk=view.kwargs.get('pk')
-        return bool(request.user.is_authenticated and request.user.user_membership.filter(role__in=['admin','owner','member'],workspace_id=wk))
+        user=request.user
+        return bool(request.user.is_authenticated and user.user_membership.filter(Q(role='admin') | Q(role='owner'),workspace=wk).exists())
 
-    def has_object_permission(self, request, view, obj):
-        print('OBJ:',obj)
-        print('ATTRS:',vars(obj))
-        return bool (request.user.is_authenticated and obj.membership.filter(role__in=['owner','admin'],user=request.user))
+
+class CommentPermission(BasePermission):
+    def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            raise PermissionDenied('You\' not authenticated')
+        tk=view.kwargs.get('pk')
+        is_member=request.user.task_members.filter(Q(members=request.user)|Q(admins=request.user)).exists()
+        return is_member
+

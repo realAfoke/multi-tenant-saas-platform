@@ -48,7 +48,8 @@ class CustomUser(AbstractUser):
         db_table='usermodel'
 
     def __str__(self):
-        return str(self.email)
+        # return str(self.email)
+        return self.email
 
 
 

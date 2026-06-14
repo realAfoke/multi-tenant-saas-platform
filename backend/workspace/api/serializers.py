@@ -17,7 +17,8 @@ class MembershipSerializer(serializers.ModelSerializer):
         fields=['role','user']
  
 class CommentSerializer(serializers.ModelSerializer):
-    user=UserSerializer()
+    # user=UserSerializer()
+    user=serializers.SerializerMethodField()
     class Meta:
         model=models.Comment
         fields='__all__'
@@ -37,6 +38,8 @@ class CommentSerializer(serializers.ModelSerializer):
             raise PermissionDenied('you dont have permission to perform this operation')
 
         return attrs
+    def get_user(self,obj):
+        return {'id':obj.user.id,'email':obj.user.email,'first_name':obj.user.first_name,'last_name':obj.user.last_name}
 
 
 class TaskSerializer(serializers.ModelSerializer):
@@ -101,9 +104,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         # if current_user in set(obj.admins.all()):
         if current_user != wk_owner.user:
             not_ex=obj.admins.all()
-            print('NOT EXT:',not_ex)
             admins=obj.admins.all().exclude(id=wk_owner.user.id)
-            print('EX:',admins)
             return UserSerializer(admins,many=True,context=self.context).data
         owner_admin_list=obj.admins.all()
         return UserSerializer(owner_admin_list,many=True,context=self.context).data

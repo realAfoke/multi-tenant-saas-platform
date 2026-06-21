@@ -6,6 +6,8 @@ from workspace import models
 from users.api.serializers import UserSerializer
 from django.db.models import Q
 
+import workspace
+
 
 
 UserModel=get_user_model()
@@ -207,9 +209,15 @@ class InviteRequestSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         if validated_data.get('status') == 'accept':
+            workspace=getattr(self.instance,'workspace')
+            wk_members_count=workspace.membershipt.count()
+            plan_limit=workspace.subscription.filter(status='active').first().plan.members_limit
+            if wk_members_count >= plan_limit:
+                raise ValidationError('upgrade your plan to add/accept more user invite')
+
             project=getattr(self.instance,'project')
             project.members.add(instance.pending_user)
-            wk_memb=models.Membership.objects.create(workspace=project.workspace,user=instance.pending_user,role='member')
+            # wk_memb=models.Membership.objects.create(workspace=project.workspace,user=instance.pending_user,role='member')
             instance.status=validated_data.get('status')
             project.save()
             instance.save()

@@ -13,6 +13,7 @@ class Plan(models.Model):
     intervals=models.CharField(max_length=100)
     is_active=models.BooleanField(default=True)
     features=models.JSONField(default=dict)
+    members_limit=models.IntegerField(null=True,blank=True)
     stripe_price_id=models.CharField(max_length=100)
     stripe_product_id=models.CharField(max_length=100)
     description=models.CharField(max_length=500)

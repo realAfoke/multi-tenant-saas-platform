@@ -46,7 +46,6 @@ def create_checkout(request):
     checkout=client.v1.checkout.sessions.create({
         "mode":"subscription","line_items":[{"price":getattr(plan,'stripe_price_id'),"quantity":1}],"success_url":"http://localhost/success"
         ,"subscription_data":{"metadata":{"workspace_id":workspace_id,"plan_id":plan_id}}})
-    print('DONE')
     if hasattr(checkout,'url'):
         return Response({'status':checkout.url})
     return response({"status":"successfull"})
@@ -56,7 +55,17 @@ def cancel_subscription(request,workspace_id):
     subscription=Subscription.objects.filter(workspace_id=workspace_id,status='active')
     client.v1.subscriptions.update(subscription.stripe_subscription_id,{'cancel_at_period_end':True})
 
-    return Response('appologies for any inconvienience your subscriptions will be cancelled shortly')
+    return Response('appologies for any inconvienience your subscription will be cancelled when your current period end and pls note you wont be charge for coming months thanks')
+
+@api_view(['POST'])
+def upgrade_subscription_plan(request,workspace_id):
+    plan_id=request.data.get('plan_id')
+    try:
+        plan=Plan.objects.get(id=plan_id)
+    except getattr(Plan,'DoesNotExist'):
+        return Response('plan does not exist')
+    wk_sub=Subscription.objects.filter(workspace_id=workspace_id,status='active').first()
+    client.v1.subscriptions.update(wk_sub.stripe_subscription_id,{"items":[{"id":wk_sub.subscription_item_id,"price":plan.stripe_price_id}],"metadata":{"plan_id":plan_id}})
  
 @api_view(['POST'])
 def stripe_webhook(request):
@@ -70,23 +79,30 @@ def stripe_webhook(request):
     except stripe.APIError:
         return HttpResponse(status=400)
 
+    subscription=event.data.object
+    stripe_sub_id=subscription.id
+    period_start=datetime.fromtimestamp(subscription.items.data[0].current_period_start)
+    period_end=datetime.fromtimestamp(subscription.items.data[0].current_period_end)
+    item_id=subscription.items.data[0].id
+
     if event.type== 'customer.subscription.created':
-        subscription=event.data.object
-        print('SUBSCRIPTION:',subscription)
-
-
         workspace_id=subscription.metadata.workspace_id
-        Subscription.objects.filter(workspace_id=workspace_id).update(status='cancelled')
         plan_id=subscription.metadata.plan_id
-        period_start=datetime.fromtimestamp(subscription.items.data[0].current_period_start)
-        period_end=datetime.fromtimestamp(subscription.items.data[0].current_period_end)
-
-        Subscription.objects.create(workspace_id=workspace_id,plan_id=plan_id,stripe_subscription_id=subscription.id,status=subscription.status,current_period_start=period_start,current_period_end=period_end)
+        Subscription.objects.filter(workspace_id=workspace_id).update(status='cancelled')
+        
+        Subscription.objects.create(workspace_id=workspace_id,plan_id=plan_id,subcription_item_id=item_id,stripe_subscription_id=subscription.id,status=subscription.status,current_period_start=period_start,current_period_end=period_end)
 
     elif event.type == 'customer.subscription.deleted':
-        sub=event.data.object
-        stripe_sub_id=sub._id
         Subscription.objects.filter(stripe_subscription_id=stripe_sub_id,status='active').update(status='active')
+    elif event.type == 'customer.subscription.updated':
+        plan_id=subscription.metadata.plan_id
+        sub=Subscription.objects.filter(stripe_subscription_id=stripe_sub_id,status='active').first()
+        sub.subscription_item_id=item_id
+        sub.plan_id=plan_id
+        sub.current_period_start=period_start
+        sub.current_period_end=period_end
+        sub.save()
+
 
     return HttpResponse({'status':'successfull'})
 

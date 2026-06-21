@@ -1,7 +1,6 @@
 from django.db import models
 from workspace.models import WorkSpace
 from django.contrib.auth import get_user_model
-
 # Create your models here.
 
 

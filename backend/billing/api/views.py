@@ -51,7 +51,13 @@ def create_checkout(request):
         return Response({'status':checkout.url})
     return response({"status":"successfull"})
     
+@api_view(['PUT','PATCH'])
+def cancel_subscription(request,workspace_id):
+    subscription=Subscription.objects.filter(workspace_id=workspace_id,status='active')
+    client.v1.subscriptions.update(subscription.stripe_subscription_id,{'cancel_at_period_end':True})
 
+    return Response('appologies for any inconvienience your subscriptions will be cancelled shortly')
+ 
 @api_view(['POST'])
 def stripe_webhook(request):
     payload=request.body
@@ -77,5 +83,11 @@ def stripe_webhook(request):
 
         Subscription.objects.create(workspace_id=workspace_id,plan_id=plan_id,stripe_subscription_id=subscription.id,status=subscription.status,current_period_start=period_start,current_period_end=period_end)
 
+    elif event.type == 'customer.subscription.deleted':
+        sub=event.data.object
+        stripe_sub_id=sub._id
+        Subscription.objects.filter(stripe_subscription_id=stripe_sub_id,status='active').update(status='active')
+
     return HttpResponse({'status':'successfull'})
-    
+
+   

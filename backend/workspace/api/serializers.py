@@ -213,7 +213,7 @@ class InviteRequestSerializer(serializers.ModelSerializer):
             wk_members_count=workspace.membershipt.count()
             plan_limit=workspace.subscription.filter(status='active').first().plan.members_limit
             if wk_members_count >= plan_limit:
-                raise ValidationError('upgrade your plan to add/accept more user invite')
+                raise ValidationError('Members limit exceeded for this plan, upgrade your plan to add/accept more user invite')
 
             project=getattr(self.instance,'project')
             project.members.add(instance.pending_user)

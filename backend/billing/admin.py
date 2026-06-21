@@ -1,0 +1,7 @@
+from django.contrib import admin
+from billing import models
+
+# Register your models here.
+
+admin.site.register(models.Plan)
+admin.site.register(models.Subscription)

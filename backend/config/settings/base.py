@@ -42,6 +42,7 @@ INSTALLED_APPS = [
         'rest_framework_simplejwt.token_blacklist',
         'users',
         'workspace',
+        'billing',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

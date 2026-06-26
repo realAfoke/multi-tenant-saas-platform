@@ -52,6 +52,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+        'config.settings.middleware.RequestLogMiddleware',
         'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -165,3 +166,24 @@ CACHE={
 #                 }
 #             }
 #                 }
+LOGGING={
+        "version":1,
+        "disable_existing_loggers":False,
+        "handlers":{
+            "file":{
+                "class":"logging.FileHandler",
+                "filename":"logs/app.log",
+                },
+            "console":{
+                "class":"logging.StreamHandler",
+
+                }
+            },
+        "root":{
+            "handlers":["file","console"],
+            "level":"INFO",
+            },
+        }
+
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

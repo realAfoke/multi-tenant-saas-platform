@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 import os
 from datetime import datetime
 from rest_framework.response import Response
+from django.core.mail import send_mail
 
 load_dotenv()
 
@@ -102,6 +103,32 @@ def stripe_webhook(request):
         sub.current_period_start=period_start
         sub.current_period_end=period_end
         sub.save()
+
+    elif event.type == 'charge.failed':
+        subs=Subscription.objects.filter(stripe_subscription_id=stripe).first()
+        subs.status='past_due'
+        owner=subs.workspace.membership.filter(role='owner').first()
+
+        send_mail('Payment Failed - Action Required',
+                  f"""
+                  Hi {owner.user.first_name} {owner.user.last_name},
+
+                  Your payment for {subs.workspace.name} subscription failed.
+
+                  Card:****
+                  Amount:****
+                  Date:****
+
+                  Please updte your payment method to keep your workspace active.
+
+                  After 3 days without payment, your workspace will be restricted
+
+                  Update payment:****
+
+                  Thanks,
+                  Orbit Team
+                  """,'noreply@example.com',[owner.email])
+
 
 
     return HttpResponse({'status':'successfull'})

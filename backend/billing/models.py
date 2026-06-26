@@ -37,6 +37,6 @@ class Subscription(models.Model):
     plan=models.ForeignKey(Plan,related_name='subscripiton_plan',on_delete=models.CASCADE)
     stripe_subscription_id=models.CharField(max_length=200)
     subcription_item_id=models.CharField(null=True,blank=True)
-    status=models.CharField(choices=[('active','Active'),('canceled','Canceled'),('past_due','Past_due')],default='active')
+    status=models.CharField(choices=[('active','Active'),('past_due','Past_Due'),('canceled','Canceled'),('past_due','Past_due')],default='active')
     current_period_start=models.DateTimeField()
     current_period_end=models.DateTimeField()

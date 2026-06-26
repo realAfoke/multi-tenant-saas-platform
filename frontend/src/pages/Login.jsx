@@ -4,34 +4,42 @@ import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { instance } from "@/api/axios"
 import useAuthStore from "@/store/authStore"
+import { replace, useNavigate } from "react-router-dom"
 
 
 export default function Login() {
 	const [email, setEmail] = useState('')
+	const [loader, setLoader] = useState({ isLoading: false, loaderMsg: '' })
 	const [password, setPassword] = useState('')
 	const setUser = useAuthStore((state) => state.setUser)
+	const user = useAuthStore((state) => state.user)
+	const navigate = useNavigate()
 
 
 	async function login() {
 		try {
+			setLoader((prev) => ({ ...prev, isLoading: true }))
 			const logInfo = await instance.post('auth/login/', { email: email, password: password })
-			console.log('LOGINFO:', logInfo)
-			const userInfo = logInfo.response.data
+			const userInfo = logInfo.data
 			setUser(userInfo)
-
+			setLoader((prev) => ({ ...prev, isLoading: false }))
+			navigate('/dashboard', { replace: true })
 		}
 		catch (err) {
-			console.error(err.response)
+			console.error('Error:', err.response)
+			const errorMsg = err.response.data?.nonFieldErrors[0]
+			const errKey = Object.fromEntries(Object.entries(errorMsg))
+			setLoader((prev) => ({ ...prev, isLoading: false, loaderMsg: errorMsg }))
 		}
 	}
 
 	return (
 		<div className="flex lg:px-10 flex-col min-h-screen bg-gray-50 border-2 border-green-500">
-			<div className="font-bold text-2xl border-b border-1-gray-200 py-3">
+			<div className="font-bold text-2xl border-b border-1-gray-200 p-3">
 				Orbit
 			</div>
 			<div className="md:flex md:justify-center">
-				<Card className='w-full max-w-md bg-gray-50 border-red-500'>
+				<Card className='ring-0 border-none shadow-none w-full max-w-md bg-gray-50 border-red-500'>
 					<CardHeader>
 						<div className="text-xl font-semibold">
 							Sign in to your Workspace
@@ -56,7 +64,14 @@ export default function Login() {
 								forgot your password?
 							</div>
 						</div>
-						<Button onClick={async()=>await login()} className='w-full bg-[#060067d6] py-6 rounded-md'>Login</Button>
+						{(loader.loaderMsg && !loader.isLoading) && <div className="text-red-500">{loader.loaderMsg}</div>}
+						<Button disabled={email.length <= 0 || password.length <= 0} onClick={async () => await login()} className='w-full bg-[#060067d6] py-6 rounded-md'>
+							{loader.isLoading ? (
+								<div className="h-7 w-7 rounded-full border-3 border-white border-t-transparent animate-spin"></div>
+							) : (
+								<div>Login</div>
+							)}
+						</Button>
 					</CardContent>
 				</Card>
 			</div>

@@ -5,7 +5,8 @@ from . base import *
 load_dotenv()
 
 
-CORS_ALLOWED_HOST=['127.0.0.1','localhost']
+# ALLOWED_HOST=['127.0.0.1','localhost']
+# CORS_ALLOW_HOST=[]
 CORS_ALLOW_CREDENTIALS=True
 
 

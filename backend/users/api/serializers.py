@@ -34,6 +34,7 @@ class LoginSerializer(TokenObtainPairSerializer):
     def validate(self, attrs: dict[str, Any]) -> dict[str, str]:
         user=authenticate(request=self.context['request'],**attrs)
         if not user:
+            # raise ValidationError('invalide credentials')
             raise AuthenticationFailed('Invalid credentials')
         refresh=self.get_token(user)
         user=UserSerializer(user).data

@@ -60,3 +60,97 @@ GET /static/admin/js/nav_sidebar.js
 GET /static/admin/img/icon-deletelink.svg
 GET /static/admin/img/icon-addlink.svg
 GET /static/admin/img/icon-changelink.svg
+Starting server at tcp:port=8000:interface=0.0.0.0
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+GET /admin
+GET /admin/
+GET /admin/login/?next=/admin/
+GET /static/admin/css/base.css
+GET /static/admin/css/dark_mode.css
+GET /static/admin/css/nav_sidebar.css
+GET /static/admin/css/login.css
+GET /static/admin/js/theme.js
+GET /static/admin/css/responsive.css
+GET /static/admin/js/nav_sidebar.js
+GET /favicon.ico
+Not Found: /favicon.ico
+GET /admin/
+GET /admin/login/?next=/admin/
+GET /static/admin/css/base.css
+GET /static/admin/css/dark_mode.css
+GET /static/admin/css/nav_sidebar.css
+GET /static/admin/css/responsive.css
+GET /static/admin/css/login.css
+GET /static/admin/js/theme.js
+GET /.well-known/appspecific/com.chrome.devtools.json
+GET /static/admin/js/nav_sidebar.js
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+OPTIONS /api/v1/auth/login/
+POST /api/v1/auth/login/
+Bad Request: /api/v1/auth/login/
+POST /api/v1/auth/login/
+Bad Request: /api/v1/auth/login/
+POST /api/v1/auth/login/
+Bad Request: /api/v1/auth/login/
+POST /api/v1/auth/login/
+Bad Request: /api/v1/auth/login/
+POST /api/v1/auth/login/
+Bad Request: /api/v1/auth/login/
+POST /api/v1/auth/login/
+Bad Request: /api/v1/auth/login/
+POST /api/v1/auth/login/
+Bad Request: /api/v1/auth/login/
+POST /api/v1/auth/login/
+Bad Request: /api/v1/auth/login/
+POST /api/v1/auth/login/
+Bad Request: /api/v1/auth/login/
+POST /api/v1/auth/login/
+Bad Request: /api/v1/auth/login/
+POST /api/v1/auth/login/
+Bad Request: /api/v1/auth/login/
+POST /api/v1/auth/login/
+Bad Request: /api/v1/auth/login/
+POST /api/v1/auth/login/
+Bad Request: /api/v1/auth/login/
+POST /api/v1/auth/login/
+Bad Request: /api/v1/auth/login/
+POST /api/v1/auth/login/
+Bad Request: /api/v1/auth/login/
+POST /api/v1/auth/login/
+Bad Request: /api/v1/auth/login/
+POST /api/v1/auth/login/
+Bad Request: /api/v1/auth/login/
+POST /api/v1/auth/login/
+Bad Request: /api/v1/auth/login/
+POST /api/v1/auth/login/
+POST /api/v1/auth/login/
+Bad Request: /api/v1/auth/login/
+POST /api/v1/auth/login/
+Bad Request: /api/v1/auth/login/
+POST /api/v1/auth/login/
+Bad Request: /api/v1/auth/login/
+POST /api/v1/auth/login/
+Bad Request: /api/v1/auth/login/
+Killed 0 pending application instances
+Starting server at tcp:port=8000:interface=0.0.0.0
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+POST /api/v1/auth/login/
+Bad Request: /api/v1/auth/login/
+OPTIONS /api/v1/auth/login/
+POST /api/v1/auth/login/
+Bad Request: /api/v1/auth/login/
+POST /api/v1/auth/login/
+Bad Request: /api/v1/auth/login/
+POST /api/v1/auth/login/
+Bad Request: /api/v1/auth/login/
+POST /api/v1/auth/login/
+Bad Request: /api/v1/auth/login/
+POST /api/v1/auth/login/
+POST /api/v1/auth/login/
+Bad Request: /api/v1/auth/login/
+Bad Request: /api/v1/auth/login/
+Killed 0 pending application instances

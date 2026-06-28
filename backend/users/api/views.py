@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.decorators import api_view
-from rest_framework import generics
+from rest_framework import generics, permissions
 from users.services.auth import verify_email,verify_otp
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -87,5 +87,11 @@ class LoginView(TokenObtainPairView):
                 )
         return response
 
+class Me(generics.RetrieveUpdateAPIView):
+        queryset=User.objects.all()
+        serializer_class=UserSerializer
+        permission_classes=[permissions.IsAuthenticated]
 
+        def get_object(self):
+            return self.request.user
 

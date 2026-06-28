@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { instance } from "@/api/axios"
 import useAuthStore from "@/store/authStore"
-import { replace, useNavigate } from "react-router-dom"
+import { useNavigate, Navigate } from "react-router-dom"
 
 
 export default function Login() {
@@ -12,8 +12,11 @@ export default function Login() {
 	const [loader, setLoader] = useState({ isLoading: false, loaderMsg: '' })
 	const [password, setPassword] = useState('')
 	const setUser = useAuthStore((state) => state.setUser)
-	const user = useAuthStore((state) => state.user)
+	const isLoggedIn = useAuthStore((state) => state.isLoggedIn())
 	const navigate = useNavigate()
+	if (isLoggedIn) {
+		return <Navigate to='/dashboard' replace />
+	}
 
 
 	async function login() {
@@ -28,7 +31,6 @@ export default function Login() {
 		catch (err) {
 			console.error('Error:', err.response)
 			const errorMsg = err.response.data?.nonFieldErrors[0]
-			const errKey = Object.fromEntries(Object.entries(errorMsg))
 			setLoader((prev) => ({ ...prev, isLoading: false, loaderMsg: errorMsg }))
 		}
 	}

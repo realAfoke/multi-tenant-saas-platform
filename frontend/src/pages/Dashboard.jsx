@@ -8,21 +8,15 @@ export default function Dashboard() {
 	const [workspaces, setWorkspaces] = useState([])
 	const loaderData = useLoaderData()
 	useEffect(() => {
-		setWorkspaces(loaderData)
+		setWorkspaces(loaderData || [])
+
 	})
-	// const user = useAuthStore(state => state.user)
-	// const userWorkspaces = workspaces.map((workspace) => {
-	// 	console.log('WORKSPACE:', workspace)
-	// 	return (
-	// 		<li key={workspace.id}>{workspace?.name}</li>
-	// 	)
-	// })
 	return (
 		<ItemGroup>
-			{workspaces.map((workspace) => {
+			{workspaces?.map((workspace) => {
 				return (
-					<Item>
-						<ItemTitle key={workspace.id}>{workspace.name}</ItemTitle>
+					<Item key={workspace.id}>
+						<ItemTitle>{workspace.name}</ItemTitle>
 						<ItemContent>
 							<ItemDescription>{workspace.description}</ItemDescription>
 						</ItemContent>
@@ -34,8 +28,10 @@ export default function Dashboard() {
 }
 
 
-export async function dashboardLoader(params) {
+export async function dashboardLoader() {
 	try {
+		const user = localStorage.getItem('user')
+		if (!user) return
 		const dashboard = await instance.get('workspaces/')
 		return dashboard.data
 	} catch (err) {

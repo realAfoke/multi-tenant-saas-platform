@@ -1,12 +1,15 @@
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.decorators import api_view
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions,status
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from users.services.auth import verify_email,verify_otp
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenRefreshView
 from users.api.serializers import UserSerializer,LoginSerializer
+ 
 
 # Create your views here.
 
@@ -86,6 +89,27 @@ class LoginView(TokenObtainPairView):
                 max_age=60*60*24*7
                 )
         return response
+
+class RefreshTokenView(TokenRefreshView):
+        def post(self, request: Request, *args, **kwargs) -> Response:
+                serializer=self.get_serializer(data={'refresh':request.COOKIES.get('refresh')})
+                try:
+                        serializer.is_valid(raise_exception=True)
+                except TokenError as e:
+                        raise InvalidToken(e.args[0]) from e
+                access=serializer.validated_data.get('access')
+                response=Response(status=status.HTTP_200_OK)
+                response.set_cookie(
+                                key='access',
+                                value=str(access),
+                                httponly=True,
+                                secure=True,
+                                samesite='None',
+                                path='/',
+                                max_age=60*5
+                                )
+                return response
+
 
 class Me(generics.RetrieveUpdateAPIView):
         queryset=User.objects.all()

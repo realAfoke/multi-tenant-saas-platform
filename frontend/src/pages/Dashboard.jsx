@@ -1,32 +1,41 @@
 import { instance } from "@/api/axios"
 import { useEffect, useState } from "react"
-import { useLoaderData } from "react-router-dom"
-import { ItemGroup, Item, ItemActions, ItemContent, ItemDescription, ItemTitle, ItemMedia } from "@/components/ui/item"
+import { useLoaderData, Outlet } from "react-router-dom"
+import { useAppStore } from "@/store/authStore"
+import { normalise } from "@/utils/dashboard"
+import SideBar from "@/components/SideBar"
+import menuIcon from "@/assets/menu3.svg"
+
+
 
 export default function Dashboard() {
-	const [workspaces, setWorkspaces] = useState([])
+	const setApp = useAppStore(state => state.setApp)
 	const loaderData = useLoaderData()
-	useEffect(() => {
-		setWorkspaces(loaderData || [])
+	const [toggle, setToggle] = useState(false)
+	const [selectedWorkspace, setSelectedWorkspace] = useState({ id: null, show: false })
+	const [selectedProject, setSelectedProject] = useState({ id: null, show: false })
+	const [toggleWorkspace, setToggleWorkspace] = useState(false)
 
-	})
+
+
+	useEffect(() => {
+		setApp(normalise(loaderData))
+	}, [])
+
 	return (
-		<div className="min-h-screen bg-[#d4d4d4b8] overflow-auto">
-			<div className="text-2xl font-semibold bg-[#040435eb] p-3 text-white shadow-lg">
-				Orbit
+		<div className='bg-[#131011] flex border-red-800 h-screen w-full overflow-hidden'>
+			{toggle && <SideBar setToggle={setToggle} handleWk={setSelectedWorkspace} handleProject={setSelectedProject} selectedProject={selectedProject} selectedWorkspace={selectedWorkspace} toggleWorkspace={toggleWorkspace} handleToggleWorkspace={setToggleWorkspace} />}
+			<div className={` flex-1 ${toggle ? 'pt-[5rem]' : ''}`}>
+				{!toggle &&
+					<div>
+						<img src={menuIcon} className="w-12 h-12" onClick={(e) => {
+							e.stopPropagation()
+							setToggle(true)
+						}} />
+					</div>
+				}
+				<Outlet context={{ selectedProject, selectedWorkspace, setSelectedWorkspace, setSelectedProject, setToggleWorkspace }} />
 			</div>
-			<ItemGroup className="">
-				{workspaces?.map((workspace) => {
-					return (
-						<Item key={workspace.id} className="flex flex-col items-start gap-0 hover:bg-[#dbd8f1d9]">
-							<ItemTitle className="text-md capitalize">{workspace.name}</ItemTitle>
-							<ItemContent>
-								<ItemDescription>{workspace.description}</ItemDescription>
-							</ItemContent>
-						</Item>
-					)
-				})}
-			</ItemGroup>
 		</div>
 	)
 }
@@ -39,11 +48,6 @@ export async function dashboardLoader() {
 		const dashboard = await instance.get('workspaces/')
 		return dashboard.data
 	} catch (err) {
-		console.error(err.response.data)
+		console.error(err)
 	}
-
-
 }
-// #040435b8
-//
-// #040435eb

@@ -8,9 +8,9 @@ import { useNavigate, Navigate } from "react-router-dom"
 
 
 export default function Login() {
-	const [email, setEmail] = useState('saas@example.com')
+	const [email, setEmail] = useState('user@example.com')
 	const [loader, setLoader] = useState({ isLoading: false, loaderMsg: '' })
-	const [password, setPassword] = useState('saas')
+	const [password, setPassword] = useState('user')
 	const setUser = useAuthStore((state) => state.setUser)
 	const isLoggedIn = useAuthStore((state) => state.isLoggedIn())
 	const navigate = useNavigate()

@@ -24,8 +24,7 @@ const processFailedRequest = (error, token = null) => {
 	failedRequest = []
 }
 instance.interceptors.response.use((resp) => (resp), async (e) => {
-
-	console.log(e.response)
+	console.log('ERROR:', e.response)
 	const { config } = e.response
 	if (e.response.status === 401 && !config.url.includes('auth')) {
 		if (config._retry) {

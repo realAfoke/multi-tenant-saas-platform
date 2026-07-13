@@ -55,12 +55,10 @@ class TaskSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         auth_user=self.context['request'].user
-        print('auth user',auth_user)
         workspace=attrs['workspace']
+        attrs['members']=[]
         attrs['members'].append(auth_user)
         if not workspace.membership.filter(user=auth_user,role__in=['owner','admin']).exists():
-            print( workspace.membership.filter(role__in=['owner','admin'],user=auth_user))
-            print('WORKSPACE:',workspace)
             raise PermissionDenied('you dont have the permissions to perform this operation')
         return attrs
 
@@ -172,7 +170,8 @@ class WorkSpaceSerializer(serializers.ModelSerializer):
     def get_projects(self,obj):
         user=self.context['request'].user
         user_project=obj.projects.filter(Q(admins=user)|Q(members=user))
-        return [{'id':project.id,'name':project.name} for project in user_project]
+        return ProjectSerializer(user_project,many=True,context=self.context).data if user_project else None
+        # return [{'id':project.id,'name':project.name} for project in user_project]
 
    
 # class FileSerializer(serializers.ModelSerializer):

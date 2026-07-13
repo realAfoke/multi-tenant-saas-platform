@@ -6,18 +6,47 @@ import ProtectedRoute from './components/ProtectedRoute.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import { dashboardLoader } from './pages/Dashboard.jsx'
 import './index.css'
+import Workspace, { workspaceLoader } from './pages/Workspace.jsx'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import Create from './components/Create.jsx'
 // import App from './App.jsx'
+
+
+const queryClient = new QueryClient()
 
 const routes = createBrowserRouter([
   {
     path: 'login', element: <Login />,
   },
-  { path: 'dashboard', element: <ProtectedRoute><Dashboard /></ProtectedRoute>, loader: dashboardLoader },
-  { path: '/', element: <ProtectedRoute><Dashboard /></ProtectedRoute>, loader: dashboardLoader },
+  {
+    path: '/', element: <ProtectedRoute />, children: [
+      {
+        path: 'dashboard', element: <Dashboard />, loader: dashboardLoader,
+        children: [
+          {
+            path: ':id', element: <Workspace />, loader: workspaceLoader
+          },
+          {
+            path: ':id/add-new-project', element: <Create />
+          },
+          {
+            path: ':id/:prjId/add-new-task', element: <Create />
+          },
+          {
+            path: 'create-new-workspace', element: <Create />
+          }
+
+
+        ]
+      },
+    ]
+  },
 ])
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <RouterProvider router={routes} />
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={routes} />
+    </QueryClientProvider>
   </StrictMode>,
 )

@@ -111,7 +111,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     def get_project_tasks(self,obj):
         current_user=self.context['request'].user
         if obj.task_project.filter(Q(members=current_user) | Q(admins=current_user)).exists():
-            return obj.task_project.values('id','title')
+            return obj.task_project.values('id','title','description')
         return None
 
 class InviteTokenSerializer(serializers.ModelSerializer):

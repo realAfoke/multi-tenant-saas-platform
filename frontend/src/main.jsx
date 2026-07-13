@@ -9,6 +9,7 @@ import './index.css'
 import Workspace, { workspaceLoader } from './pages/Workspace.jsx'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import Create from './components/Create.jsx'
+import Task from './pages/Task.jsx'
 // import App from './App.jsx'
 
 
@@ -34,6 +35,9 @@ const routes = createBrowserRouter([
           },
           {
             path: 'create-new-workspace', element: <Create />
+          },
+          {
+            path: 'task/:id', element: <Task />
           }
 
 

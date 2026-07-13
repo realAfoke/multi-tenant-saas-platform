@@ -514,3 +514,33 @@ GET /api/v1/workspaces/
 GET /api/v1/workspaces/
 GET /api/v1/workspaces/
 GET /api/v1/workspaces/
+Starting server at tcp:port=8000:interface=0.0.0.0
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+GET /api/v1/workspaces/
+Unauthorized: /api/v1/workspaces/
+OPTIONS /api/v1/auth/refresh-token/
+POST /api/v1/auth/refresh-token/
+GET /api/v1/workspaces/
+GET /api/v1/workspaces/
+GET /api/v1/workspaces/
+GET /api/v1/workspaces/
+Unauthorized: /api/v1/workspaces/
+POST /api/v1/auth/refresh-token/
+GET /api/v1/workspaces/
+GET /api/v1/workspaces/
+GET /api/v1/workspaces/
+GET /api/v1/workspaces/
+GET /api/v1/workspaces/
+Unauthorized: /api/v1/workspaces/
+POST /api/v1/auth/refresh-token/
+GET /api/v1/workspaces/
+GET /api/v1/workspaces/
+GET /api/v1/workspaces/
+GET /api/v1/workspaces/
+GET /api/v1/workspaces/
+Unauthorized: /api/v1/workspaces/
+POST /api/v1/auth/refresh-token/
+GET /api/v1/workspaces/
+GET /api/v1/workspaces/

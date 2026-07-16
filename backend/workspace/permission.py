@@ -25,11 +25,8 @@ class IsWorkspaceAdminOrSuperAdmin(IsWorkspaceMemeber):
     def has_permission(self, request, view):
         if not request.user.is_authenticated:
             return False
-        wk=view.kwargs.get('pk')
+        wk=view.kwargs.get('wk')
         user=request.user
-        logger.info(f'user:{request.user}')
-        logger.info(f'wkid:{wk}')
-        logger.info(list(request.user.user_membership.filter(workspace=wk).values_list('role',flat=True)))
         return bool(user.user_membership.filter(Q(role='admin') | Q(role='owner'),workspace=wk).exists())
 
 

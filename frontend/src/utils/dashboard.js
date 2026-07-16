@@ -22,3 +22,13 @@ export function normalise(workspaces) {
 }
 
 
+export function commentNormaliser(comments) {
+	const normaliseComments = { commentObj: {}, commentKeys: [] }
+	comments.forEach((comment) => {
+		normaliseComments.commentObj[comment?.id] = comment
+		normaliseComments.commentKeys.push(comment?.id)
+		return normaliseComments
+	})
+	return normaliseComments
+}
+

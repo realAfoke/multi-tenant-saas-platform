@@ -17,7 +17,7 @@ const useAuthStore = create(combine({ user: localStorage.getItem('user'), }, (se
 
 export default useAuthStore
 
-export const useAppStore = create(combine({ cacheWorkspace: {}, cacheProjects: {}, cacheTasks: {} }, (set, get) => (
+export const useAppStore = create(combine({ cacheWorkspace: {}, cacheProjects: {}, cacheTasks: {}, comments: {} }, (set, get) => (
 	{
 		setApp: (data) => {
 			set((state) => {
@@ -26,13 +26,11 @@ export const useAppStore = create(combine({ cacheWorkspace: {}, cacheProjects: {
 					cacheWorkspace: { ...(state.cacheWorkspace ?? {}), ...data.allWorkspace },
 					cacheProjects: { ...(state.cacheProjects ?? {}), ...data.allProjects },
 					cacheTasks: { ...(state.cacheTasks ?? {}), ...data.allTasks },
-
-
-
 				}
 			})
 		},
 		setWorkspace: (workpace) => {
+			console.log(workpace)
 			set((state) => {
 				const { cacheWorkspace } = state ?? {}
 				const { workspaces, ordering } = cacheWorkspace
@@ -156,6 +154,60 @@ export const useAppStore = create(combine({ cacheWorkspace: {}, cacheProjects: {
 
 			})
 		},
+		setComment: (comment, taskId) => {
+			set((state) => {
+				const { commentObj, commentKeys } = comment
+				const tasks = state.cacheTasks?.tasks
+				const projects = state.cacheProjects?.projects
+				const selectedTask = tasks?.[taskId] ?? {}
+				const projectTask = projects?.[selectedTask?.project] ?? {}
+				const wk = projectTask?.workspace
+				// const commentIds = Object.keys(comment)
+				return {
+					...state,
+					cacheWorkspace: {
+						...(state.cacheWorkspace),
+						workspaces: {
+							...(state.cacheWorkspace?.workspaces ?? {}),
+							[wk]: {
+								...(wk ?? {}),
+								projects: [
+									...new Set([projectTask?.id, ...(wk.projects ?? [])])
+								]
+
+							}
+						}
+					},
+					cacheProjects: {
+						...(state.cacheProjects),
+						projects: {
+							...(projects ?? {}),
+							[projectTask?.id]: {
+								...(projectTask ?? {}),
+								tasks: [
+									...new Set([taskId, ...(projectTask?.tasks ?? [])])
+								]
+							}
+						}
+					},
+					cacheTasks: {
+						...state.cacheTasks,
+						tasks: {
+							...(tasks ?? {}),
+							[taskId]: {
+								...(tasks?.[taskId] ?? {}),
+								comments: [...new Set(...commentKeys ?? [])]
+
+							}
+						}
+					},
+					comments: {
+						...state.comments,
+						...commentObj
+					}
+				}
+			})
+		},
 		getWorkspace: () => (
 			get(id).cacheWorkspace?.workspaces?.[id]
 		),
@@ -167,48 +219,3 @@ export const useAppStore = create(combine({ cacheWorkspace: {}, cacheProjects: {
 		)
 	}
 )))
-
-
-
-// <ItemGroup className="p-2 py-1 gap-1">
-// 				{workspaces.ordering?.map((id) => {
-// 					const workspace = workspaces.workspace[id]
-// 					return (
-// 						<Item key={workspace?.id} onClick={() => setToggle(workspace?.id)} className={``}>
-// 							<ItemTitle className={`text-[#f7f7f7] text-md capitalize`}>{workspace?.name}</ItemTitle>
-// 							<ItemContent>
-// 								<ItemDescription>{workspace?.description}</ItemDescription>
-// 							</ItemContent>
-// 							{toggle == workspace?.id && <NestedList lists={workspace?.projects} setHideDashBoard={setHideDashBoard} />}
-// 						</Item>
-// 					)
-// 				})}
-// 			</ItemGroup>
-
-
-
-// const { workspaces, ordering } = state.cacheWorkspace
-// 				const activeWorkspace = workspaces?.[Number(wkId)]
-//
-//
-// 				return {
-// 					cacheWorkspace: {
-// 						...state.cacheWorkspace,
-// 						workspaces: {
-// 							...(workspaces ?? {}),
-// 							[Number(wkId)]: {
-// 								...(activeWorkspace ?? {}),
-// 								projects: {
-// 									...(activeWorkspace?.projects ?? {}),
-// 									[project.id]: project,
-// 								},
-// 								projectOrdering: [
-// 									...new Set([project.id,
-// 									...(activeWorkspace?.projectOrdering ?? [])
-// 									]),
-// 								],
-// 							},
-// 						},
-// 					},
-// 				}
-

@@ -25,19 +25,19 @@ const routes = createBrowserRouter([
         path: 'dashboard', element: <Dashboard />, loader: dashboardLoader,
         children: [
           {
-            path: ':id', element: <Workspace />, loader: workspaceLoader
+            path: ':wkName', element: <Workspace />, loader: workspaceLoader
           },
           {
-            path: ':id/add-new-project', element: <Create />
+            path: ':wkName/add-new-project', element: <Create />
           },
           {
-            path: ':id/:prjId/add-new-task', element: <Create />
+            path: ':wkName/:prjName/add-new-task', element: <Create />
           },
           {
             path: 'create-new-workspace', element: <Create />
           },
           {
-            path: 'task/:id', element: <Task />
+            path: ':wkNme/:prjName/task/:id', element: <Task />,
           }
 
 

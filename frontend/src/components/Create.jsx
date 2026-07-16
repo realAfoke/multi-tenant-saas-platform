@@ -8,7 +8,7 @@ import { instance } from "@/api/axios"
 import { useEffect, useState } from "react"
 
 export default function Create() {
-	const { id, prjId } = useParams()
+	const { wkName, prjName } = useParams()
 	const { selectedWorkspace, selectedProject, setSelectedWorkspace, setSelectedProject, setToggleWorkspace } = useOutletContext()
 	const navigate = useNavigate()
 	const workspace = useAppStore(state => state.cacheWorkspace.workspaces?.[selectedWorkspace?.id])
@@ -16,7 +16,7 @@ export default function Create() {
 	const addProject = useAppStore(state => state.setWkProject)
 	const addTask = useAppStore(state => state.setTask)
 	const addWorkspace = useAppStore(state => state.setWorkspace)
-	const project = projects?.[selectedProject.id]
+	const project = projects?.[selectedProject?.id]
 	const [name, setName] = useState('')
 	const [description, setDescription] = useState('')
 
@@ -24,37 +24,37 @@ export default function Create() {
 	let text = 'Create A New Workspace'
 	let setter = addWorkspace
 	if (selectedWorkspace?.id) {
-		endpoint = `${selectedWorkspace.id}/${selectedProject.id ? 'tasks/' : 'project/'}`
+		endpoint = `${selectedWorkspace?.id}/${selectedProject.id ? selectedProject?.id + '/tasks/' : 'projects/'}`
 		text = `Create a new ${project ? `Task in ${project.name} of ${workspace.name}` : `Project in ${workspace?.name}`}`
 		setter = selectedProject?.id ? addTask : addProject
 	}
 	useEffect(() => {
-		if (selectedWorkspace?.id && selectedProject?.id) {
-			navigate(`/dashboard/${selectedWorkspace?.id}/${selectedProject?.id}/add-new-task`, { replace: true })
-		} else if (selectedWorkspace?.id) {
-			navigate(`/dashboard/${selectedWorkspace?.id}/add-new-project`, { replace: true })
+		if (selectedWorkspace?.name && selectedProject?.id) {
+			navigate(`/dashboard/${selectedWorkspace?.name}/${selectedProject?.name}/add-new-task`, { replace: true })
+		} else if (selectedWorkspace?.name) {
+			navigate(`/dashboard/${selectedWorkspace?.name}/add-new-project`, { replace: true })
 		}
 		else {
 			navigate('/dashboard/create-new-workspace', { replace: true })
 		}
 
-	}, [selectedWorkspace?.id, selectedProject?.id])
+	}, [selectedWorkspace?.wkName, selectedProject?.id])
 	useEffect(() => {
-		if (id) {
-			setSelectedWorkspace((prev) => ({ ...prev, id: selectedWorkspace?.id, show: true }))
+		if (wkName) {
+			setSelectedWorkspace((prev) => ({ ...prev, wkName: selectedWorkspace?.id, show: true }))
 		}
-		if (prjId) {
-			setSelectedProject((prev) => ({ ...prev, id: selectedProject?.id, show: true }))
+		if (prjName) {
+			setSelectedProject((prev) => ({ ...prev, wkName: selectedProject?.id, show: true }))
 		}
 
 	}, [])
 
 	async function create() {
 		try {
-			const nameField = selectedProject.id ? 'title' : 'name'
+			const nameField = selectedProject?.id ? 'title' : 'name'
 			const createObj = await instance.post(`workspaces/${endpoint}`, { [nameField]: name, description: description, workspace: selectedWorkspace?.id, project: selectedProject?.id })
-			setter(createObj.data, selectedProject?.id || id)
-			if (!id) {
+			setter(createObj.data, selectedProject?.id || selectedWorkspace?.id)
+			if (!wkName) {
 				setToggleWorkspace(true)
 			}
 			setDescription('')

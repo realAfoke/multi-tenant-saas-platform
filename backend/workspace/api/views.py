@@ -90,6 +90,10 @@ class Comment(generics.ListCreateAPIView):
     serializer_class=CommentSerializer
     permission_classes=[CommentPermission]
 
+
+    def get_queryset(self):
+        return models.Comment.objects.filter(task_id=self.kwargs.get('pk')).order_by('-updated_at')
+
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 

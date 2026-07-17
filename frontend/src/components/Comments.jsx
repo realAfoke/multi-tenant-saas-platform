@@ -3,7 +3,7 @@ import time from "@/assets/time.svg"
 
 
 export default function Comments(props) {
-	const { comment } = props
+	const { comment = {} } = props ?? {}
 	const { user } = comment
 	return (
 		<Item className="bg-black rounded-sm flex justify-between items-center">

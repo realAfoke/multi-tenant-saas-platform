@@ -1,12 +1,12 @@
 import { useAppStore } from "@/store/authStore"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useParams } from "react-router-dom"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import sendBtn from "@/assets/send-button.svg"
 import { instance } from "@/api/axios"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { commentNormaliser } from "@/utils/dashboard"
+// import { commentNormaliser } from "@/utils/dashboard"
 import Comments from "@/components/Comments"
 import { ItemGroup } from "@/components/ui/item"
 
@@ -44,7 +44,8 @@ export default function Task() {
 				</div>
 				<div className="flex items-center gap-2 my-5">
 					<Input value={content} onChange={(e) => setContent(e.target.value)} className="bg-[#212121] p-6 rounded-[5px] outline-0 border-0" placeholder="Enter your comment..." />
-					<Button onClick={() => {
+					<Button disabled={!content.trim()} onClick={() => {
+						if (!content.trim()) return
 						mutate.mutate({ id, data: { content: content, workspace: task?.workspace, project: task?.project, task: task?.id } })
 						setContent('')
 					}} className=" p-5 bg-blue-400 max-w-50 self-end rounded-sm my-2">

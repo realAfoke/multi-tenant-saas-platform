@@ -5,6 +5,7 @@ import { useAppStore } from "@/store/authStore"
 import { normalise } from "@/utils/dashboard"
 import SideBar from "@/components/SideBar"
 import menuIcon from "@/assets/menu3.svg"
+import { useParams } from "react-router-dom"
 
 
 
@@ -13,22 +14,57 @@ export default function Dashboard() {
 	const navigate = useNavigate()
 	const loaderData = useLoaderData()
 	const [toggle, setToggle] = useState(false)
+	const workspaces = useAppStore(state => state.cacheWorkspace?.workspaces)
+	const { projects = {} } = useAppStore(state => state.cacheProjects)
 	const [selectedWorkspace, setSelectedWorkspace] = useState({ id: null, name: '', show: false })
 	const [selectedProject, setSelectedProject] = useState({ id: null, name: '', show: false })
 	const [selectedTask, setSelectedTask] = useState({ id: null, name: '', show: false })
 	const [toggleWorkspace, setToggleWorkspace] = useState(false)
+	const { wkName, prjName } = useParams()
+
 
 
 	useEffect(() => {
-		if (selectedTask.id) {
+		if (selectedTask?.name) {
 			navigate(`/dashboard/${selectedWorkspace?.name}/${selectedProject?.name}/task/${selectedTask.id}`)
 		}
+
 	}, [selectedTask])
+
+	// useEffect(() => {
+	// 	console.log(selectedTask)
+	// 	console.log('inside here brody')
+	// 	if (selectedTask?.name) {
+	// 		navigate(`/dashboard/${selectedWorkspace?.name}/${selectedProject?.name}/task/${selectedTask.id}`)
+	// 	}
+	// 	else if (selectedWorkspace?.name && selectedProject?.name) {
+	// 		navigate(`/dashboard/${selectedWorkspace?.name}/${selectedProject?.name}/add-new-task`, { replace: true })
+	// 	} else if (selectedWorkspace?.name) {
+	// 		navigate(`/dashboard/${selectedWorkspace?.name}/add-new-project`, { replace: true })
+	// 	}
+	// 	else {
+	// 		navigate('/dashboard/create-new-workspace', { replace: true })
+	// 	}
+	//
+	// }, [selectedWorkspace?.name, selectedProject?.name, selectedTask?.name])
+
+
+	useEffect(() => {
+		if (wkName) {
+			const workspace = Object.values(workspaces ?? {}).find(wk => wk?.name == wkName)
+			setSelectedWorkspace((prev) => ({ ...prev, id: workspace?.id, name: wkName, show: true }))
+			if (prjName) {
+				const project = Object.values(projects ?? {}).find((prj) => prj?.name == prjName)
+				setSelectedProject((prev) => ({ ...prev, id: project?.id, name: prjName, show: true }))
+			}
+		}
+	}, [workspaces])
+
 
 	useEffect(() => {
 		setApp(normalise(loaderData))
 	}, [])
-// bg-[#131011]
+	// bg-[#131011]
 	return (
 		<div className='bg-[#000] flex h-screen w-full relative overflow-hidden '>
 			{toggle && <SideBar setToggle={setToggle} handleWk={setSelectedWorkspace} handleProject={setSelectedProject} selectedProject={selectedProject} selectedWorkspace={selectedWorkspace} toggleWorkspace={toggleWorkspace} handleToggleWorkspace={setToggleWorkspace} handleTask={setSelectedTask} />}

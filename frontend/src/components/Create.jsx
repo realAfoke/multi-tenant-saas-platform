@@ -9,7 +9,7 @@ import { useEffect, useState } from "react"
 
 export default function Create() {
 	const { wkName, prjName } = useParams()
-	const { selectedWorkspace, selectedProject, setSelectedWorkspace, setSelectedProject, setToggleWorkspace } = useOutletContext()
+	const { selectedWorkspace, selectedProject, setToggleWorkspace, selectedTask } = useOutletContext()
 	const navigate = useNavigate()
 	const workspace = useAppStore(state => state.cacheWorkspace.workspaces?.[selectedWorkspace?.id])
 	const { projects } = useAppStore(state => state.cacheProjects)
@@ -29,7 +29,7 @@ export default function Create() {
 		setter = selectedProject?.id ? addTask : addProject
 	}
 	useEffect(() => {
-		if (selectedWorkspace?.name && selectedProject?.id) {
+		if (selectedWorkspace?.name && selectedProject?.name) {
 			navigate(`/dashboard/${selectedWorkspace?.name}/${selectedProject?.name}/add-new-task`, { replace: true })
 		} else if (selectedWorkspace?.name) {
 			navigate(`/dashboard/${selectedWorkspace?.name}/add-new-project`, { replace: true })
@@ -38,16 +38,29 @@ export default function Create() {
 			navigate('/dashboard/create-new-workspace', { replace: true })
 		}
 
-	}, [selectedWorkspace?.wkName, selectedProject?.id])
-	useEffect(() => {
-		if (wkName) {
-			setSelectedWorkspace((prev) => ({ ...prev, wkName: selectedWorkspace?.id, show: true }))
-		}
-		if (prjName) {
-			setSelectedProject((prev) => ({ ...prev, wkName: selectedProject?.id, show: true }))
-		}
+	}, [selectedWorkspace?.name, selectedProject?.name, selectedTask?.name])
 
-	}, [])
+
+	// useEffect(() => {
+	// 	if (selectedWorkspace?.name && selectedProject?.id) {
+	// 		navigate(`/dashboard/${selectedWorkspace?.name}/${selectedProject?.name}/add-new-task`, { replace: true })
+	// 	} else if (selectedWorkspace?.name) {
+	// 		navigate(`/dashboard/${selectedWorkspace?.name}/add-new-project`, { replace: true })
+	// 	}
+	// 	else {
+	// 		navigate('/dashboard/create-new-workspace', { replace: true })
+	// 	}
+	//
+	// }, [selectedWorkspace?.wkName, selectedProject?.id])
+	// useEffect(() => {
+	// 	if (wkName) {
+	// 		setSelectedWorkspace((prev) => ({ ...prev, wkName: selectedWorkspace?.id, show: true }))
+	// 	}
+	// 	if (prjName) {
+	// 		setSelectedProject((prev) => ({ ...prev, wkName: selectedProject?.id, show: true }))
+	// 	}
+	//
+	// }, [])
 
 	async function create() {
 		try {

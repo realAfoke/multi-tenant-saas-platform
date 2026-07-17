@@ -6,16 +6,13 @@ import edit from "@/assets/edit1.svg"
 import closeMenu from '@/assets/close.svg'
 import { useAppStore } from "@/store/authStore"
 import { Fragment, useState, useRef, useEffect } from "react"
-import { useNavigate, useParams } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 
 
 export default function SideBar(props) {
 	const ref = useRef(null)
-	const { id, prjId } = useParams()
 	const { setToggle, handleWk, handleProject, selectedWorkspace, selectedProject, handleToggleWorkspace, toggleWorkspace, handleTask } = props
 	const { workspaces, ordering } = useAppStore(state => state.cacheWorkspace)
-	// const allState = useAppStore.getState()
-	// console.log(allState)
 	const { projects } = useAppStore(state => state.cacheProjects)
 	const { tasks } = useAppStore(state => state.cacheTasks)
 	const [showOptions, setShowOptions] = useState(false)
@@ -23,22 +20,9 @@ export default function SideBar(props) {
 	const isProjectSelected = !!selectedProject?.id
 	const isWorkspaceSeleted = !!selectedWorkspace?.id
 
-	const title = isProjectSelected ? 'Add Task' : isWorkspaceSeleted ? 'Add Project' : 'Create New Project'
+
+	const title = isProjectSelected ? 'Add Task' : isWorkspaceSeleted ? 'Add Project' : 'Create New Workspace'
 	const path = isProjectSelected ? `${selectedWorkspace?.name}/${selectedProject?.name}/add-new-task` : isWorkspaceSeleted ? `${selectedWorkspace?.name}/add-new-project` : 'create-new-workspace'
-
-
-	useEffect(() => {
-		if (prjId && id) {
-			handleToggleWorkspace(true)
-			handleWk((prev) => ({ ...prev, id: Number(id), show: true }))
-			handleProject((prev) => ({ ...prev, id: Number(prjId), show: true }))
-			handleToggleWorkspace(true)
-		} else if (id) {
-			handleWk((prev) => ({ ...prev, id: Number(id), show: true }))
-
-			handleToggleWorkspace(true)
-		}
-	}, [])
 
 	useEffect(() => {
 		const projects = workspaces?.[selectedWorkspace?.id]?.projects
@@ -57,8 +41,6 @@ export default function SideBar(props) {
 		document.addEventListener('click', handleClick)
 		return () => { document.removeEventListener('click', handleClick) }
 	}, [])
-
-
 	return (
 		<div ref={ref} className={`absolute overflow-auto min-h-screen scrollbar scrollbar-thin scrollbar-thumb-zinc-600 scrollbar-track-zinc-900 text-white bg-[#000] shadow-lg border-r border-[#f6f3f438] px-2 min-w-60 md:relative md:min-w-[17rem] `}>
 			<div className="flex justify-between items-center">
@@ -91,7 +73,7 @@ export default function SideBar(props) {
 						</ItemTitle>
 						{showOptions && <ItemGroup className="gap-0">
 							<Item className="py-2 my-0 hover:bg-[#ffffff1a] rounded-md px-2" onClick={() => {
-								navigate(path)
+								navigate(path, { state: { wkId: selectedWorkspace?.id, prjId: selectedProject?.id } })
 							}}>
 								<ItemContent>
 									<ItemTitle className="capitalize text-sm w-full">
@@ -99,13 +81,10 @@ export default function SideBar(props) {
 									</ItemTitle>
 								</ItemContent>
 							</Item>
-
-
 						</ItemGroup>
 						}
 
 					</ItemContent>
-
 				</Item>
 				<div>
 					<Item className="gap-2 py-2 hover:bg-[#ffffff1a] rounded-md px-2 ">
@@ -114,13 +93,15 @@ export default function SideBar(props) {
 						</ItemMedia>
 						<ItemContent>
 							<ItemTitle className="capitalize text-sm  w-full" onClick={() => {
+								console.log('clicked!!!')
+								handleWk((prev) => ({ ...prev, show: false }))
 								handleToggleWorkspace((prev) => (!prev))
 							}}>
 								Workspaces
 							</ItemTitle>
 						</ItemContent>
 					</Item>
-					{toggleWorkspace &&
+					{(toggleWorkspace && !selectedWorkspace?.show) &&
 						<ItemGroup className="gap-0 px-10 ">
 							{
 								ordering?.map((id) => {
@@ -145,7 +126,6 @@ export default function SideBar(props) {
 							</ItemTitle>
 						</ItemContent>
 					</Item>
-
 					{selectedWorkspace?.show && <ItemGroup className="gap-0 px-10">
 						{workspaces?.[selectedWorkspace?.id]?.projects?.map((projectId) => {
 							const project = projects?.[projectId]
@@ -170,7 +150,7 @@ export default function SideBar(props) {
 				</div>
 
 
-			</div>
+			</div >
 		</div>
 	)
 }

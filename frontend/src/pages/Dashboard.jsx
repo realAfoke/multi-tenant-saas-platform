@@ -6,6 +6,7 @@ import { normalise } from "@/utils/dashboard"
 import SideBar from "@/components/SideBar"
 import menuIcon from "@/assets/menu3.svg"
 import { useParams } from "react-router-dom"
+import useAuthStore from "@/store/authStore"
 
 
 
@@ -13,6 +14,8 @@ export default function Dashboard() {
 	const setApp = useAppStore(state => state.setApp)
 	const navigate = useNavigate()
 	const loaderData = useLoaderData()
+	const user = useAuthStore(state => state.user)
+	const setUser = useAuthStore(state => state.setUser)
 	const [toggle, setToggle] = useState(false)
 	const workspaces = useAppStore(state => state.cacheWorkspace?.workspaces)
 	const { projects = {} } = useAppStore(state => state.cacheProjects)
@@ -22,8 +25,6 @@ export default function Dashboard() {
 	const [toggleWorkspace, setToggleWorkspace] = useState(false)
 	const { wkName, prjName } = useParams()
 
-
-
 	useEffect(() => {
 		if (selectedTask?.name) {
 			navigate(`/dashboard/${selectedWorkspace?.name}/${selectedProject?.name}/task/${selectedTask.id}`)
@@ -31,26 +32,9 @@ export default function Dashboard() {
 
 	}, [selectedTask])
 
-	// useEffect(() => {
-	// 	console.log(selectedTask)
-	// 	console.log('inside here brody')
-	// 	if (selectedTask?.name) {
-	// 		navigate(`/dashboard/${selectedWorkspace?.name}/${selectedProject?.name}/task/${selectedTask.id}`)
-	// 	}
-	// 	else if (selectedWorkspace?.name && selectedProject?.name) {
-	// 		navigate(`/dashboard/${selectedWorkspace?.name}/${selectedProject?.name}/add-new-task`, { replace: true })
-	// 	} else if (selectedWorkspace?.name) {
-	// 		navigate(`/dashboard/${selectedWorkspace?.name}/add-new-project`, { replace: true })
-	// 	}
-	// 	else {
-	// 		navigate('/dashboard/create-new-workspace', { replace: true })
-	// 	}
-	//
-	// }, [selectedWorkspace?.name, selectedProject?.name, selectedTask?.name])
-
-
 	useEffect(() => {
 		if (wkName) {
+			console.log(wkName)
 			const workspace = Object.values(workspaces ?? {}).find(wk => wk?.name == wkName)
 			setSelectedWorkspace((prev) => ({ ...prev, id: workspace?.id, name: wkName, show: true }))
 			if (prjName) {
@@ -64,7 +48,18 @@ export default function Dashboard() {
 	useEffect(() => {
 		setApp(normalise(loaderData))
 	}, [])
-	// bg-[#131011]
+
+	useEffect(() => {
+		(async () => {
+			try {
+				const user = await instance.get('users/me/')
+				setUser(user?.data)
+			}
+			catch (error) {
+				console.error(err)
+			}
+		})()
+	}, [user])
 	return (
 		<div className='bg-[#000] flex h-screen w-full relative overflow-hidden '>
 			{toggle && <SideBar setToggle={setToggle} handleWk={setSelectedWorkspace} handleProject={setSelectedProject} selectedProject={selectedProject} selectedWorkspace={selectedWorkspace} toggleWorkspace={toggleWorkspace} handleToggleWorkspace={setToggleWorkspace} handleTask={setSelectedTask} />}

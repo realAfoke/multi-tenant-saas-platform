@@ -38,7 +38,7 @@ const routes = createBrowserRouter([
             path: 'create-new-workspace', element: <Create />
           },
           {
-            path: ':wkNme/:prjName/task/:id', element: <Task />,
+            path: ':wkName/:prjName/task/:id', element: <Task />,
           }
 
 

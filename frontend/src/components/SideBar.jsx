@@ -7,6 +7,7 @@ import closeMenu from '@/assets/close.svg'
 import { useAppStore } from "@/store/authStore"
 import { Fragment, useState, useRef, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
+import useAuthStore from "@/store/authStore"
 
 
 export default function SideBar(props) {
@@ -19,6 +20,8 @@ export default function SideBar(props) {
 	const navigate = useNavigate()
 	const isProjectSelected = !!selectedProject?.id
 	const isWorkspaceSeleted = !!selectedWorkspace?.id
+	const user = useAuthStore(state => state.getUser())
+	console.log('user:', user)
 
 
 	const title = isProjectSelected ? 'Add Task' : isWorkspaceSeleted ? 'Add Project' : 'Create New Workspace'
@@ -42,7 +45,7 @@ export default function SideBar(props) {
 		return () => { document.removeEventListener('click', handleClick) }
 	}, [])
 	return (
-		<div ref={ref} className={`absolute overflow-auto min-h-screen scrollbar scrollbar-thin scrollbar-thumb-zinc-600 scrollbar-track-zinc-900 text-white bg-[#000] shadow-lg border-r border-[#f6f3f438] px-2 min-w-60 md:relative md:min-w-[17rem] `}>
+		<div ref={ref} className={`flex h-full flex-col absolute text-white bg-[#000] shadow-lg border-r border-[#f6f3f438] px-2 min-w-60 md:relative md:min-w-[17rem] `}>
 			<div className="flex justify-between items-center">
 				<div className="text-2xl font-semibolf p-3 text-white shadow-md">Orbit</div>
 				<div>
@@ -51,8 +54,10 @@ export default function SideBar(props) {
 					} />
 				</div>
 			</div>
-			<div>
+
+			<div className="mb-[5rem] overflow-auto min-h-full  scrollbar scrollbar-thin scrollbar-thumb-zinc-600 scrollbar-track-zinc-900 md:pb-[6rem]">
 				<Item className="gap-2 py-2 hover:bg-[#ffffff1a] rounded-md px-2">
+
 					<ItemMedia variant="image" className="w-5 h-5">
 						<img src={searchIcon} className="" />
 					</ItemMedia>
@@ -93,7 +98,6 @@ export default function SideBar(props) {
 						</ItemMedia>
 						<ItemContent>
 							<ItemTitle className="capitalize text-sm  w-full" onClick={() => {
-								console.log('clicked!!!')
 								handleWk((prev) => ({ ...prev, show: false }))
 								handleToggleWorkspace((prev) => (!prev))
 							}}>
@@ -151,6 +155,11 @@ export default function SideBar(props) {
 
 
 			</div >
+			<div className="bg-inherit shadow-lg absolute bottom-0 w-full py-5">
+				<div>
+					{`${user?.firstName} ${user?.lastName}`}
+				</div>
+			</div>
 		</div>
 	)
 }

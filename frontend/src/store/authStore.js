@@ -1,12 +1,14 @@
 import { create } from 'zustand'
 import { combine } from 'zustand/middleware'
 
-const useAuthStore = create(combine({ user: localStorage.getItem('user'), }, (set, get) => (
+const useAuthStore = create(combine({ user: '', }, (set, get) => (
 	{
 		setUser: (user) => {
-			localStorage.setItem('user', JSON.stringify(user)),
-				set({ user })
+			// localStorage.setItem('user', JSON.stringify(user)),
+			set({ user })
 		},
+		getUser: () => get().user,
+
 		logout: () => {
 			localStorage.removeItem('user'),
 				set({ user: null })

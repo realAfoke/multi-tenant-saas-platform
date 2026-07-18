@@ -6,8 +6,9 @@ import edit from "@/assets/edit1.svg"
 import closeMenu from '@/assets/close.svg'
 import { useAppStore } from "@/store/authStore"
 import { Fragment, useState, useRef, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 import useAuthStore from "@/store/authStore"
+import profile from "@/assets/profileIcon.svg"
 
 
 export default function SideBar(props) {
@@ -21,7 +22,6 @@ export default function SideBar(props) {
 	const isProjectSelected = !!selectedProject?.id
 	const isWorkspaceSeleted = !!selectedWorkspace?.id
 	const user = useAuthStore(state => state.getUser())
-	console.log('user:', user)
 
 
 	const title = isProjectSelected ? 'Add Task' : isWorkspaceSeleted ? 'Add Project' : 'Create New Workspace'
@@ -155,11 +155,14 @@ export default function SideBar(props) {
 
 
 			</div >
-			<div className="bg-inherit shadow-lg absolute bottom-0 w-full py-5">
-				<div>
+			<Link to="profile" className="bg-inherit shadow-lg absolute bottom-0 w-full py-5">
+				<div className="flex items-center justify-start gap-1">
+					<div className="w-7 rounded-full h-7">
+						<img src={profile} className="object-fit-contain rounded-full" />
+					</div>
 					{`${user?.firstName} ${user?.lastName}`}
 				</div>
-			</div>
+			</Link>
 		</div>
 	)
 }

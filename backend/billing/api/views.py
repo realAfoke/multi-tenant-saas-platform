@@ -34,23 +34,26 @@ class GetPlans(generics.ListAPIView):
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def create_checkout(request):
-    print('GOT HERE')
     plan_id=request.data.get('plan_id')
-    workspace_id=request.data.get('workspace_id')
+    # workspace_id=request.data.get('workspace_id')
     try:
         plan=Plan.objects.get(id=plan_id)
     except Plan.DoesNotExist:
         return Response('Select a plan to make payment')
-    if not request.user.user_membership.filter(workspace_id=workspace_id,role__in=['owner','admin']).exists():
+
+    workspace=request.user.user_membership.filter(role='owner').first().workspace
+    if not workspace:
         raise ValidationError('cant make payment to this workspace')
 
     checkout=client.v1.checkout.sessions.create({
         "mode":"subscription","line_items":[{"price":getattr(plan,'stripe_price_id'),"quantity":1}],"success_url":"http://localhost/success"
-        ,"subscription_data":{"metadata":{"workspace_id":workspace_id,"plan_id":plan_id}}})
+        ,"subscription_data":{"metadata":{"workspace_id":workspace.id,"plan_id":plan_id}}})
     if hasattr(checkout,'url'):
         return Response({'status':checkout.url})
-    return response({"status":"successfull"})
-    
+    return Response({"status":"successfull"})
+   
+
+
 @api_view(['PUT','PATCH'])
 def cancel_subscription(request,workspace_id):
     subscription=Subscription.objects.filter(workspace_id=workspace_id,status='active')
@@ -68,6 +71,9 @@ def upgrade_subscription_plan(request,workspace_id):
     wk_sub=Subscription.objects.filter(workspace_id=workspace_id,status='active').first()
     client.v1.subscriptions.update(wk_sub.stripe_subscription_id,{"items":[{"id":wk_sub.subscription_item_id,"price":plan.stripe_price_id}],"metadata":{"plan_id":plan_id}})
  
+
+
+##webhook
 @api_view(['POST'])
 def stripe_webhook(request):
     payload=request.body

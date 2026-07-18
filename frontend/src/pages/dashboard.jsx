@@ -34,7 +34,6 @@ export default function Dashboard() {
 
 	useEffect(() => {
 		if (wkName) {
-			console.log(wkName)
 			const workspace = Object.values(workspaces ?? {}).find(wk => wk?.name == wkName)
 			setSelectedWorkspace((prev) => ({ ...prev, id: workspace?.id, name: wkName, show: true }))
 			if (prjName) {
@@ -50,6 +49,7 @@ export default function Dashboard() {
 	}, [])
 
 	useEffect(() => {
+		if (user) return
 		(async () => {
 			try {
 				const user = await instance.get('users/me/')
@@ -65,8 +65,8 @@ export default function Dashboard() {
 			{toggle && <SideBar setToggle={setToggle} handleWk={setSelectedWorkspace} handleProject={setSelectedProject} selectedProject={selectedProject} selectedWorkspace={selectedWorkspace} toggleWorkspace={toggleWorkspace} handleToggleWorkspace={setToggleWorkspace} handleTask={setSelectedTask} />}
 			<div className={`pb-[4rem] overflow-hidden flex-1 ${toggle ? '' : ''}`}>
 				{!toggle &&
-					<div>
-						<img src={menuIcon} className="w-12 h-12" onClick={(e) => {
+					<div className="relative">
+						<img src={menuIcon} className="absolute w-12 h-12" onClick={(e) => {
 							e.stopPropagation()
 							setToggle(true)
 						}} />

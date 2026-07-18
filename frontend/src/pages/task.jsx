@@ -29,12 +29,12 @@ export default function Task() {
 	})
 	// console.log(data)
 	return (
-		<div className="text-white p-3 md:px-30  h-full overflow-hidden flex flex-col">
+		<div className="text-white p-3 md:px-30  h-screen overflow-hidden flex flex-col">
 			<div>
 				<h3 className="text-md font-semibold">{task?.title}</h3>
 				<div className="">{task?.description}</div>
 			</div>
-			<div className="rounded-sm flex-1 scrollbar scrollbar-thin scrollbar-thumb-zinc-600 scrollbar-track-zinc-900">
+			<div className="rounded-sm h-screen overflow-hidden flex-1 scrollbar scrollbar-thin scrollbar-thumb-zinc-600 scrollbar-track-zinc-900">
 
 				<div>
 					<h3>Comments</h3>
@@ -52,7 +52,7 @@ export default function Task() {
 						<img src={sendBtn} className="w-8 h-8" />
 					</Button>
 				</div>
-				<ItemGroup className="p-2 rounded-sm pb-[19rem] gap-1.5  bg-[#212121]  h-screen overflow-auto scrollbar scrollbar-thin scrollbar-thumb-zinc-600 scrollbar-track-zinc-900">
+				<ItemGroup className="p-2 rounded-sm pb-[15rem] gap-1.5  bg-[#212121]  h-screen overflow-auto scrollbar scrollbar-thin scrollbar-thumb-zinc-600 scrollbar-track-zinc-900">
 					{
 						data?.map((comment) => (
 							<Comments key={comment?.id} comment={comment} />

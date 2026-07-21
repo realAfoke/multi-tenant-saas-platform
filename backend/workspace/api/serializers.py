@@ -135,11 +135,12 @@ class InviteTokenSerializer(serializers.ModelSerializer):
         return attrs
 
 class WorkSpaceSerializer(serializers.ModelSerializer):
-    projects=serializers.SerializerMethodField()
+    # projects=serializers.SerializerMethodField()
     # project_ids=serializers.PrimaryKeyRelatedField(source='projects',many=True,read_only=True)
     class Meta:
         model=models.WorkSpace
-        fields=['id','name','description','projects','created_at','updated_at']
+        # fields=['id','name','description','projects','created_at','updated_at']
+        fields='__all__'
 
 
     def create(self, validated_data):
@@ -167,11 +168,11 @@ class WorkSpaceSerializer(serializers.ModelSerializer):
             if len(self.instance.membership.all()) > 500:
                 raise ValidationError('workspace membership limmit reached')
             return attrs
-    def get_projects(self,obj):
-        user=self.context['request'].user
-        user_project=obj.projects.filter(Q(admins=user)|Q(members=user))
-        return ProjectSerializer(user_project,many=True,context=self.context).data if user_project else None
-        # return [{'id':project.id,'name':project.name} for project in user_project]
+    # def get_projects(self,obj):
+    #     user=self.context['request'].user
+    #     user_project=obj.projects.filter(Q(admins=user)|Q(members=user))
+    #     return ProjectSerializer(user_project,many=True,context=self.context).data if user_project else None
+    #     # return [{'id':project.id,'name':project.name} for project in user_project]
 
    
 # class FileSerializer(serializers.ModelSerializer):

@@ -16,7 +16,7 @@ export default function Profile() {
 		mutationFn: (planId) => checkoutPlan(planId),
 		onSuccess: (url) => {
 			console.log(url)
-			redirect(url?.data)
+			window.location.href = url?.status
 		}
 	})
 	const subPlans = data?.map((plan) => (<Plan key={plan?.id} plan={plan} handleCheckout={mutate} />))

@@ -9,6 +9,8 @@ import { Fragment, useState, useRef, useEffect } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import useAuthStore from "@/store/authStore"
 import profile from "@/assets/profileIcon.svg"
+import { useQuery } from "@tanstack/react-query"
+import { instance } from "@/api/axios"
 
 
 export default function SideBar(props) {
@@ -34,6 +36,7 @@ export default function SideBar(props) {
 		}
 	}, [selectedWorkspace?.id])
 
+	console.log(data)
 	useEffect(() => {
 		const handleClick = (e) => {
 			if (window.innerWidth >= 780) return
@@ -160,10 +163,11 @@ export default function SideBar(props) {
 					<div className="w-7 rounded-full h-7">
 						<img src={profile} className="object-fit-contain rounded-full" />
 					</div>
-					{`${user?.firstName} ${user?.lastName}`}
+					{`${data?.firstName} ${data?.lastName}`}
 				</div>
 			</Link>
 		</div>
 	)
 }
+
 

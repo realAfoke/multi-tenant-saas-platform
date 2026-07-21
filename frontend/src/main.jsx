@@ -1,10 +1,9 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import Login from './pages/login.jsx'
+import Login, { loader as loginLoader } from './pages/login.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 import Dashboard from './pages/dashboard.jsx'
-import { dashboardLoader } from './pages/dashboard.jsx'
 import './index.css'
 import Workspace, { workspaceLoader } from './pages/Workspace.jsx'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -19,12 +18,13 @@ const queryClient = new QueryClient()
 
 const routes = createBrowserRouter([
   {
-    path: 'login', element: <Login />,
+    path: 'login', element: <Login />, errorElement: <ErrorPage />, loader: loginLoader
   },
   {
-    path: '/', element: <ProtectedRoute />, errorElement: <ErrorPage />, children: [
+    path: '/', element: <ProtectedRoute />, errorElement: <ErrorPage />,
+    children: [
       {
-        path: 'dashboard', element: <Dashboard />, loader: dashboardLoader,
+        path: 'dashboard', element: <Dashboard />,
         children: [
           {
             path: ':wkName', element: <Workspace />, loader: workspaceLoader

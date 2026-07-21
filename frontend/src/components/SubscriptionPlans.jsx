@@ -1,7 +1,6 @@
 import { ItemGroup, Item, ItemTitle, ItemContent } from "./ui/item"
 import { Button } from "./ui/button"
 export default function Plan(props) {
-	console.log(props)
 	const { plan = {}, handleCheckout } = props ?? {}
 	const { features = {} } = plan
 	return (
@@ -29,7 +28,7 @@ export default function Plan(props) {
 						</div>
 					</div>
 					<div>
-						<div className="text-white text-xl font-semibold">
+						<div className="text-white text-lg font-semibold">
 							{`${plan?.price}${plan?.currency}`}
 						</div>
 						<div className="text-gray-400 text-sm">Billed monthly</div>

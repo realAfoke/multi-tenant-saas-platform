@@ -7,15 +7,15 @@ import SideBar from "@/components/SideBar"
 import menuIcon from "@/assets/menu3.svg"
 import { useParams } from "react-router-dom"
 import useAuthStore from "@/store/authStore"
-
-
+import { useQuery } from "@tanstack/react-query"
+import { fetchUserQueryOption } from "@/queryOptions/fetchUserQueryOptions"
 
 export default function Dashboard() {
 	const setApp = useAppStore(state => state.setApp)
 	const navigate = useNavigate()
 	const loaderData = useLoaderData()
-	const user = useAuthStore(state => state.user)
-	const setUser = useAuthStore(state => state.setUser)
+	// const user = useAuthStore(state => state.user)
+	// const setUser = useAuthStore(state => state.setUser)
 	const [toggle, setToggle] = useState(false)
 	const workspaces = useAppStore(state => state.cacheWorkspace?.workspaces)
 	const { projects = {} } = useAppStore(state => state.cacheProjects)
@@ -25,11 +25,16 @@ export default function Dashboard() {
 	const [toggleWorkspace, setToggleWorkspace] = useState(false)
 	const { wkName, prjName } = useParams()
 
+	const { data } = useQuery({
+		queryKey: ['workspaceData'],
+		queryFn: dashboardLoader
+	})
+	const { data: user } = useQuery(fetchUserQueryOption())
+
 	useEffect(() => {
 		if (selectedTask?.name) {
 			navigate(`/dashboard/${selectedWorkspace?.name}/${selectedProject?.name}/task/${selectedTask.id}`)
 		}
-
 	}, [selectedTask])
 
 	useEffect(() => {
@@ -42,24 +47,10 @@ export default function Dashboard() {
 			}
 		}
 	}, [workspaces])
-
-
 	useEffect(() => {
 		setApp(normalise(loaderData))
 	}, [])
 
-	useEffect(() => {
-		if (user) return
-		(async () => {
-			try {
-				const user = await instance.get('users/me/')
-				setUser(user?.data)
-			}
-			catch (error) {
-				console.error(err)
-			}
-		})()
-	}, [user])
 	return (
 		<div className='bg-[#000] flex h-screen w-full relative overflow-hidden '>
 			{toggle && <SideBar setToggle={setToggle} handleWk={setSelectedWorkspace} handleProject={setSelectedProject} selectedProject={selectedProject} selectedWorkspace={selectedWorkspace} toggleWorkspace={toggleWorkspace} handleToggleWorkspace={setToggleWorkspace} handleTask={setSelectedTask} />}
@@ -78,14 +69,14 @@ export default function Dashboard() {
 	)
 }
 
-
-export async function dashboardLoader() {
+async function dashboardLoader() {
 	try {
 		const user = localStorage.getItem('user')
-		if (!user) return
 		const dashboard = await instance.get('workspaces/')
+		console.log('dashboard:', dashboard?.data)
 		return dashboard.data
 	} catch (err) {
 		console.error(err)
 	}
 }
+

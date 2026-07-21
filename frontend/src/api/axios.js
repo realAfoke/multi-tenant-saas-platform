@@ -44,8 +44,9 @@ instance.interceptors.response.use((resp) => (resp), async (e) => {
 			processFailedRequest()
 			return instance(config)
 		} catch (error) {
-			console.log('ERROR:', error)
-			localStorage.removeItem('user')
+			if (window.location.pathname === '/login') {
+				return Promise.reject(e)
+			}
 			window.location.href = '/login'
 			return Promise.reject(e)
 		} finally {

@@ -4,37 +4,30 @@ import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { instance } from "@/api/axios"
 import useAuthStore from "@/store/authStore"
-import { useNavigate, Navigate } from "react-router-dom"
+import { useNavigate, redirect } from "react-router-dom"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { fetchUserQueryOption } from "@/queryOptions/fetchUserQueryOptions"
 
 
 export default function Login() {
 	const [email, setEmail] = useState('user@example.com')
-	const [loader, setLoader] = useState({ isLoading: false, loaderMsg: '' })
 	const [password, setPassword] = useState('user')
 	const setUser = useAuthStore((state) => state.setUser)
-	const isLoggedIn = useAuthStore((state) => state.isLoggedIn())
+	const queryClient = useQueryClient()
 	const navigate = useNavigate()
-	if (isLoggedIn) {
-		return <Navigate to='/dashboard' replace />
-	}
+	// const user = queryClient.getQueryData(['user'])
 
-
-	async function login() {
-		try {
-			setLoader((prev) => ({ ...prev, isLoading: true }))
-			const logInfo = await instance.post('auth/login/', { email: email, password: password })
-			const userInfo = logInfo.data
-			setUser(userInfo)
-			setLoader((prev) => ({ ...prev, isLoading: false }))
-			navigate('/dashboard', { replace: true })
+	const mutate = useMutation({
+		mutationFn: ({ email, password, navigate }) => login(email, password, navigate),
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: ['user']
+			})
 		}
-		catch (err) {
-			console.error('Error:', err.response)
-			const errorMsg = err.response.data?.nonFieldErrors[0]
-			setLoader((prev) => ({ ...prev, isLoading: false, loaderMsg: errorMsg }))
-		}
-	}
-
+	})
+	// if (user) {
+	// 	return <Navigate to='/dashboard' replace />
+	// }
 	return (
 		<div className="flex lg:px-10 flex-col min-h-screen bg-gray-50 border-2 border-green-500">
 			<div className="font-bold text-2xl border-b border-1-gray-200 p-3">
@@ -66,9 +59,9 @@ export default function Login() {
 								forgot your password?
 							</div>
 						</div>
-						{(loader.loaderMsg && !loader.isLoading) && <div className="text-red-500">{loader.loaderMsg}</div>}
-						<Button disabled={email.length <= 0 || password.length <= 0} onClick={async () => await login()} className='w-full bg-[#060067d6] py-6 rounded-md'>
-							{loader.isLoading ? (
+						{(mutate.error && !mutate.isPending) && <div className="text-red-500">{mutate.errorMsg}</div>}
+						<Button disabled={email.length <= 0 || password.length <= 0} onClick={async () => mutate.mutate({ email, password, navigate })} className='w-full bg-[#060067d6] py-6 rounded-md'>
+							{mutate.isPending ? (
 								<div className="h-7 w-7 rounded-full border-3 border-white border-t-transparent animate-spin"></div>
 							) : (
 								<div>Login</div>
@@ -81,6 +74,22 @@ export default function Login() {
 
 	)
 }
+async function login(email, password, navigate) {
+	try {
+		await instance.post('auth/login/', { email: email, password: password })
+		navigate('/dashboard', { replace: true })
+	}
+	catch (err) {
+		console.error('Error:', err)
+	}
+}
 
-
+export async function loader() {
+	try {
+		const user = await instance.get('users/me')
+		return redirect('/dashboard')
+	} catch (error) {
+		console.error(error)
+	}
+}
 // #070c587a

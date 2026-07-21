@@ -27,6 +27,8 @@ class IsWorkspaceAdminOrSuperAdmin(IsWorkspaceMemeber):
             return False
         wk=view.kwargs.get('wk')
         user=request.user
+        if request.method in SAFE_METHODS:
+            return True
         return bool(user.user_membership.filter(Q(role='admin') | Q(role='owner'),workspace=wk).exists())
 
 

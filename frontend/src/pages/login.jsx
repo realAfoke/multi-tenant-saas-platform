@@ -6,7 +6,7 @@ import { instance } from "@/api/axios"
 import useAuthStore from "@/store/authStore"
 import { useNavigate, redirect } from "react-router-dom"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { fetchUserQueryOption } from "@/queryOptions/fetchUserQueryOptions"
+import { fetchUserQueryOption } from "@/queryOptions/queryOptions"
 
 
 export default function Login() {

@@ -1,7 +1,7 @@
 import useAuthStore from "../store/authStore.js"
 import { Navigate } from "react-router-dom"
 import { Outlet } from "react-router-dom"
-import { fetchUserQueryOption } from "@/queryOptions/fetchUserQueryOptions.js"
+import { fetchUserQueryOption } from "@/queryOptions/queryOptions.js"
 import { useQuery } from "@tanstack/react-query"
 
 export default function ProtectedRoute() {

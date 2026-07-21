@@ -9,21 +9,56 @@ import { Fragment, useState, useRef, useEffect } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import useAuthStore from "@/store/authStore"
 import profile from "@/assets/profileIcon.svg"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { instance } from "@/api/axios"
+import { workspaceQueryOption, projectQueryOption } from "@/queryOptions/queryOptions"
 
 
 export default function SideBar(props) {
 	const ref = useRef(null)
 	const { setToggle, handleWk, handleProject, selectedWorkspace, selectedProject, handleToggleWorkspace, toggleWorkspace, handleTask } = props
-	const { workspaces, ordering } = useAppStore(state => state.cacheWorkspace)
-	const { projects } = useAppStore(state => state.cacheProjects)
+	// const { workspaces, ordering } = useAppStore(state => state.cacheWorkspace)
+	// const { projects } = useAppStore(state => state.cacheProjects)
 	const { tasks } = useAppStore(state => state.cacheTasks)
 	const [showOptions, setShowOptions] = useState(false)
 	const navigate = useNavigate()
 	const isProjectSelected = !!selectedProject?.id
 	const isWorkspaceSeleted = !!selectedWorkspace?.id
-	const user = useAuthStore(state => state.getUser())
+	// const user = useAuthStore(state => state.getUser())
+	const queryClient = useQueryClient()
+
+	const { data: projects } = useQuery(projectQueryOption(selectedWorkspace?.id))
+	const user = queryClient.getQueryData(['user'])
+	const { data: workspaces } = useQuery(workspaceQueryOption())
+	const { workspace, ordering } = workspaces ?? {}
+
+
+	//toggle workspace list off i.e hide the list when a workspace is selected
+	useEffect(() => {
+		if (!selectedWorkspace?.show) return
+		handleToggleWorkspace(false)
+	}, [selectedWorkspace?.show])
+
+
+	// useEffect(() => {
+	// 	if (!projects || !selectedWorkspace?.id) return
+	// 	queryClient.setQueryData(['workspace'], (old) => {
+	// 		console.log('project:', projects)
+	// 		const { workspace = {} } = old ?? {}
+	// 		const next = {
+	// 			...old,
+	// 			workspace: {
+	// 				...workspace,
+	// 				[selectedWorkspace?.id]: {
+	// 					...(workspace?.[selectedWorkspace?.id] ?? {}),
+	// 					projectIds: projects.map((project) => project?.id)
+	// 				}
+	// 			}
+	// 		}
+	// 		console.log('next:', next)
+	// 		return next
+	// 	})
+	// }, [projects, selectedWorkspace?.id, queryClient])
 
 
 	const title = isProjectSelected ? 'Add Task' : isWorkspaceSeleted ? 'Add Project' : 'Create New Workspace'
@@ -36,7 +71,6 @@ export default function SideBar(props) {
 		}
 	}, [selectedWorkspace?.id])
 
-	console.log(data)
 	useEffect(() => {
 		const handleClick = (e) => {
 			if (window.innerWidth >= 780) return
@@ -57,7 +91,6 @@ export default function SideBar(props) {
 					} />
 				</div>
 			</div>
-
 			<div className="mb-[5rem] overflow-auto min-h-full  scrollbar scrollbar-thin scrollbar-thumb-zinc-600 scrollbar-track-zinc-900 md:pb-[6rem]">
 				<Item className="gap-2 py-2 hover:bg-[#ffffff1a] rounded-md px-2">
 
@@ -108,11 +141,11 @@ export default function SideBar(props) {
 							</ItemTitle>
 						</ItemContent>
 					</Item>
-					{(toggleWorkspace && !selectedWorkspace?.show) &&
+					{toggleWorkspace &&
 						<ItemGroup className="gap-0 px-10 ">
 							{
 								ordering?.map((id) => {
-									const main = workspaces?.[id]
+									const main = workspace?.[id]
 									return (
 										<NestedList key={main?.id} list={main} selectedWkId={selectedWorkspace} setter={handleWk} />)
 								})
@@ -134,8 +167,8 @@ export default function SideBar(props) {
 						</ItemContent>
 					</Item>
 					{selectedWorkspace?.show && <ItemGroup className="gap-0 px-10">
-						{workspaces?.[selectedWorkspace?.id]?.projects?.map((projectId) => {
-							const project = projects?.[projectId]
+						{projects?.ordering?.map((projectId) => {
+							const project = projects?.project?.[projectId]
 							return (
 								<Fragment key={project?.id}>
 									<NestedList key={project?.id} list={project} selectedPrjId={selectedProject} setter={handleProject} />
@@ -163,7 +196,7 @@ export default function SideBar(props) {
 					<div className="w-7 rounded-full h-7">
 						<img src={profile} className="object-fit-contain rounded-full" />
 					</div>
-					{`${data?.firstName} ${data?.lastName}`}
+					{`${user?.firstName} ${user?.lastName}`}
 				</div>
 			</Link>
 		</div>

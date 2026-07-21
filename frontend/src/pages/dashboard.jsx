@@ -8,7 +8,7 @@ import menuIcon from "@/assets/menu3.svg"
 import { useParams } from "react-router-dom"
 import useAuthStore from "@/store/authStore"
 import { useQuery } from "@tanstack/react-query"
-import { fetchUserQueryOption } from "@/queryOptions/fetchUserQueryOptions"
+import { fetchUserQueryOption, workspaceQueryOption } from "@/queryOptions/queryOptions"
 
 export default function Dashboard() {
 	const setApp = useAppStore(state => state.setApp)
@@ -25,11 +25,9 @@ export default function Dashboard() {
 	const [toggleWorkspace, setToggleWorkspace] = useState(false)
 	const { wkName, prjName } = useParams()
 
-	const { data } = useQuery({
-		queryKey: ['workspaceData'],
-		queryFn: dashboardLoader
-	})
-	const { data: user } = useQuery(fetchUserQueryOption())
+	const {data}=useQuery(workspaceQueryOption())
+	// console.log('data:',data)
+	useQuery(fetchUserQueryOption())
 
 	useEffect(() => {
 		if (selectedTask?.name) {
@@ -69,14 +67,4 @@ export default function Dashboard() {
 	)
 }
 
-async function dashboardLoader() {
-	try {
-		const user = localStorage.getItem('user')
-		const dashboard = await instance.get('workspaces/')
-		console.log('dashboard:', dashboard?.data)
-		return dashboard.data
-	} catch (err) {
-		console.error(err)
-	}
-}
 

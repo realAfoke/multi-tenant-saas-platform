@@ -1,4 +1,5 @@
 from rest_framework import generics
+import workspace
 from workspace.permission import CommentPermission,IsWorkspaceMemeber,IsWorkspaceAdminOrSuperAdmin
 # from .serializers import CommentSerializer, FileSerializer, InviteRequestSerializer, TaskSerializer, WorkSpaceSerializer,ProjectSerializer
 from .serializers import CommentSerializer, MembershipSerializer, TaskSerializer,WorkSpaceSerializer,ProjectSerializer,InviteRequestSerializer
@@ -57,10 +58,13 @@ class WorkSpaceDetail(generics.RetrieveUpdateDestroyAPIView):
         serializer.save(members=self.request.data.get('members'))
 
 
-class Project(generics.CreateAPIView):
+class Project(generics.ListCreateAPIView):
     queryset=models.Project.objects.all()
     serializer_class=ProjectSerializer
     permission_classes=[IsWorkspaceAdminOrSuperAdmin]
+
+    def get_queryset(self):
+        return models.Project.objects.filter(workspace=self.kwargs.get('wk'))
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)

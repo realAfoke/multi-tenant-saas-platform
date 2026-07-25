@@ -25,9 +25,6 @@ export default function Login() {
 			})
 		}
 	})
-	// if (user) {
-	// 	return <Navigate to='/dashboard' replace />
-	// }
 	return (
 		<div className="flex lg:px-10 flex-col min-h-screen bg-gray-50 border-2 border-green-500">
 			<div className="font-bold text-2xl border-b border-1-gray-200 p-3">
@@ -77,7 +74,7 @@ export default function Login() {
 async function login(email, password, navigate) {
 	try {
 		await instance.post('auth/login/', { email: email, password: password })
-		navigate('/dashboard', { replace: true })
+		navigate('/', { replace: true })
 	}
 	catch (err) {
 		console.error('Error:', err)

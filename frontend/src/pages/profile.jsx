@@ -1,13 +1,14 @@
 import { instance } from "@/api/axios"
 import profile from "@/assets/profileIcon.svg"
-import useAuthStore from "@/store/authStore"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import Plan from "@/components/SubscriptionPlans"
 import { Button } from "@/components/ui/button"
-import { redirect } from "react-router-dom"
-export default function Profile() {
-	const user = useAuthStore(state => state.user)
+import { fetchUserQueryOption } from "@/queryOptions/queryOptions"
 
+
+export default function Profile() {
+
+	const { data: user } = useQuery(fetchUserQueryOption())
 	const { data } = useQuery({
 		queryKey: ['plan'],
 		queryFn: getPlans
@@ -15,7 +16,6 @@ export default function Profile() {
 	const mutate = useMutation({
 		mutationFn: (planId) => checkoutPlan(planId),
 		onSuccess: (url) => {
-			console.log(url)
 			window.location.href = url?.status
 		}
 	})
@@ -37,7 +37,7 @@ export default function Profile() {
 					<Button className="text-[#d0d0d0] text-xl font-semibold">
 						Plan
 					</Button>
-					<Button className="text-[#d0d0d0] text-xl font-semibold">
+					<Button disabled={true} className="text-[#d0d0d0] text-xl font-semibold -z-1">
 						Manage subscription
 					</Button>
 				</div>

@@ -4,33 +4,33 @@ import searchIcon from "@/assets/search1.svg"
 import cog from "@/assets/project.svg"
 import edit from "@/assets/edit1.svg"
 import closeMenu from '@/assets/close.svg'
-import { useAppStore } from "@/store/authStore"
 import { Fragment, useState, useRef, useEffect } from "react"
 import { useNavigate, Link } from "react-router-dom"
-import useAuthStore from "@/store/authStore"
 import profile from "@/assets/profileIcon.svg"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { instance } from "@/api/axios"
-import { workspaceQueryOption, projectQueryOption } from "@/queryOptions/queryOptions"
-
+import { workspaceQueryOption, projectQueryOption, taskQueryOption } from "@/queryOptions/queryOptions"
+import { useAppState } from "@/hooks/apptools"
 
 export default function SideBar(props) {
 	const ref = useRef(null)
-	const { setToggle, handleWk, handleProject, selectedWorkspace, selectedProject, handleToggleWorkspace, toggleWorkspace, handleTask } = props
-	// const { workspaces, ordering } = useAppStore(state => state.cacheWorkspace)
-	// const { projects } = useAppStore(state => state.cacheProjects)
-	const { tasks } = useAppStore(state => state.cacheTasks)
+	const { setToggle, handleToggleWorkspace, toggleWorkspace } = props
+	const { setWorkspace, setProject, setTask, selectedWorkspace, selectedProject, selectedTask } = useAppState()
 	const [showOptions, setShowOptions] = useState(false)
 	const navigate = useNavigate()
 	const isProjectSelected = !!selectedProject?.id
 	const isWorkspaceSeleted = !!selectedWorkspace?.id
-	// const user = useAuthStore(state => state.getUser())
 	const queryClient = useQueryClient()
+	// console.log('proj:', selectedProject)
 
-	const { data: projects } = useQuery(projectQueryOption(selectedWorkspace?.id))
+	const { data: userWorkspaces } = useQuery(workspaceQueryOption())
+	const { workspaces, ordering } = userWorkspaces ?? {}
+	const { data: workspaceProject } = useQuery(projectQueryOption(selectedWorkspace?.id))
+	const { projects, projectOrdering } = workspaceProject ?? {}
+
 	const user = queryClient.getQueryData(['user'])
-	const { data: workspaces } = useQuery(workspaceQueryOption())
-	const { workspace, ordering } = workspaces ?? {}
+	const { data: projectTasks } = useQuery(taskQueryOption(selectedWorkspace?.id, selectedProject?.id))
+	const { tasks, taskOrdering } = projectTasks ?? {}
+	// console.log('task:',tasks,'ordering:',taskOrdering)
 
 
 	//toggle workspace list off i.e hide the list when a workspace is selected
@@ -40,36 +40,15 @@ export default function SideBar(props) {
 	}, [selectedWorkspace?.show])
 
 
-	// useEffect(() => {
-	// 	if (!projects || !selectedWorkspace?.id) return
-	// 	queryClient.setQueryData(['workspace'], (old) => {
-	// 		console.log('project:', projects)
-	// 		const { workspace = {} } = old ?? {}
-	// 		const next = {
-	// 			...old,
-	// 			workspace: {
-	// 				...workspace,
-	// 				[selectedWorkspace?.id]: {
-	// 					...(workspace?.[selectedWorkspace?.id] ?? {}),
-	// 					projectIds: projects.map((project) => project?.id)
-	// 				}
-	// 			}
-	// 		}
-	// 		console.log('next:', next)
-	// 		return next
-	// 	})
-	// }, [projects, selectedWorkspace?.id, queryClient])
-
-
 	const title = isProjectSelected ? 'Add Task' : isWorkspaceSeleted ? 'Add Project' : 'Create New Workspace'
 	const path = isProjectSelected ? `${selectedWorkspace?.name}/${selectedProject?.name}/add-new-task` : isWorkspaceSeleted ? `${selectedWorkspace?.name}/add-new-project` : 'create-new-workspace'
 
 	useEffect(() => {
-		const projects = workspaces?.[selectedWorkspace?.id]?.projects
-		if (!projects?.includes(selectedProject?.id)) {
-			handleProject({ id: null, show: false })
+		if (!selectedProject) {
+			setProject({ id: null, show: false })
+
 		}
-	}, [selectedWorkspace?.id])
+	}, [selectedWorkspace?.id, selectedProject?.id])
 
 	useEffect(() => {
 		const handleClick = (e) => {
@@ -133,8 +112,8 @@ export default function SideBar(props) {
 							<img src={cog} />
 						</ItemMedia>
 						<ItemContent>
-							<ItemTitle className="capitalize text-sm  w-full" onClick={() => {
-								handleWk((prev) => ({ ...prev, show: false }))
+							<ItemTitle className="py-2 capitalize text-sm  w-full" onClick={() => {
+								setWorkspace((prev) => ({ ...prev, show: false }))
 								handleToggleWorkspace((prev) => (!prev))
 							}}>
 								Workspaces
@@ -142,12 +121,12 @@ export default function SideBar(props) {
 						</ItemContent>
 					</Item>
 					{toggleWorkspace &&
-						<ItemGroup className="gap-0 px-10 ">
+						<ItemGroup className="gap-0 ">
 							{
 								ordering?.map((id) => {
-									const main = workspace?.[id]
+									const main = workspaces?.[id]
 									return (
-										<NestedList key={main?.id} list={main} selectedWkId={selectedWorkspace} setter={handleWk} />)
+										<NestedList key={main?.id} list={main} selectedWkId={selectedWorkspace} setter={setWorkspace} />)
 								})
 							}
 						</ItemGroup>
@@ -160,25 +139,26 @@ export default function SideBar(props) {
 						</ItemMedia>
 						<ItemContent>
 							<ItemTitle className="capitalize text-sm w-full" onClick={() => {
-								handleWk((prev) => ({ ...prev, show: !prev.show }))
+								setWorkspace((prev) => ({ ...prev, show: !prev.show }))
 							}}>
 								Project
 							</ItemTitle>
 						</ItemContent>
 					</Item>
-					{selectedWorkspace?.show && <ItemGroup className="gap-0 px-10">
-						{projects?.ordering?.map((projectId) => {
-							const project = projects?.project?.[projectId]
+					{selectedWorkspace?.show && <ItemGroup className="gap-0">
+						{projectOrdering?.map((projectId) => {
+							const project = projects?.[projectId]
 							return (
 								<Fragment key={project?.id}>
-									<NestedList key={project?.id} list={project} selectedPrjId={selectedProject} setter={handleProject} />
+									<NestedList key={project?.id} list={project} selectedPrjId={selectedProject} setter={setProject} />
 									{
 										selectedProject?.id === project?.id &&
 										<ItemGroup className="gap-0 my-0 py-0 px-7">
-											{project?.tasks?.map((taskId) => {
+											{taskOrdering?.map((taskId) => {
+
 												const task = tasks?.[taskId]
 												return (
-													<NestedList key={task?.id} list={task} setter={handleTask} />
+													<NestedList key={task?.id} list={task} setter={setTask} />
 												)
 											})}
 										</ItemGroup>

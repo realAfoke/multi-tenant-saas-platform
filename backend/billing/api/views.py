@@ -16,7 +16,7 @@ import logging
 
 load_dotenv()
 
-logger=logging.Logger(__name__)
+logger=logging.getLogger(__name__)
 
 
 ##views start here
@@ -89,10 +89,11 @@ def stripe_webhook(request):
             sig,
             endpoint_secret,
         )
+        logger.info(f'RELATED OBJECT:{event.related_object.type}')
+        logger.info(f'DIR:{dir(event.related_object.type)}')
     except Exception as e:
         import traceback
         traceback.print_exc()
-        logger.exception(e)
 
         return HttpResponse(status=400)
     # try:
@@ -100,57 +101,55 @@ def stripe_webhook(request):
     # except stripe.APIError:
     #     return HttpResponse(status=400)
     #
-    subscription=event.data.object
-    stripe_sub_id=subscription.id
-    period_start=datetime.fromtimestamp(subscription.items.data[0].current_period_start)
-    period_end=datetime.fromtimestamp(subscription.items.data[0].current_period_end)
-    item_id=subscription.items.data[0].id
-
-    if event.type== 'customer.subscription.created':
-        workspace_id=subscription.metadata.workspace_id
-        plan_id=subscription.metadata.plan_id
-        Subscription.objects.filter(workspace_id=workspace_id).update(status='cancelled')
-        
-        Subscription.objects.create(workspace_id=workspace_id,plan_id=plan_id,subcription_item_id=item_id,stripe_subscription_id=subscription.id,status=subscription.status,current_period_start=period_start,current_period_end=period_end)
-
-    elif event.type == 'customer.subscription.deleted':
-        Subscription.objects.filter(stripe_subscription_id=stripe_sub_id,status='active').update(status='active')
-    elif event.type == 'customer.subscription.updated':
-        plan_id=subscription.metadata.plan_id
-        sub=Subscription.objects.filter(stripe_subscription_id=stripe_sub_id,status='active').first()
-        sub.subscription_item_id=item_id
-        sub.plan_id=plan_id
-        sub.current_period_start=period_start
-        sub.current_period_end=period_end
-        sub.save()
-
-    elif event.type == 'charge.failed':
-        subs=Subscription.objects.filter(stripe_subscription_id=stripe).first()
-        subs.status='past_due'
-        owner=subs.workspace.membership.filter(role='owner').first()
-
-        send_mail('Payment Failed - Action Required',
-                  f"""
-                  Hi {owner.user.first_name} {owner.user.last_name},
-
-                  Your payment for {subs.workspace.name} subscription failed.
-
-                  Card:****
-                  Amount:****
-                  Date:****
-
-                  Please updte your payment method to keep your workspace active.
-
-                  After 3 days without payment, your workspace will be restricted
-
-                  Update payment:****
-
-                  Thanks,
-                  Orbit Team
-                  """,'noreply@example.com',[owner.email])
-
-
-
+    # subscription=event.data.object
+    # stripe_sub_id=subscription.id
+    # period_start=datetime.fromtimestamp(subscription.items.data[0].current_period_start)
+    # period_end=datetime.fromtimestamp(subscription.items.data[0].current_period_end)
+    # item_id=subscription.items.data[0].id
+    #
+    # if event.type== 'customer.subscription.created':
+    #     workspace_id=subscription.metadata.workspace_id
+    #     plan_id=subscription.metadata.plan_id
+    #     Subscription.objects.filter(workspace_id=workspace_id).update(status='cancelled')
+    #
+    #     Subscription.objects.create(workspace_id=workspace_id,plan_id=plan_id,subcription_item_id=item_id,stripe_subscription_id=subscription.id,status=subscription.status,current_period_start=period_start,current_period_end=period_end)
+    #
+    # elif event.type == 'customer.subscription.deleted':
+    #     Subscription.objects.filter(stripe_subscription_id=stripe_sub_id,status='active').update(status='active')
+    # elif event.type == 'customer.subscription.updated':
+    #     plan_id=subscription.metadata.plan_id
+    #     sub=Subscription.objects.filter(stripe_subscription_id=stripe_sub_id,status='active').first()
+    #     sub.subscription_item_id=item_id
+    #     sub.plan_id=plan_id
+    #     sub.current_period_start=period_start
+    #     sub.current_period_end=period_end
+    #     sub.save()
+    #
+    # elif event.type == 'charge.failed':
+    #     subs=Subscription.objects.filter(stripe_subscription_id=stripe).first()
+    #     subs.status='past_due'
+    #     owner=subs.workspace.membership.filter(role='owner').first()
+    #
+    #     send_mail('Payment Failed - Action Required',
+    #               f"""
+    #               Hi {owner.user.first_name} {owner.user.last_name},
+    #
+    #               Your payment for {subs.workspace.name} subscription failed.
+    #
+    #               Card:****
+    #               Amount:****
+    #               Date:****
+    #
+    #               Please updte your payment method to keep your workspace active.
+    #
+    #               After 3 days without payment, your workspace will be restricted
+    #
+    #               Update payment:****
+    #
+    #               Thanks,
+    #               Orbit Team
+    #               """,'noreply@example.com',[owner.email])
+    #
+    #
+    #
     return HttpResponse({'status':'successfull'})
-
-   

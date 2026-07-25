@@ -13,7 +13,7 @@ export function fetchUserQueryOption() {
 async function getUser() {
 	try {
 		const user = await instance.get('users/me')
-		return user.data
+		return user?.data
 	} catch (error) {
 		console.error(error)
 		throw new Error(error)
@@ -25,69 +25,95 @@ export function workspaceQueryOption() {
 	return queryOptions({
 		queryKey: ['workspace'],
 		queryFn: workspaceFn,
-		select: (data) => {
-			const workspaceMap = Object.fromEntries(data.map((obj) => [obj.id, obj]))
-			return {
-				workspace: workspaceMap,
-				ordering: data.map((obj) => obj.id)
-			}
-		}
+		// select: (data) => {
+		// 	const workspaceMap = Object.fromEntries(data.map((obj) => [obj.id, obj]))
+		// 	return {
+		// 		workspace: workspaceMap,
+		// 		ordering: data.map((obj) => obj.id)
+		// 	}
+		// }
 	})
 }
 
 async function workspaceFn() {
 	try {
 		const dashboard = await instance.get('workspaces/')
-		return dashboard.data
+		return {
+			workspaces: Object.fromEntries(dashboard?.data?.map((obj) => [obj?.id, obj])),
+			ordering: dashboard?.data?.map((obj) => obj?.id)
+		}
+
 	} catch (err) {
 		console.error(err)
 		throw new Error(err)
 	}
 }
 
-export function projectQueryOption(id) {
+export function projectQueryOption(wkId) {
 	return queryOptions({
-		queryKey: [id],
-		queryFn: () => projectFn(id),
-		enabled: !!id,
-		select: (data) => {
-			const projectMap = Object.fromEntries(data.map((obj) => [obj.id, obj]))
-			return {
-				project: projectMap,
-				ordering: data.map((obj) => obj.id)
-			}
-		},
-		// onsuccess: (projects, id) => {
-		// 	queryClient.setQueryData(['workspace'], (oldWorkspace) => {
-		// 		const workspace = oldWorkspace.workspace?.[id]
-		// 		return {
-		// 			...oldWorkspace,
-		// 			workspace: {
-		// 				...oldWorkspace.workspace,
-		// 				[id]: {
-		// 					...oldWorkspace.workspace?.[id],
-		// 					...workspace,
-		// 					projectIds: projects.map((obj) => obj.id)
-		// 				}
-		// 			}
-		// 		}
-		// 	})
-		// }
-
-
+		queryKey: [wkId, 'projects'],
+		queryFn: () => projectFn(wkId),
+		enabled: !!wkId,
+		// select: (data) => {
+		// 	const projectMap = Object.fromEntries(data.map((obj) => [obj.id, obj]))
+		// 	return {
+		// 		projects: projectMap,
+		// 		projectOrdering: data.map((obj) => obj.id)
+		// 	}
+		// },
 	})
 }
 
-async function projectFn(id) {
+async function projectFn(wkId) {
 	try {
-		// if (!id) return
-		const projects = await instance.get(`workspaces/${id}/projects/`)
-		return projects?.data
+		const projects = await instance.get(`workspaces/${wkId}/projects/`)
+		return {
+			projects: Object.fromEntries(projects?.data?.map((obj) => [obj?.id, obj])),
+			projectOrdering: projects?.data?.map((obj) => obj?.id)
+		}
 	} catch (error) {
 		console.error(error)
 		throw new Error(error)
 	}
 }
 
+
+export function taskQueryOption(wk, prjId) {
+	return queryOptions({
+		queryKey: [wk, prjId, 'tasks'],
+		queryFn: () => taskFn(wk, prjId),
+		enabled: !!prjId,
+	})
+}
+
+async function taskFn(wk, prjId) {
+	try {
+		const task = await instance.get(`workspaces/${wk}/${prjId}/tasks/`)
+		return {
+			tasks: Object.fromEntries(task?.data?.map((obj) => [obj?.id, obj])),
+			taskOrdering: task?.data?.map((obj) => obj?.id)
+		}
+	} catch (error) {
+		console.error(error)
+		throw new Error(error)
+	}
+}
+
+export function commentQueryOption(taskId) {
+	return queryOptions({
+		queryKey: [taskId, 'comments'],
+		queryFn: () => getTaskComments(taskId),
+		enabled: !!taskId
+	})
+}
+
+const getTaskComments = async (taskId) => {
+	try {
+		const comments = await instance.get(`workspaces/${taskId}/comments/`)
+		return comments.data
+	} catch (err) {
+		console.error(err)
+	}
+}
 
 

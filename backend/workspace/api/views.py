@@ -76,10 +76,13 @@ class ProjectDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes=[IsWorkspaceMemeber]
 
 
-class Task(generics.CreateAPIView):
+class Task(generics.ListCreateAPIView):
     queryset=models.Task.objects.all()
     serializer_class=TaskSerializer
     permission_classes=[permissions.IsAuthenticated,IsWorkspaceAdminOrSuperAdmin]
+
+    def get_queryset(self):
+        return models.Task.objects.filter(workspace=self.kwargs.get('wk'),project=self.kwargs.get('pk'))
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)

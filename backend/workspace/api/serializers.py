@@ -5,11 +5,14 @@ from django.contrib.auth import get_user_model
 from workspace import models
 from users.api.serializers import UserSerializer
 from django.db.models import Q
+import logging
 
 import workspace
 
 
 
+
+logger=logging.getLogger(__name__)
 UserModel=get_user_model()
 
 class MembershipSerializer(serializers.ModelSerializer):
@@ -34,7 +37,7 @@ class CommentSerializer(serializers.ModelSerializer):
         task=attrs['task']
         if not workspace.membership.filter(user=user).exists():
             raise PermissionDenied('you dont have permission to perform this operation')
-        if not project.members.filter(id=user.id).exists():
+        if not (project.members.filter(id=user.id).exists() or project.admins.filter(id=user.id).exists()):
             raise PermissionDenied('you dont have permission to perform this operation')
         if not task.members.filter(id=user.id).exists():
             raise PermissionDenied('you dont have permission to perform this operation')
@@ -46,11 +49,15 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class TaskSerializer(serializers.ModelSerializer):
     members=UserSerializer(many=True,read_only=True)
-    comment_task=CommentSerializer(many=True,read_only=True)
+    # comment_task=CommentSerializer(many=True,read_only=True)
     class Meta:
         model=models.Task
-        fields=['id','title','project','workspace','comment_task','description','members','created_by']
+        fields=['id','title','project','workspace','description','members','created_by']
         read_only_fields=['created_by']
+        # fields="__all__"
+    # def create(self, validated_data):
+    #     logger.info('validated_data:',validated_data)
+    #     return super().create(validated_data)
 
 
     def validate(self, attrs):
@@ -58,6 +65,7 @@ class TaskSerializer(serializers.ModelSerializer):
         workspace=attrs['workspace']
         attrs['members']=[]
         attrs['members'].append(auth_user)
+        # logger.info('attrs:',attrs)
         if not workspace.membership.filter(user=auth_user,role__in=['owner','admin']).exists():
             raise PermissionDenied('you dont have the permissions to perform this operation')
         return attrs
@@ -67,12 +75,12 @@ class TaskSerializer(serializers.ModelSerializer):
 class ProjectSerializer(serializers.ModelSerializer):
     members=UserSerializer(many=True,required=False)
     # task_project=TaskSerializer(many=True,read_only=True)
-    project_tasks=serializers.SerializerMethodField()
+    # project_tasks=serializers.SerializerMethodField()
     admins=serializers.PrimaryKeyRelatedField(queryset=UserModel.objects.all(),many=True,required=False,write_only=True)
     project_admins=serializers.SerializerMethodField()
     class Meta:
         model=models.Project
-        fields=['id','name','workspace','created_by','admins','project_admins','members','project_tasks','description']
+        fields=['id','name','workspace','created_by','admins','project_admins','members','description']
         read_only_fields=['created_by','project_admins']
 
 
@@ -108,11 +116,11 @@ class ProjectSerializer(serializers.ModelSerializer):
             return UserSerializer(admins,many=True,context=self.context).data
         owner_admin_list=obj.admins.all()
         return UserSerializer(owner_admin_list,many=True,context=self.context).data
-    def get_project_tasks(self,obj):
-        current_user=self.context['request'].user
-        if obj.task_project.filter(Q(members=current_user) | Q(admins=current_user)).exists():
-            return obj.task_project.values('id','title','description')
-        return None
+    # def get_project_tasks(self,obj):
+    #     current_user=self.context['request'].user
+    #     if obj.task_project.filter(Q(members=current_user) | Q(admins=current_user)).exists():
+    #         return obj.task_project.values('id','title','description')
+    #     return None
 
 class InviteTokenSerializer(serializers.ModelSerializer):
     class Meta:

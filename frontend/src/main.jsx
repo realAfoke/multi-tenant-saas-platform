@@ -12,6 +12,7 @@ import Task from './pages/task.jsx'
 import Profile from './pages/profile.jsx'
 // import App from './App.jsx'
 import ErrorPage from './components/Error.jsx'
+import LandingPage from './pages/landing.jsx'
 
 
 const queryClient = new QueryClient()
@@ -20,30 +21,29 @@ const routes = createBrowserRouter([
   {
     path: 'login', element: <Login />, errorElement: <ErrorPage />, loader: loginLoader
   },
+  { path: '/', element: <LandingPage /> },
   {
-    path: '/', element: <ProtectedRoute />, errorElement: <ErrorPage />,
+    path: '/dashboard', element: <ProtectedRoute />, errorElement: <ErrorPage />,
     children: [
+      // {
+      // index: true, element: <Dashboard />
+      // },
       {
-        path: 'dashboard', element: <Dashboard />,
-        children: [
-          {
-            path: ':wkName', element: <Workspace />, loader: workspaceLoader
-          },
-          {
-            path: ':wkName/add-new-project', element: <Create />
-          },
-          {
-            path: ':wkName/:prjName/add-new-task', element: <Create />
-          },
-          {
-            path: 'create-new-workspace', element: <Create />
-          },
-          {
-            path: ':wkName/:prjName/task/:id', element: <Task />,
-          },
-          { path: 'profile', element: <Profile /> }
-        ]
+        path: ':wkName', element: <Workspace />, loader: workspaceLoader
       },
+      {
+        path: ':wkName/add-new-project', element: <Create />
+      },
+      {
+        path: ':wkName/:prjName/add-new-task', element: <Create />
+      },
+      {
+        path: 'create-new-workspace', element: <Create />
+      },
+      {
+        path: ':wkName/:prjName/task/:id', element: <Task />,
+      },
+      { path: 'profile', element: <Profile /> },
     ]
   },
 ])

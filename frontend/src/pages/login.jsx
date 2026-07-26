@@ -74,7 +74,7 @@ export default function Login() {
 async function login(email, password, navigate) {
 	try {
 		await instance.post('auth/login/', { email: email, password: password })
-		navigate('/', { replace: true })
+		navigate('/dashboard', { replace: true })
 	}
 	catch (err) {
 		console.error('Error:', err)
@@ -83,7 +83,7 @@ async function login(email, password, navigate) {
 
 export async function loader() {
 	try {
-		const user = await instance.get('users/me')
+		await instance.get('users/me')
 		return redirect('/dashboard')
 	} catch (error) {
 		console.error(error)

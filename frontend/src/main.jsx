@@ -12,6 +12,7 @@ import Profile from './pages/profile.jsx'
 // import App from './App.jsx'
 import ErrorPage from './components/Error.jsx'
 import LandingPage from './pages/landing.jsx'
+import Pricing from './pages/pricing.jsx'
 
 
 const queryClient = new QueryClient()
@@ -21,12 +22,10 @@ const routes = createBrowserRouter([
     path: 'login', element: <Login />, errorElement: <ErrorPage />, loader: loginLoader
   },
   { path: '/', element: <LandingPage /> },
+  { path: '/pricing', element: <Pricing /> },
   {
     path: '/dashboard', element: <ProtectedRoute />, errorElement: <ErrorPage />,
     children: [
-      // {
-      // index: true, element: <Dashboard />
-      // },
       {
         path: ':wkName', element: <Workspace />, loader: workspaceLoader
       },

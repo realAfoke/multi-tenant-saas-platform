@@ -10,6 +10,7 @@ import profile from "@/assets/profileIcon.svg"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { workspaceQueryOption, projectQueryOption, taskQueryOption } from "@/queryOptions/queryOptions"
 import { useAppState } from "@/hooks/apptools"
+import { Button } from "./ui/button"
 
 export default function SideBar(props) {
 	const ref = useRef(null)
@@ -20,7 +21,6 @@ export default function SideBar(props) {
 	const isProjectSelected = !!selectedProject?.id
 	const isWorkspaceSeleted = !!selectedWorkspace?.id
 	const queryClient = useQueryClient()
-	// console.log('proj:', selectedProject)
 
 	const { data: userWorkspaces } = useQuery(workspaceQueryOption())
 	const { workspaces, ordering } = userWorkspaces ?? {}
@@ -30,10 +30,8 @@ export default function SideBar(props) {
 	const user = queryClient.getQueryData(['user'])
 	const { data: projectTasks } = useQuery(taskQueryOption(selectedWorkspace?.id, selectedProject?.id))
 	const { tasks, taskOrdering } = projectTasks ?? {}
-	// console.log('task:',tasks,'ordering:',taskOrdering)
 
 
-	//toggle workspace list off i.e hide the list when a workspace is selected
 	useEffect(() => {
 		if (!selectedWorkspace?.show) return
 		handleToggleWorkspace(false)
@@ -62,13 +60,30 @@ export default function SideBar(props) {
 	}, [])
 	return (
 		<div ref={ref} className={`flex h-full flex-col absolute text-white bg-[#000] shadow-lg border-r border-[#f6f3f438] px-2 min-w-60 md:relative md:min-w-[17rem] `}>
-			<div className="flex justify-between items-center">
-				<div className="text-2xl font-semibolf p-3 text-white shadow-md">Orbit</div>
-				<div>
-					<img src={closeMenu} className="w-5 h-5 md:w-5 md:h-5 cursor-pointer" onClick={() =>
-						setToggle(false)
-					} />
+			<div className="border-b border-zinc-800 pb-6">
+
+				<div className="flex justify-between items-start">
+
+					<div>
+
+						<h1 className="text-2xl font-bold text-white">
+							OrbitSpace
+						</h1>
+
+						<p className="text-xs text-gray-500 mt-1">
+							Manage all your work
+						</p>
+
+					</div>
+
+					<img
+						src={closeMenu}
+						className="w-5 h-5 cursor-pointer md:hidden"
+						onClick={() => setToggle(false)}
+					/>
+
 				</div>
+
 			</div>
 			<div className="mb-[5rem] overflow-auto min-h-full  scrollbar scrollbar-thin scrollbar-thumb-zinc-600 scrollbar-track-zinc-900 md:pb-[6rem]">
 				<Item className="gap-2 py-2 hover:bg-[#ffffff1a] rounded-md px-2">
@@ -82,30 +97,19 @@ export default function SideBar(props) {
 						</ItemTitle>
 					</ItemContent>
 				</Item>
-				<Item className={`gap-2 py-2 ${!showOptions ? 'hover:bg-[#ffffff1a]' : ''} rounded-md px-2`}>
-
-					<ItemMedia variant="image" className="w-4 h-4 self-start">
-						<img src={edit} />
-					</ItemMedia>
-					<ItemContent >
-						<ItemTitle onClick={() => setShowOptions((prev) => !prev)} className="capitalize text-sm w-full" >
-							New
-						</ItemTitle>
-						{showOptions && <ItemGroup className="gap-0">
-							<Item className="py-2 my-0 hover:bg-[#ffffff1a] rounded-md px-2" onClick={() => {
-								navigate(path, { state: { wkId: selectedWorkspace?.id, prjId: selectedProject?.id } })
-							}}>
-								<ItemContent>
-									<ItemTitle className="capitalize text-sm w-full">
-										{title}
-									</ItemTitle>
-								</ItemContent>
-							</Item>
-						</ItemGroup>
-						}
-
-					</ItemContent>
-				</Item>
+				<div className="mt-6">
+					<Button
+						variant="outline"
+						className="
+        w-full
+        rounded-xl
+        border-zinc-700
+        hover:bg-zinc-900
+    "
+					>
+						+ New
+					</Button>
+				</div>
 				<div>
 					<Item className="gap-2 py-2 hover:bg-[#ffffff1a] rounded-md px-2 ">
 						<ItemMedia variant="image" className="w-5 h-5">
@@ -171,16 +175,89 @@ export default function SideBar(props) {
 
 
 			</div >
-			<Link to="profile" className="bg-inherit shadow-lg absolute bottom-0 w-full py-5">
-				<div className="flex items-center justify-start gap-1">
-					<div className="w-7 rounded-full h-7">
-						<img src={profile} className="object-fit-contain rounded-full" />
+			<Link
+				to="profile"
+				className="absolute bottom-0 left-0 w-full border-t border-zinc-800 p-4 hover:bg-zinc-900 transition "
+			>
+				<div className="flex items-center gap-3">
+
+					<img
+						src={profile}
+						className="w-10 h-10 rounded-full"
+					/>
+
+					<div>
+
+						<p className="text-white font-medium">
+							{user?.firstName} {user?.lastName}
+						</p>
+
+						<p className="text-xs text-gray-500">
+							Free Plan
+						</p>
+
 					</div>
-					{`${user?.firstName} ${user?.lastName}`}
+
 				</div>
+
 			</Link>
 		</div>
 	)
 }
 
+// <div className="flex justify-between items-center">
+// 	<div className="text-2xl font-semibolf p-3 text-white shadow-md">Orbit</div>
+// 	<div>
+// 		<img src={closeMenu} className="w-5 h-5 md:w-5 md:h-5 cursor-pointer" onClick={() =>
+// 			setToggle(false)
+// 		} />
+// 	</div>
+// </div>
+//
+//
+// New button
+//				<Item className={`gap-2 py-2 ${!showOptions ? 'hover:bg-[#ffffff1a]' : ''} rounded-md px-2`}>
+// 	<ItemMedia variant="image" className="w-4 h-4 self-start">
+// 		<img src={edit} />
+// 	</ItemMedia>
+// 	<ItemContent >
+// 		<ItemTitle onClick={() => setShowOptions((prev) => !prev)} className="capitalize text-sm w-full" >
+// 			New
+// 		</ItemTitle>
+// 		{showOptions && <ItemGroup className="gap-0">
+// 			<Item className="py-2 my-0 hover:bg-[#ffffff1a] rounded-md px-2" onClick={() => {
+// 				navigate(path, { state: { wkId: selectedWorkspace?.id, prjId: selectedProject?.id } })
+// 			}}>
+// 				<ItemContent>
+// 					<ItemTitle className="capitalize text-sm w-full">
+// 						{title}
+// 					</ItemTitle>
+// 				</ItemContent>
+// 			</Item>
+// 		</ItemGroup>
+// 		}
+//
+// 	</ItemContent>
+// </Item>
+// //	<Link to="profile" className="bg-inherit shadow-lg absolute bottom-0 w-full py-5">
+// 				<div className="flex items-center justify-start gap-1">
+// 					<div className="w-7 rounded-full h-7">
+// 						<img src={profile} className="object-fit-contain rounded-full" />
+// 					</div>
+// 					{`${user?.firstName} ${user?.lastName}`}
+// 				</div>
+// 			</Link>
+//
+
+
+// <p className="text-xs uppercase tracking-widest text-gray-500 mt-8 mb-3 px-2">
+// Projects
+// </p>
+// <p className="text-xs uppercase tracking-widest text-gray-500 mt-8 mb-3 px-2">
+// Navigation
+// </p>
+
+// <p className="text-xs uppercase tracking-widest text-gray-500 mt-8 mb-3 px-2">
+// Workspaces
+// </p>
 

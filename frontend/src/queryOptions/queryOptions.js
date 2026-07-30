@@ -116,4 +116,21 @@ const getTaskComments = async (taskId) => {
 	}
 }
 
+export function dasboardDataQueryOption(id) {
+	return queryOptions({
+		queryKey: ['dasboard', 'data', id],
+		queryFn: () => getDashboardData(id)
+	})
+}
+
+
+async function getDashboardData(id) {
+	try {
+		const data = await instance.get(`workspaces/${id}/`)
+		return data?.data
+	} catch (error) {
+		console.error(error)
+		return error
+	}
+}
 

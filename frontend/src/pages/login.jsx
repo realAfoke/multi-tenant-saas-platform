@@ -1,10 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { useState } from "react"
+import { use, useState } from "react"
 import { instance } from "@/api/axios"
 import useAuthStore from "@/store/authStore"
-import { useNavigate, redirect } from "react-router-dom"
+import { useNavigate, redirect, Navigate } from "react-router-dom"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { fetchUserQueryOption } from "@/queryOptions/queryOptions"
 
@@ -15,7 +15,7 @@ export default function Login() {
 	const setUser = useAuthStore((state) => state.setUser)
 	const queryClient = useQueryClient()
 	const navigate = useNavigate()
-	// const user = queryClient.getQueryData(['user'])
+	const user = queryClient.getQueryData(['user'])
 
 	const mutate = useMutation({
 		mutationFn: ({ email, password, navigate }) => login(email, password, navigate),
@@ -25,8 +25,12 @@ export default function Login() {
 			})
 		}
 	})
+	console.log('user:', user)
+	if (user) {
+		return <Navigate to='/dashboard' />
+	}
 	return (
-		<div className="flex lg:px-10 flex-col min-h-screen bg-gray-50 border-2 border-green-500">
+		<div className="flex lg:px-10 flex-col min-h-screen bg-gray-50">
 			<div className="font-bold text-2xl border-b border-1-gray-200 p-3">
 				Orbit
 			</div>
@@ -81,12 +85,13 @@ async function login(email, password, navigate) {
 	}
 }
 
-export async function loader() {
-	try {
-		await instance.get('users/me')
-		return redirect('/dashboard')
-	} catch (error) {
-		console.error(error)
-	}
-}
+// export async function loader() {
+// 	try {
+// 		console.log('inside here')
+// 		await instance.get('users/me')
+// 		return redirect('/dashboard')
+// 	} catch (error) {
+// 		console.error(error)
+// 	}
+// }
 // #070c587a

@@ -9,6 +9,7 @@ import commentCollaboration from "@/assets/comment-collaboration.svg"
 import roleBase from "@/assets/role-base.svg"
 import dashboardImg from "@/assets/dashboard.png"
 import collab from "@/assets/collab.jpg"
+import SideBar from "@/components/landingPage/SideBar"
 
 
 
@@ -16,64 +17,8 @@ import collab from "@/assets/collab.jpg"
 export default function LandingPage() {
 	return (
 		<div className="bg-black">
-			<div className="fixed top-0 left-0 w-full z-50 bg-black/80 backdrop-blur-md border-b border-zinc-900">
-
-				<div className="flex items-center justify-between px-6 lg:px-20 py-5">
-
-					<div className="text-white font-bold text-2xl tracking-tight">
-						OrbitSpace
-					</div>
-
-
-					<div className="hidden md:flex items-center gap-8 text-gray-400">
-
-						<a className="hover:text-white transition cursor-pointer">
-							Features
-						</a>
-
-						<a className="hover:text-white transition cursor-pointer">
-							Solutions
-						</a>
-
-						<a className="hover:text-white transition cursor-pointer">
-							Pricing
-						</a>
-
-						<a className="hover:text-white transition cursor-pointer">
-							About
-						</a>
-
-					</div>
-
-
-					<div className="flex items-center gap-3">
-
-						<Button
-							variant="ghost"
-							className="hidden md:block text-gray-300 hover:text-white"
-						>
-							Login
-						</Button>
-
-
-						<Button
-							className="rounded-full bg-blue-500 hover:bg-blue-600 px-6"
-						>
-							Get Started
-						</Button>
-
-
-						<img
-							src={menuIcon}
-							className="md:hidden size-9"
-						/>
-
-					</div>
-
-				</div>
-
-			</div>
-			<div className="flex flex-col lg:flex-row items-center justify-between px-6 lg:px-20 pt-32 pb-24 min-h-[90vh]">
+			<SideBar />
+			<div className="flex gap-5 flex-col lg:flex-row items-center justify-between px-6 lg:px-20 pt-32 pb-24 min-h-[90vh]">
 				<div className="max-w-2xl">
 
 					<span className="inline-block bg-blue-500/20 text-blue-400 px-4 py-2 rounded-full text-sm font-medium">
@@ -130,10 +75,10 @@ export default function LandingPage() {
 
 				</div>
 
-				<div className="mt-20 lg:mt-0">
+				<div className="mt-20 lg:mt-0 max-w-2xl">
 					<img
 						src={dashboardImg}
-						className="rounded-2xl shadow-2xl border border-zinc-800 max-w-2xl"
+						className="object-fit-contain rounded-2xl shadow-2xl border border-zinc-800"
 					/>
 				</div>
 

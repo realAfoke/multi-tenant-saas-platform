@@ -59,7 +59,7 @@ export default function SideBar(props) {
 		return () => { document.removeEventListener('click', handleClick) }
 	}, [])
 	return (
-		<div ref={ref} className={`flex h-full flex-col absolute text-white bg-[#000] shadow-lg border-r border-[#f6f3f438] px-2 min-w-60 md:relative md:min-w-[17rem] `}>
+		<div ref={ref} className={`py-3 flex h-full flex-col absolute text-white bg-[#000] shadow-lg border-r border-[#f6f3f438] px-2 min-w-60 md:relative md:min-w-[17rem] `}>
 			<div className="border-b border-zinc-800 pb-6">
 
 				<div className="flex justify-between items-start">
@@ -78,7 +78,7 @@ export default function SideBar(props) {
 
 					<img
 						src={closeMenu}
-						className="w-5 h-5 cursor-pointer md:hidden"
+						className=" w-5 h-5 cursor-pointer"
 						onClick={() => setToggle(false)}
 					/>
 
@@ -205,59 +205,207 @@ export default function SideBar(props) {
 	)
 }
 
-// <div className="flex justify-between items-center">
-// 	<div className="text-2xl font-semibolf p-3 text-white shadow-md">Orbit</div>
-// 	<div>
-// 		<img src={closeMenu} className="w-5 h-5 md:w-5 md:h-5 cursor-pointer" onClick={() =>
-// 			setToggle(false)
-// 		} />
-// 	</div>
-// </div>
+
+// return (
+// 	<div
+// 		ref={ref}
+// 		className="absolute md:relative flex h-full w-72 flex-col bg-black border-r border-zinc-800 text-white"
+// 	>
 //
+// 		{/* Header */}
+// 		<div className="border-b border-zinc-800 px-6 py-6">
 //
-// New button
-//				<Item className={`gap-2 py-2 ${!showOptions ? 'hover:bg-[#ffffff1a]' : ''} rounded-md px-2`}>
-// 	<ItemMedia variant="image" className="w-4 h-4 self-start">
-// 		<img src={edit} />
-// 	</ItemMedia>
-// 	<ItemContent >
-// 		<ItemTitle onClick={() => setShowOptions((prev) => !prev)} className="capitalize text-sm w-full" >
-// 			New
-// 		</ItemTitle>
-// 		{showOptions && <ItemGroup className="gap-0">
-// 			<Item className="py-2 my-0 hover:bg-[#ffffff1a] rounded-md px-2" onClick={() => {
-// 				navigate(path, { state: { wkId: selectedWorkspace?.id, prjId: selectedProject?.id } })
-// 			}}>
+// 			<div className="flex items-start justify-between">
+//
+// 				<div>
+//
+// 					<h1 className="text-3xl font-bold tracking-tight">
+// 						OrbitSpace
+// 					</h1>
+//
+// 					<p className="text-sm text-zinc-500 mt-1">
+// 						Manage all your work
+// 					</p>
+//
+// 				</div>
+//
+// 				<img
+// 					src={closeMenu}
+// 					className="w-5 h-5 md:hidden cursor-pointer"
+// 					onClick={() => setToggle(false)}
+// 				/>
+//
+// 			</div>
+//
+// 		</div>
+//
+// 		{/* Navigation */}
+//
+// 		<div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
+//
+// 			<Item className="gap-3 rounded-xl px-3 py-3 hover:bg-zinc-900 cursor-pointer">
+//
+// 				<ItemMedia variant="image" className="w-5 h-5">
+// 					<img src={searchIcon} />
+// 				</ItemMedia>
+//
 // 				<ItemContent>
-// 					<ItemTitle className="capitalize text-sm w-full">
-// 						{title}
+// 					<ItemTitle className="text-sm">
+// 						Search
 // 					</ItemTitle>
 // 				</ItemContent>
+//
 // 			</Item>
-// 		</ItemGroup>
-// 		}
 //
-// 	</ItemContent>
-// </Item>
-// //	<Link to="profile" className="bg-inherit shadow-lg absolute bottom-0 w-full py-5">
-// 				<div className="flex items-center justify-start gap-1">
-// 					<div className="w-7 rounded-full h-7">
-// 						<img src={profile} className="object-fit-contain rounded-full" />
-// 					</div>
-// 					{`${user?.firstName} ${user?.lastName}`}
+// 			<div>
+//
+// 				<p className="px-3 text-xs uppercase tracking-widest text-zinc-500 mb-3">
+// 					Your Workspaces
+// 				</p>
+//
+// 				<div className="space-y-1">
+//
+// 					{ordering?.map(id => {
+//
+// 						const workspace = workspaces?.[id]
+//
+// 						return (
+//
+// 							<div key={workspace?.id}>
+//
+// 								<Item
+// 									className="gap-3 rounded-xl px-3 py-3 hover:bg-zinc-900 cursor-pointer"
+// 									onClick={() => {
+// 										setWorkspace(prev => ({
+// 											...prev,
+// 											show: selectedWorkspace?.id === workspace?.id
+// 												? !prev.show
+// 												: true
+// 										}))
+// 										setWorkspace(workspace)
+// 									}}
+// 								>
+//
+// 									<ItemMedia variant="image" className="w-5 h-5">
+// 										<img src={cog} />
+// 									</ItemMedia>
+//
+// 									<ItemContent>
+//
+// 										<div className="flex justify-between items-center">
+//
+// 											<ItemTitle className="text-sm">
+// 												{workspace?.name}
+// 											</ItemTitle>
+//
+// 											<span className="text-zinc-500">
+// 												{selectedWorkspace?.id === workspace?.id && selectedWorkspace?.show ? "−" : "+"}
+// 											</span>
+//
+// 										</div>
+//
+// 									</ItemContent>
+//
+// 								</Item>
+//
+// 								{selectedWorkspace?.id === workspace?.id &&
+// 									selectedWorkspace?.show && (
+//
+// 										<div className="ml-8 mt-1 space-y-1 border-l border-zinc-800 pl-4">
+//
+// 											{projectOrdering?.map(projectId => {
+//
+// 												const project = projects?.[projectId]
+//
+// 												return (
+//
+// 													<Fragment key={project?.id}>
+//
+// 														<NestedList
+// 															list={project}
+// 															selectedPrjId={selectedProject}
+// 															setter={setProject}
+// 														/>
+//
+// 														{selectedProject?.id === project?.id && (
+//
+// 															<div className="ml-5 mt-1 border-l border-zinc-800 pl-3">
+//
+// 																{taskOrdering?.map(taskId => {
+//
+// 																	const task = tasks?.[taskId]
+//
+// 																	return (
+// 																		<NestedList
+// 																			key={task?.id}
+// 																			list={task}
+// 																			setter={setTask}
+// 																		/>
+// 																	)
+//
+// 																})}
+//
+// 															</div>
+//
+// 														)}
+//
+// 													</Fragment>
+//
+// 												)
+//
+// 											})}
+//
+// 										</div>
+//
+// 									)}
+//
+// 							</div>
+//
+// 						)
+//
+// 					})}
+//
 // 				</div>
-// 			</Link>
 //
-
-
-// <p className="text-xs uppercase tracking-widest text-gray-500 mt-8 mb-3 px-2">
-// Projects
-// </p>
-// <p className="text-xs uppercase tracking-widest text-gray-500 mt-8 mb-3 px-2">
-// Navigation
-// </p>
-
-// <p className="text-xs uppercase tracking-widest text-gray-500 mt-8 mb-3 px-2">
-// Workspaces
-// </p>
-
+// 			</div>
+//
+// 			<Button
+// 				variant="outline"
+// 				className="w-full rounded-xl border-zinc-700 hover:bg-zinc-900"
+// 				onClick={() => navigate(path)}
+// 			>
+// 				{title}
+// 			</Button>
+//
+// 		</div>
+//
+// 		<Link
+// 			to="profile"
+// 			className="border-t border-zinc-800 p-5 hover:bg-zinc-900 transition"
+// 		>
+//
+// 			<div className="flex items-center gap-3">
+//
+// 				<img
+// 					src={profile}
+// 					className="w-11 h-11 rounded-full"
+// 				/>
+//
+// 				<div>
+//
+// 					<p className="font-medium">
+// 						{user?.firstName} {user?.lastName}
+// 					</p>
+//
+// 					<p className="text-xs text-zinc-500">
+// 						Free Plan
+// 					</p>
+//
+// 				</div>
+//
+// 			</div>
+//
+// 		</Link>
+//
+// 	</div>
+// )

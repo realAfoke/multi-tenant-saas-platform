@@ -7,7 +7,7 @@ import { useParams, useNavigate } from "react-router-dom"
 import { useAppState } from "@/hooks/apptools"
 import { useEffect, useState } from "react"
 import SideBar from "@/components/SideBar"
-import menuIcon from "@/assets/menu3.svg"
+import TopBar from "./TopBar"
 
 
 export default function ProtectedRoute() {
@@ -45,19 +45,28 @@ export default function ProtectedRoute() {
 	}
 
 	return (
-		<div className='bg-[#000] flex h-screen w-full relative overflow-hidden '>
-			{toggle && <SideBar setToggle={setToggle} toggleWorkspace={toggleWorkspace} handleToggleWorkspace={setToggleWorkspace} />}
-			<div className={`pb-[4rem] overflow-hidden flex-1 ${toggle ? '' : ''}`}>
-				{!toggle &&
-					<div className="relative">
-						<img src={menuIcon} className="absolute w-12 h-12" onClick={(e) => {
-							e.stopPropagation()
-							setToggle(true)
-						}} />
+		<div className="flex h-screen bg-black overflow-hidden">
+
+			{toggle && (
+				<div className="">
+					<SideBar
+						setToggle={setToggle}
+						toggleWorkspace={toggleWorkspace}
+						handleToggleWorkspace={setToggleWorkspace}
+					/>
+				</div>
+			)}
+
+			<div className="flex flex-col flex-1 overflow-hidden">
+				<TopBar setToggle={setToggle} toggle={toggle} />
+
+				<main className="flex-1 overflow-auto bg-zinc-950">
+					<div className="max-w-7xl mx-auto px-6 py-8">
+						<Outlet />
 					</div>
-				}
-				<Outlet context={{ setToggleWorkspace }} />
+				</main>
 			</div>
+
 		</div>
 	)
 }

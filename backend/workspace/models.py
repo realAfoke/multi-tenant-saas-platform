@@ -162,3 +162,18 @@ class InviteRequest(models.Model):
     def __str__(self):
         return str(self.pending_user)
 
+
+class ActivityLog(models.Model):
+    user=models.ForeignKey(UserModel,related_name='activity_user',on_delete=models.CASCADE)
+    workspace=models.ForeignKey(WorkSpace,related_name='workspace_activity',on_delete=models.CASCADE)
+    project=models.ForeignKey(Project,related_name='activity_project',on_delete=models.CASCADE,null=True)
+    task=models.ForeignKey(Task,related_name='activity_task',on_delete=models.CASCADE,null=True)
+    action=models.CharField(max_length=200)
+    created_at=models.DateTimeField(auto_now_add=True)
+
+
+    def __str__(self):
+        return self.action
+
+    class Meta:
+        db_table='activityLog'

@@ -13,9 +13,7 @@ export default function Create() {
 	const { selectedWorkspace, selectedProject, selectedTask } = useAppState()
 	const navigate = useNavigate()
 	const queryClient = useQueryClient()
-	const [name, setName] = useState('')
-	const [description, setDescription] = useState('')
-
+	
 	// console.log('q:',queryClient)
 	const createProject = useMutation(createProjectMutationOption(queryClient))
 	const createTask = useMutation(createTaskMutationOption(queryClient))

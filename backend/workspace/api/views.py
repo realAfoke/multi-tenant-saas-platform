@@ -11,9 +11,24 @@ from rest_framework import permissions
 # from workspace.services.workspace import create_work_space
 from channels.layers import get_channel_layer
 from workspace.services.invite import send_invite,accept_invite
+import logging
 
 
 
+
+
+logger=logging.getLogger(__name__)
+
+class DashBoard(generics.ListAPIView):
+    queryset=models.Task.objects.all()
+    serializer_class=TaskSerializer
+    permission_classes=[IsWorkspaceMemeber]
+
+    def get_queryset(self):
+        project=models.Project.objects.filter(workspace=self.kwargs.get('wk')).order_by('-updated_at')[0]
+        logger.info(f'project:{project}')
+        return models.Task.objects.filter(project=project).order_by('-updated_at')[:5]
+        # return models.Task.objects.all()
 
 
 class Base(generics.ListCreateAPIView):
@@ -46,7 +61,7 @@ class WorkSpaceMembers(generics.ListAPIView):
     serializer_class=MembershipSerializer
 
     def get_queryset(self):
-        return models.Membership.objects.filter(workspace=self.kwargs.get('pk'))
+        return models.Membership.objects.filter(workspace=self.kwargs.get('wk'))
     
 class WorkSpaceDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset=models.WorkSpace.objects.all()

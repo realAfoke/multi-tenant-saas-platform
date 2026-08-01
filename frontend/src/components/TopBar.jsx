@@ -17,7 +17,7 @@ export default function TopBar({ setToggle, toggle }) {
 						}}
 					/>}
 				<h1 className="text-white text-lg font-semibold">
-					Workspace
+					Orbit
 				</h1>
 			</div>
 

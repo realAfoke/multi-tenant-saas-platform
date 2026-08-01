@@ -8,6 +8,7 @@ import { useEffect } from "react"
 
 export default function Workspace() {
 	const { id } = useParams()
+	const queryClient=useQuerycl
 	const workspace = useAppStore(state => state.cacheWorkspace?.[id])
 	// const workspace = useAppStore(state => state.getWorkspace(id))
 	const setWorkspace = useAppStore(state => state.setWorkspace)

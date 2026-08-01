@@ -62,7 +62,7 @@ export default function ProtectedRoute() {
 
 				<main className="flex-1 overflow-auto bg-zinc-950">
 					<div className="max-w-7xl mx-auto px-6 py-8">
-						<Outlet />
+						<Outlet context={{ setToggle }} />
 					</div>
 				</main>
 			</div>

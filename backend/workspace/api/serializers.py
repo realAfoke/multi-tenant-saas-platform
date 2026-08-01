@@ -80,8 +80,8 @@ class ProjectSerializer(serializers.ModelSerializer):
     project_admins=serializers.SerializerMethodField()
     class Meta:
         model=models.Project
-        fields=['id','name','workspace','created_by','admins','project_admins','members','description']
-        read_only_fields=['created_by','project_admins']
+        fields=['id','name','workspace','created_by','admins','project_admins','members','description','updated_at']
+        read_only_fields=['created_by','project_admins','updated_at']
 
 
     def create(self, validated_data):

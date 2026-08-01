@@ -4,7 +4,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Login from './pages/login.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 import './index.css'
-import Workspace, { workspaceLoader } from './pages/Workspace.jsx'
+import Workspace from './pages/Workspace.jsx'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import Create from './components/Create.jsx'
 import Task from './pages/task.jsx'
@@ -38,7 +38,9 @@ const routes = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       {
-        path: ':workspace', element: <Workspace />, loader: workspaceLoader
+        path: ':wkName', element: <Workspace />, children: [
+          { path: 'create-project', element: <CreateProject /> },
+        ]
       },
       {
         path: ':wkName/add-new-project', element: <Create />
@@ -59,9 +61,8 @@ const routes = createBrowserRouter([
       { path: 'file', element: <Files /> },
       { path: 'setting', element: <Settings /> },
       { path: 'notification', element: <Notifications /> },
-      { path: 'createproject', element: <CreateProject /> },
       { path: 'createtask', element: <CreateTask /> },
-      { path: 'checkout', element: <Checkout /> }
+      { path: 'checkout', element: <Checkout /> },
     ]
   },
 ])

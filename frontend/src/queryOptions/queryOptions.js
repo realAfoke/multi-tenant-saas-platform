@@ -126,7 +126,7 @@ export function dasboardDataQueryOption(id) {
 
 async function getDashboardData(id) {
 	try {
-		const data = await instance.get(`workspaces/${id}/`)
+		const data = await instance.get(`workspaces/dashboard/${id}/`)
 		return data?.data
 	} catch (error) {
 		console.error(error)
@@ -134,3 +134,21 @@ async function getDashboardData(id) {
 	}
 }
 
+
+export function workspaceMemberQueryOption(id) {
+	return queryOptions({
+		queryKey: ['workspace', id, 'members'],
+		queryFn: () => getMembers(id)
+	})
+}
+
+
+async function getMembers(id) {
+	try {
+		const members = await instance.get(`workspaces/${id}/members/`)
+		return members?.data
+	}
+	catch (error) {
+		console.error(error)
+	}
+}

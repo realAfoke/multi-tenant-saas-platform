@@ -2,7 +2,7 @@ import { Navigate, useLocation } from "react-router-dom"
 import { Outlet } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
 import { useAppHook } from "@/hooks/appHook.js"
-import { fetchUserQueryOption, workspaceQueryOption, projectQueryOption, taskQueryOption } from "@/queryOptions/queryOptions"
+import { fetchUserQueryOption, workspaceQueryOption, taskQueryOption } from "@/queryOptions/queryOptions"
 import { useParams, useNavigate } from "react-router-dom"
 import { useAppState } from "@/hooks/apptools"
 import { useEffect, useState } from "react"
@@ -13,22 +13,20 @@ import TopBar from "./TopBar"
 export default function ProtectedRoute() {
 	const navigate = useNavigate()
 	const location = useLocation()
-	const { wkName, prjName, id } = useParams()
+	const { wkName, projectName, id } = useParams()
 	const [toggle, setToggle] = useState(false)
 	const [toggleWorkspace, setToggleWorkspace] = useState(false)
 
 
 	const { setWorkspace, setProject, setTask, selectedWorkspace, selectedProject, selectedTask } = useAppState()
 	const { data: userWorkspaces } = useQuery(workspaceQueryOption())
-	let { data: workspaceProjects } = useQuery(projectQueryOption(selectedWorkspace?.id, selectedProject?.id))
 	const { data: projectTasks } = useQuery(taskQueryOption(selectedWorkspace?.id, selectedProject?.id))
 
 	const { tasks } = projectTasks ?? {}
-	const { projects } = workspaceProjects ?? {}
 	const { workspaces } = userWorkspaces ?? {}
 
 	const { data: user } = useQuery(fetchUserQueryOption())
-	useAppHook(workspaces, wkName, setWorkspace, projects, prjName, setProject, tasks, id, setTask)
+	useAppHook(workspaces, wkName, setWorkspace, selectedWorkspace, projectName, setProject, tasks, id, setTask)
 
 	useEffect(() => {
 		if (location?.pathname?.includes('profile')) {

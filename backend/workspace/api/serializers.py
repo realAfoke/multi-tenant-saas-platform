@@ -74,14 +74,16 @@ class TaskSerializer(serializers.ModelSerializer):
 
 class ProjectSerializer(serializers.ModelSerializer):
     members=UserSerializer(many=True,required=False)
-    # task_project=TaskSerializer(many=True,read_only=True)
+    last_updated_task=serializers.SerializerMethodField()
     # project_tasks=serializers.SerializerMethodField()
+    recent_activity=serializers.SerializerMethodField()
     admins=serializers.PrimaryKeyRelatedField(queryset=UserModel.objects.all(),many=True,required=False,write_only=True)
     project_admins=serializers.SerializerMethodField()
+    workspace_name=serializers.SerializerMethodField()
     class Meta:
         model=models.Project
-        fields=['id','name','workspace','created_by','admins','project_admins','members','description','updated_at']
-        read_only_fields=['created_by','project_admins','updated_at']
+        fields=['id','name','workspace','workspace_name','created_by','admins','project_admins','members','description','last_updated_task','updated_at']
+        read_only_fields=['created_by','project_admins','updated_at','workspace_name','last_updated_task']
 
 
     def create(self, validated_data):
@@ -116,11 +118,12 @@ class ProjectSerializer(serializers.ModelSerializer):
             return UserSerializer(admins,many=True,context=self.context).data
         owner_admin_list=obj.admins.all()
         return UserSerializer(owner_admin_list,many=True,context=self.context).data
-    # def get_project_tasks(self,obj):
-    #     current_user=self.context['request'].user
-    #     if obj.task_project.filter(Q(members=current_user) | Q(admins=current_user)).exists():
-    #         return obj.task_project.values('id','title','description')
-    #     return None
+    def get_workspace_name(self,obj):
+        return obj.workspace.name
+    def get_last_updated_task(self,obj):
+        current_user=self.context['request'].user
+        task=obj.task_project.filter(Q(members=current_user) | Q(admins=current_user)).order_by('-updated_at')
+        return obj.task_project.values('id','title','description','updated_at') if task else None
 
 class InviteTokenSerializer(serializers.ModelSerializer):
     class Meta:
@@ -143,12 +146,13 @@ class InviteTokenSerializer(serializers.ModelSerializer):
         return attrs
 
 class WorkSpaceSerializer(serializers.ModelSerializer):
-    # projects=serializers.SerializerMethodField()
+    projects=serializers.SerializerMethodField()
     # project_ids=serializers.PrimaryKeyRelatedField(source='projects',many=True,read_only=True)
     class Meta:
         model=models.WorkSpace
         # fields=['id','name','description','projects','created_at','updated_at']
         fields='__all__'
+        read_only_fields=['projects']
 
 
     def create(self, validated_data):
@@ -176,11 +180,11 @@ class WorkSpaceSerializer(serializers.ModelSerializer):
             if len(self.instance.membership.all()) > 500:
                 raise ValidationError('workspace membership limmit reached')
             return attrs
-    # def get_projects(self,obj):
-    #     user=self.context['request'].user
-    #     user_project=obj.projects.filter(Q(admins=user)|Q(members=user))
-    #     return ProjectSerializer(user_project,many=True,context=self.context).data if user_project else None
-    #     # return [{'id':project.id,'name':project.name} for project in user_project]
+    def get_projects(self,obj):
+        user=self.context['request'].user
+        user_project=obj.projects.filter(Q(admins=user)|Q(members=user))
+        # return ProjectSerializer(user_project,many=True,context=self.context).data if user_project else None
+        return [{'id':project.id,'name':project.name,'description':project.description,'updated_at':project.updated_at} for project in user_project]
 
    
 # class FileSerializer(serializers.ModelSerializer):

@@ -8,25 +8,21 @@ import { Fragment, useState, useRef, useEffect } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import profile from "@/assets/profileIcon.svg"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { workspaceQueryOption, projectQueryOption, taskQueryOption } from "@/queryOptions/queryOptions"
+import { workspaceQueryOption, taskQueryOption } from "@/queryOptions/queryOptions"
 import { useAppState } from "@/hooks/apptools"
 import { Button } from "./ui/button"
 
 export default function SideBar(props) {
 	const ref = useRef(null)
 	const { setToggle, handleToggleWorkspace, toggleWorkspace } = props
-	const { setWorkspace, setProject, setTask, selectedWorkspace, selectedProject, selectedTask } = useAppState()
-	console.log(selectedWorkspace)
+	const { setWorkspace, setProject, setTask, selectedWorkspace, selectedProject } = useAppState()
 	const [showOptions, setShowOptions] = useState(false)
 	const navigate = useNavigate()
-	const isProjectSelected = !!selectedProject?.id
-	const isWorkspaceSeleted = !!selectedWorkspace?.id
 	const queryClient = useQueryClient()
 
 	const { data: userWorkspaces } = useQuery(workspaceQueryOption())
 	const { workspaces, ordering } = userWorkspaces ?? {}
-	const { data: workspaceProject } = useQuery(projectQueryOption(selectedWorkspace?.id))
-	const { projects, projectOrdering } = workspaceProject ?? {}
+	const { projects, projectOrdering } = workspaces?.[selectedWorkspace?.id] ?? {}
 
 	const user = queryClient.getQueryData(['user'])
 	const { data: projectTasks } = useQuery(taskQueryOption(selectedWorkspace?.id, selectedProject?.id))
@@ -39,12 +35,9 @@ export default function SideBar(props) {
 	}, [selectedWorkspace?.show])
 
 
-	const title = isProjectSelected ? 'Add Task' : isWorkspaceSeleted ? 'Add Project' : 'Create New Workspace'
-	const path = isProjectSelected ? `${selectedWorkspace?.name}/${selectedProject?.name}/add-new-task` : isWorkspaceSeleted ? `${selectedWorkspace?.name}/add-new-project` : 'create-new-workspace'
-
 	useEffect(() => {
 		if (!selectedProject) {
-			setProject({ id: null, show: false })
+			setProject({ id: null, show: false, name: '' })
 
 		}
 	}, [selectedWorkspace?.id, selectedProject?.id])
@@ -101,12 +94,7 @@ export default function SideBar(props) {
 				<div className="mt-6">
 					<Button
 						variant="outline"
-						className="
-        w-full
-        rounded-xl
-        border-zinc-700
-        hover:bg-zinc-900
-    "
+						className="w-full rounded-xl border-zinc-700 hover:bg-zinc-900"
 					>
 						+ New
 					</Button>

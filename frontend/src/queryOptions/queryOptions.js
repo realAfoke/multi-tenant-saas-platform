@@ -38,9 +38,16 @@ export function workspaceQueryOption() {
 async function workspaceFn() {
 	try {
 		const dashboard = await instance.get('workspaces/')
+		const workspaces = dashboard?.data?.map((workspace) => {
+			return ({
+				...workspace,
+				projects: Object.fromEntries(workspace?.projects?.map((obj) => [obj?.id, obj])),
+				projectOrdering: workspace?.projects?.map(prj => prj?.id)
+			})
+		})
 		return {
-			workspaces: Object.fromEntries(dashboard?.data?.map((obj) => [obj?.id, obj])),
-			ordering: dashboard?.data?.map((obj) => obj?.id)
+			workspaces: Object.fromEntries(workspaces?.map((obj) => [obj?.id, obj])),
+			ordering: workspaces?.map((obj) => obj?.id)
 		}
 
 	} catch (err) {
@@ -49,11 +56,11 @@ async function workspaceFn() {
 	}
 }
 
-export function projectQueryOption(wkId) {
+export function projectQueryOption(wkId, projectId) {
 	return queryOptions({
-		queryKey: [wkId, 'projects'],
-		queryFn: () => projectFn(wkId),
-		enabled: !!wkId,
+		queryKey: [wkId, 'projects', projectId],
+		queryFn: () => projectFn(wkId, projectId),
+		enabled: !!projectId,
 		// select: (data) => {
 		// 	const projectMap = Object.fromEntries(data.map((obj) => [obj.id, obj]))
 		// 	return {
@@ -64,13 +71,14 @@ export function projectQueryOption(wkId) {
 	})
 }
 
-async function projectFn(wkId) {
+async function projectFn(wkId, projectId) {
 	try {
-		const projects = await instance.get(`workspaces/${wkId}/projects/`)
-		return {
-			projects: Object.fromEntries(projects?.data?.map((obj) => [obj?.id, obj])),
-			projectOrdering: projects?.data?.map((obj) => obj?.id)
-		}
+		const project = await instance.get(`workspaces/${wkId}/project/${projectId}/`)
+		return project?.data
+		// return {
+		// 	projects: Object.fromEntries(projects?.data?.map((obj) => [obj?.id, obj])),
+		// 	projectOrdering: projects?.data?.map((obj) => obj?.id)
+		// }
 	} catch (error) {
 		console.error(error)
 		throw new Error(error)

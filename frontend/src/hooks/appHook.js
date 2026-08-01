@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-export function useAppHook(workspaces, wkName, setSelectedWorkspace, projects, prjName, setSelectedProject, tasks, id, setSelectedTask) {
+export function useAppHook(workspaces, wkName, setSelectedWorkspace, selectedWorkspace, projectName, setSelectedProject, tasks, id, setSelectedTask) {
 
 	useEffect(() => {
 		// console.log('got here nigga')
@@ -11,20 +11,6 @@ export function useAppHook(workspaces, wkName, setSelectedWorkspace, projects, p
 		}
 	}, [workspaces, wkName])
 
-	useEffect(() => {
-		if (prjName) {
-			localStorage.setItem('prjName', prjName)
-		}
-		let storedName = localStorage.getItem('prjName')
-
-		if (!projects || !storedName) return
-		const project = Object.values(projects ?? {}).find((prj) => prj?.name == storedName)
-		if (project) {
-			setSelectedProject({ id: project?.id, name: project?.name, show: true })
-			localStorage.removeItem('prjName')
-		}
-
-	}, [projects, prjName])
 
 	useEffect(() => {
 		if (id) {

@@ -1,24 +1,21 @@
+import { useNavigate } from "react-router-dom"
 import { CardContent, Card } from "../ui/card"
+import { useAppState } from "@/hooks/apptools"
+import { dateFormatter } from "@/utils/appUtil"
 export default function Grid({ project }) {
-	const updatedAt = new Date(project?.updatedAt)
-	const now = new Date()
-	const diff = now - updatedAt
-	let lastUpdated
-	const hour = diff / (1000 * 60 * 60)
-	const day = Math.floor(hour / 24)
-	if (hour < 24) {
-		lastUpdated = hour.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric' })
-	} else if (hour < 48) {
-		lastUpdated = 'yesterday'
-	} else {
-		lastUpdated = `${day}  days ago`
-	}
+	const { setProject } = useAppState()
+	const navigate = useNavigate()
+	const lastUpdated = dateFormatter(project?.updatedAt)
 	return (
 		<Card
 			key={project.id}
 			className="bg-zinc-900 border-zinc-800 hover:border-blue-500 hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+			onClick={() => {
+				setProject(project)
+				navigate(`${project?.name}`)
+			}
+			}
 		>
-
 			<CardContent className="p-7">
 
 				<div className="flex items-center justify-between">

@@ -1,8 +1,17 @@
 
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { useAppState } from "@/hooks/apptools"
+import { useQuery } from "@tanstack/react-query"
+import { projectQueryOption } from "@/queryOptions/queryOptions"
+import { dateFormatter } from "@/utils/appUtil"
+
 
 export default function ProjectOverview() {
+	const { selectedWorkspace, selectedProject } = useAppState()
+	const { data: project } = useQuery(projectQueryOption(selectedWorkspace?.id, selectedProject?.id))
+	const { lastUpdatedTask=[] } = project ?? {}
+	const lastUpdated = dateFormatter(lastUpdatedTask[0]?.updatedAt)
 	return (
 		<div className="space-y-8">
 
@@ -11,13 +20,13 @@ export default function ProjectOverview() {
 			<div>
 
 				<p className="text-blue-400 text-sm font-medium">
-					Marketing
+					{project?.workspaceName}
 				</p>
 
 				<div className="flex flex-wrap items-center gap-4 mt-2">
 
 					<h1 className="text-4xl font-bold text-white">
-						Landing Page Redesign
+						{project?.name}
 					</h1>
 
 					<span className="px-3 py-1 rounded-full bg-green-500/20 text-green-300 text-sm">
@@ -27,8 +36,7 @@ export default function ProjectOverview() {
 				</div>
 
 				<p className="text-zinc-400 max-w-3xl mt-4 leading-relaxed">
-					Modern redesign of the company's public website with a focus
-					on performance, accessibility and conversions.
+					{project?.description}
 				</p>
 
 			</div>
@@ -76,11 +84,11 @@ export default function ProjectOverview() {
 						</p>
 
 						<h2 className="text-xl font-semibold text-white mt-2">
-							Authentication API
+							{lastUpdatedTask[0]?.title}
 						</h2>
 
 						<p className="text-zinc-500 mt-1">
-							Last opened yesterday
+							{`Last opend ${lastUpdated}`}
 						</p>
 
 					</div>

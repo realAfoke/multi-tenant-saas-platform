@@ -1,16 +1,17 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useQuery } from "@tanstack/react-query"
-import { projectQueryOption, workspaceMemberQueryOption, workspaceQueryOption } from "@/queryOptions/queryOptions"
-import { Outlet, useParams, useNavigate } from "react-router-dom"
+import { workspaceMemberQueryOption, workspaceQueryOption } from "@/queryOptions/queryOptions"
+import { Outlet, useNavigate } from "react-router-dom"
 import Grid from "@/components/itemDisplayOption/Option"
 import { useState } from "react"
 import User from "@/components/User"
 import { useLocation } from "react-router-dom"
+import { useAppState } from "@/hooks/apptools"
 
 
 export default function Workspace() {
-	const { wkName } = useParams()
+	const { selectedWorkspace } = useAppState()
 	const navigate = useNavigate()
 	const location = useLocation()
 	const [showMoreProject, setShowMoreProject] = useState(false)
@@ -18,53 +19,37 @@ export default function Workspace() {
 
 	const { data: allWorkspace } = useQuery(workspaceQueryOption())
 	const { workspaces } = allWorkspace ?? {}
-	const workspace = Object.values(workspaces ?? {})?.find((obj) => obj?.name == wkName)
-	const { data: workspaceProject } = useQuery(projectQueryOption(workspace?.id))
-	let { projects, projectOrdering } = workspaceProject ?? {}
+	const workspace = workspaces?.[selectedWorkspace?.id]
+	let { projects, projectOrdering } = workspace ?? {}
 	const ordering = projectOrdering?.length > 4 && !showMoreProject ? projectOrdering?.slice(0, 6) : projectOrdering
-
 	const { data: members } = useQuery(workspaceMemberQueryOption(workspace?.id))
 	let memberDisplay = members?.length > 5 && !showMoreMembers ? members?.slice(0, 5) : members
-
 	return (
 		<div className="space-y-10">
-
 			<div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
-
 				<div>
-
 					<p className="text-blue-400 text-sm font-medium">
 						Workspace
 					</p>
-
 					<h1 className="text-4xl font-bold text-white mt-2">
 						{workspace?.name}
 					</h1>
-
 					<p className="text-zinc-400 mt-3 max-w-2xl leading-relaxed">
 						{workspace?.description}
 					</p>
-
 				</div>
-
 				<Button className="rounded-xl bg-blue-500 hover:bg-blue-600 h-11 px-6" onClick={() => navigate('create-project')}>
 					New Project
 				</Button>
-
 			</div>
-
 			<div className={`grid  ${showMoreMembers ? 'grid-cols-1 md:grid-cols-[1.6fr_0.5fr]' : 'grid-cols-1'} gap-3 `}>
 				<div className={`${showMoreMembers ? 'hidden md:flex' : 'flex'} flex-col gap-5 `}>
 					<div>
-
 						<div className="flex items-center justify-between mb-5">
-
 							<h2 className="text-2xl font-semibold text-white">
 								Projects
 							</h2>
-
 							<div className="flex gap-2">
-
 								<Button
 									variant="secondary"
 									className="rounded-xl bg-zinc-900 text-green-500 hover:bg-zinc-800"

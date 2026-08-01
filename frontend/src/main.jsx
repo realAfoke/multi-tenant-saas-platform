@@ -23,6 +23,7 @@ import Notifications from './pages/notification.jsx'
 import CreateProject from './components/CreateProject.jsx'
 import CreateTask from './components/CreateTask.jsx'
 import Checkout from './pages/checkout.jsx'
+import ProjectRoute from './route/projectRoute.jsx'
 
 
 const queryClient = new QueryClient()
@@ -45,8 +46,12 @@ const routes = createBrowserRouter([
       {
         path: ':wkName/add-new-project', element: <Create />
       },
-      { path: 'workspace/project', element: <ProjectOverview /> },
-      { path: 'workspace/project/board', element: <Board /> },
+      {
+        path: ':wkName/:projectName', element: <ProjectRoute />, children: [
+          { index: true, element: <ProjectOverview /> },
+          { path: 'board', element: <Board /> },
+        ]
+      },
       {
         path: ':wkName/:prjName/add-new-task', element: <Create />
       },

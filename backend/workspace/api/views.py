@@ -61,7 +61,7 @@ class WorkSpaceMembers(generics.ListAPIView):
     serializer_class=MembershipSerializer
 
     def get_queryset(self):
-        return models.Membership.objects.filter(workspace=self.kwargs.get('wk'))
+        return models.Membership.objects.filter(workspace=self.kwargs.get('pk'))
     
 class WorkSpaceDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset=models.WorkSpace.objects.all()

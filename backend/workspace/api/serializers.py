@@ -1,3 +1,5 @@
+from django.template import context
+from django.utils import tree
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from django.core.exceptions import PermissionDenied
@@ -48,12 +50,14 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class TaskSerializer(serializers.ModelSerializer):
-    members=UserSerializer(many=True,read_only=True)
+    # members=UserSerializer(many=True,read_only=True)
+    created_by=UserSerializer()
+    comments=serializers.SerializerMethodField()
     # comment_task=CommentSerializer(many=True,read_only=True)
     class Meta:
         model=models.Task
-        fields=['id','title','project','workspace','description','members','created_by']
-        read_only_fields=['created_by']
+        fields=['id','title','project','workspace','description','created_by','comments']
+        read_only_fields=['created_by','comments']
         # fields="__all__"
     # def create(self, validated_data):
     #     logger.info('validated_data:',validated_data)
@@ -70,20 +74,23 @@ class TaskSerializer(serializers.ModelSerializer):
             raise PermissionDenied('you dont have the permissions to perform this operation')
         return attrs
 
+    def get_comments(self,obj):
+        comments_count=obj.comment_task.count()
+        return comments_count
+
 
 
 class ProjectSerializer(serializers.ModelSerializer):
     members=UserSerializer(many=True,required=False)
-    last_updated_task=serializers.SerializerMethodField()
+    tasks=serializers.SerializerMethodField()
     # project_tasks=serializers.SerializerMethodField()
-    recent_activity=serializers.SerializerMethodField()
     admins=serializers.PrimaryKeyRelatedField(queryset=UserModel.objects.all(),many=True,required=False,write_only=True)
     project_admins=serializers.SerializerMethodField()
     workspace_name=serializers.SerializerMethodField()
     class Meta:
         model=models.Project
-        fields=['id','name','workspace','workspace_name','created_by','admins','project_admins','members','description','last_updated_task','updated_at']
-        read_only_fields=['created_by','project_admins','updated_at','workspace_name','last_updated_task']
+        fields=['id','name','workspace','workspace_name','created_by','admins','project_admins','members','description','tasks','updated_at']
+        read_only_fields=['created_by','project_admins','updated_at','workspace_name','tasks']
 
 
     def create(self, validated_data):
@@ -120,10 +127,11 @@ class ProjectSerializer(serializers.ModelSerializer):
         return UserSerializer(owner_admin_list,many=True,context=self.context).data
     def get_workspace_name(self,obj):
         return obj.workspace.name
-    def get_last_updated_task(self,obj):
+    def get_tasks(self,obj):
         current_user=self.context['request'].user
         task=obj.task_project.filter(Q(members=current_user) | Q(admins=current_user)).order_by('-updated_at')
-        return obj.task_project.values('id','title','description','updated_at') if task else None
+        return TaskSerializer(task,many=tree,context=self.context).data
+        # return obj.task_project.values('id','created_by','title','description','comments','updated_at') if task else None
 
 class InviteTokenSerializer(serializers.ModelSerializer):
     class Meta:
@@ -182,7 +190,7 @@ class WorkSpaceSerializer(serializers.ModelSerializer):
             return attrs
     def get_projects(self,obj):
         user=self.context['request'].user
-        user_project=obj.projects.filter(Q(admins=user)|Q(members=user))
+        user_project=obj.projects.filter(Q(admins=user)|Q(members=user)).order_by('-updated_at')
         # return ProjectSerializer(user_project,many=True,context=self.context).data if user_project else None
         return [{'id':project.id,'name':project.name,'description':project.description,'updated_at':project.updated_at} for project in user_project]
 

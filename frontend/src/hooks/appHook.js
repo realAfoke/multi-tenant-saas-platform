@@ -1,27 +1,29 @@
 import { useEffect } from "react";
 
-export function useAppHook(workspaces, wkName, setSelectedWorkspace, selectedWorkspace, projectName, setSelectedProject, tasks, id, setSelectedTask) {
+export function useAppHook(workspaces, wkName, setWorkspace, selectedWorkspace, project, projectName, setProject, taskId, setTask) {
 
 	useEffect(() => {
-		// console.log('got here nigga')
 		if (!workspaces || !wkName) return
 		const workspace = Object.values(workspaces ?? {}).find(wk => wk?.name == wkName)
 		if (workspace) {
-			setSelectedWorkspace({ id: workspace?.id, name: wkName, show: true })
+			setWorkspace({ id: workspace?.id, name: wkName, show: true })
 		}
 	}, [workspaces, wkName])
 
+	useEffect(() => {
+		const workspace = workspaces?.[selectedWorkspace?.id]
+		const { projects = {} } = workspace ?? {}
+		const project = Object.values(projects)?.find(obj => obj?.name === projectName)
+		if (!project || !projectName) return
+		setProject({ id: project?.id, name: project?.name, show: true })
+	}, [project, projectName, selectedWorkspace, workspaces])
 
 	useEffect(() => {
-		if (id) {
-			localStorage.setItem('id', id)
-		}
-		let storedId = localStorage.getItem('id')
-		if (!tasks || !storedId) return
-		const task = tasks?.[Number(storedId)]
+		if (!project || !taskId) return
+		const tasks = (project?.tasks) ?? []
+		const task = tasks?.find((tsk) => tsk?.title == taskId)
 		if (task) {
-			setSelectedTask({ id: task?.id, name: task?.title, show: true })
-			localStorage.removeItem('id')
+			setTask({ id: task?.id, title: task?.title, show: false })
 		}
-	}, [tasks, id])
+	}, [project, taskId])
 }

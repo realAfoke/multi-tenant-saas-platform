@@ -50,7 +50,12 @@ const routes = createBrowserRouter([
         path: ':wkName/:projectName', element: <ProjectRoute />, children: [
           { index: true, element: <ProjectOverview /> },
           { path: 'board', element: <Board /> },
+          { path: 'files', element: <Files /> },
+          { path: 'discussion', element: <Discussion /> },
         ]
+      },
+      {
+        path: ':wkName/:projectName/:taskId', element: <Task />,
       },
       {
         path: ':wkName/:prjName/add-new-task', element: <Create />
@@ -58,12 +63,8 @@ const routes = createBrowserRouter([
       {
         path: 'create-new-workspace', element: <Create />
       },
-      {
-        path: 'tasks', element: <Task />,
-      },
-      { path: 'discussion', element: <Discussion /> },
+
       { path: 'profile', element: <Profile /> },
-      { path: 'file', element: <Files /> },
       { path: 'setting', element: <Settings /> },
       { path: 'notification', element: <Notifications /> },
       { path: 'createtask', element: <CreateTask /> },

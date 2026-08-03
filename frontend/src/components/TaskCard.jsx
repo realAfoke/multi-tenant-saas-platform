@@ -4,11 +4,15 @@ import {
 	Paperclip,
 	CalendarDays,
 } from "lucide-react"
+import { useParams, useNavigate } from "react-router-dom"
+import { useAppState } from "@/hooks/apptools"
 
 export default function TaskCard({ task }) {
+	const { wkName, projectName } = useParams()
+	const { setTask } = useAppState()
+	const navigate = useNavigate()
 
 	return (
-
 		<Card
 			className="
 				bg-zinc-900
@@ -19,6 +23,10 @@ export default function TaskCard({ task }) {
 				cursor-pointer
 				hover:-translate-y-1
 			"
+			onClick={() => {
+				setTask(task)
+				navigate(`/dashboard/${wkName}/${projectName}/${task?.title}`)
+			}}
 		>
 
 			<CardContent className="p-5">
@@ -58,13 +66,13 @@ export default function TaskCard({ task }) {
 					<div className="flex items-center gap-2 text-zinc-400">
 
 						<div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-sm font-semibold text-white">
-							{task.assignee.charAt(0)}
+							{task?.assignee?.charAt(0)}
 						</div>
 
 						<div>
 
 							<p className="text-sm text-white">
-								{task.assignee}
+								{task?.assignee}
 							</p>
 
 							<div className="flex items-center gap-1 text-xs">
@@ -72,7 +80,7 @@ export default function TaskCard({ task }) {
 								<CalendarDays className="w-3 h-3" />
 
 								<span>
-									{task.dueDate}
+									{task?.dueDate}
 								</span>
 
 							</div>
@@ -85,20 +93,20 @@ export default function TaskCard({ task }) {
 
 						<div className="flex items-center gap-1">
 
-							<MessageCircle className="w-4 h-4" />
+							<MessageCircle className="w-4 h-4 text-white" />
 
-							<span className="text-xs">
-								{task.comments}
+							<span className="text-xs text-white">
+								{task?.comments}
 							</span>
 
 						</div>
 
 						<div className="flex items-center gap-1">
 
-							<Paperclip className="w-4 h-4" />
+							<Paperclip className="w-4 h-4 text-white" />
 
 							<span className="text-xs">
-								{task.attachments}
+								{task?.attachments}
 							</span>
 
 						</div>

@@ -15,6 +15,7 @@ export default function CreateProject() {
 	const { workspace } = useOutletContext()
 	const queryClient = useQueryClient()
 	const createProject = useMutation(createProjectMutationOption(queryClient))
+
 	return (
 		<div className="max-w-4xl mx-auto space-y-8 text-white">
 
@@ -137,7 +138,9 @@ export default function CreateProject() {
 							Cancel
 						</Button>
 
-						<Button className="rounded-xl bg-blue-500 hover:bg-blue-600 px-6" onClick={() => createProject.mutate({ wk: workspace?.id, data: { name: name, description: description } })}>
+						<Button className="rounded-xl bg-blue-500 hover:bg-blue-600 px-6" onClick={() => {
+							createProject.mutate({ wk: workspace?.id, data: { name: name, description: description } }, { onSuccess: () => navigate('../') })
+						}}>
 							Create Project
 						</Button>
 

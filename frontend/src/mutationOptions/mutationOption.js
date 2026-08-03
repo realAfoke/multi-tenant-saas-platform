@@ -14,17 +14,24 @@ export function createProjectMutationOption(queryClient) {
 			}
 		},
 		onSuccess: (newProject, { wk }) => {
-			queryClient.setQueryData([wk, 'projects'], (old) => {
+			queryClient.setQueryData(['workspace'], (old) => {
+				const workspaces = (old?.workspaces) ?? {}
+				const workspace = workspaces?.[wk] ?? {}
+				const projects = workspace?.projects ?? {}
+				const projectOrdering = workspace?.projectOrdering ?? []
 				return {
 					...old,
-					projects: {
-						...(old?.projects ?? {}),
-						[newProject?.id]: {
-							...(old?.projects?.[newProject?.id] ?? {}),
-							...newProject
+					workspaces: {
+						...workspaces,
+						[wk]: {
+							...workspace,
+							projects: {
+								...projects,
+								[newProject?.id]: newProject
+							},
+							projectOrdering: [...new Set([newProject?.id, ...(projectOrdering)])]
 						}
 					},
-					projectOrdering: [... new Set([newProject?.id, ...(old?.projectOrdering ?? [])])]
 				}
 			})
 		}

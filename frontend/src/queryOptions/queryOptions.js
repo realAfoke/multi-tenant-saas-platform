@@ -58,7 +58,7 @@ async function workspaceFn() {
 
 export function projectQueryOption(wkId, projectId) {
 	return queryOptions({
-		queryKey: [wkId, 'projects', projectId],
+		queryKey: [wkId, 'project', projectId],
 		queryFn: () => projectFn(wkId, projectId),
 		enabled: !!projectId,
 		// select: (data) => {
@@ -127,7 +127,8 @@ const getTaskComments = async (taskId) => {
 export function dasboardDataQueryOption(id) {
 	return queryOptions({
 		queryKey: ['dasboard', 'data', id],
-		queryFn: () => getDashboardData(id)
+		queryFn: () => getDashboardData(id),
+		enabled: !!id
 	})
 }
 
@@ -146,7 +147,8 @@ async function getDashboardData(id) {
 export function workspaceMemberQueryOption(id) {
 	return queryOptions({
 		queryKey: ['workspace', id, 'members'],
-		queryFn: () => getMembers(id)
+		queryFn: () => getMembers(id),
+		enabled: !!id
 	})
 }
 

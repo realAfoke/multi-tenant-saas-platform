@@ -5,7 +5,7 @@ import cog from "@/assets/project.svg"
 import edit from "@/assets/edit1.svg"
 import closeMenu from '@/assets/close.svg'
 import { Fragment, useState, useRef, useEffect } from "react"
-import { useNavigate, Link } from "react-router-dom"
+import { useNavigate, Link, useParams } from "react-router-dom"
 import profile from "@/assets/profileIcon.svg"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { workspaceQueryOption, taskQueryOption } from "@/queryOptions/queryOptions"
@@ -15,11 +15,12 @@ import { Button } from "./ui/button"
 export default function SideBar(props) {
 	const ref = useRef(null)
 	const { setToggle, handleToggleWorkspace, toggleWorkspace } = props
-	const { setWorkspace, setProject, setTask, selectedWorkspace, selectedProject } = useAppState()
+	const { setWorkspace, setProject, setTask, selectedWorkspace, selectedProject, selectedTask } = useAppState()
 	const [showOptions, setShowOptions] = useState(false)
 	const navigate = useNavigate()
 	const queryClient = useQueryClient()
 
+	const { wkName, projectName } = useParams()
 	const { data: userWorkspaces } = useQuery(workspaceQueryOption())
 	const { workspaces, ordering } = userWorkspaces ?? {}
 	const { projects, projectOrdering } = workspaces?.[selectedWorkspace?.id] ?? {}
@@ -33,7 +34,6 @@ export default function SideBar(props) {
 		if (!selectedWorkspace?.show) return
 		handleToggleWorkspace(false)
 	}, [selectedWorkspace?.show])
-
 
 	useEffect(() => {
 		if (!selectedProject) {
@@ -119,7 +119,7 @@ export default function SideBar(props) {
 								ordering?.map((id) => {
 									const main = workspaces?.[id]
 									return (
-										<NestedList key={main?.id} list={main} selectedWkId={selectedWorkspace} setter={setWorkspace} />)
+										<NestedList key={main?.id} list={main} isWorkspace={true} setter={setWorkspace} />)
 								})
 							}
 						</ItemGroup>
@@ -143,7 +143,7 @@ export default function SideBar(props) {
 							const project = projects?.[projectId]
 							return (
 								<Fragment key={project?.id}>
-									<NestedList key={project?.id} list={project} selectedPrjId={selectedProject} setter={setProject} />
+									<NestedList key={project?.id} list={project} isProject={true} setter={setProject} />
 									{
 										selectedProject?.id === project?.id &&
 										<ItemGroup className="gap-0 my-0 py-0 px-7">

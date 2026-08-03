@@ -8,6 +8,16 @@ import { useState } from "react"
 import User from "@/components/User"
 import { useLocation } from "react-router-dom"
 import { useAppState } from "@/hooks/apptools"
+// import Collapsible from "@/components/Collapsable"
+import {
+	PanelRightClose,
+	// PanelRightOpen,
+	// CalendarDays,
+	// CheckCircle2,
+	// Circle,
+	// Paperclip,
+} from "lucide-react"
+
 
 
 export default function Workspace() {
@@ -24,6 +34,16 @@ export default function Workspace() {
 	const ordering = projectOrdering?.length > 4 && !showMoreProject ? projectOrdering?.slice(0, 6) : projectOrdering
 	const { data: members } = useQuery(workspaceMemberQueryOption(workspace?.id))
 	let memberDisplay = members?.length > 5 && !showMoreMembers ? members?.slice(0, 5) : members
+
+
+
+	const tabs = [
+		{ id: "members", label: "Members" },
+		{ id: "requests", label: "Requests" },
+		{ id: "details", label: "Project Details" },
+	];
+
+	const [activeTab, setActiveTab] = useState("members");
 	return (
 		<div className="space-y-10">
 			<div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
@@ -42,7 +62,7 @@ export default function Workspace() {
 					New Project
 				</Button>
 			</div>
-			<div className={`grid  ${showMoreMembers ? 'grid-cols-1 md:grid-cols-[1.6fr_0.5fr]' : 'grid-cols-1'} gap-3 `}>
+			<div className={`grid  ${showMoreMembers ? 'grid-cols-1 md:grid-cols-[1.6fr_0.7fr]' : 'grid-cols-1'} gap-3 `}>
 				<div className={`${showMoreMembers ? 'hidden md:flex' : 'flex'} flex-col gap-5 `}>
 					<div>
 						<div className="flex items-center justify-between mb-5">
@@ -70,8 +90,17 @@ export default function Workspace() {
 								>
 									Archived
 								</Button>
+								<Button
+									variant="ghost"
+									size="icon"
+									className="text-zinc-500 hover:text-white"
+									onClick={() => setShowMoreMembers(prev => !prev)}
+								>
+									<PanelRightClose className="w-5 h-5" />
+								</Button>
 
 							</div>
+
 
 						</div>
 
@@ -198,19 +227,37 @@ export default function Workspace() {
 						}
 					</div>
 				</div>
-				{showMoreMembers && <div className="text-white bg-zinc-950 shadow-lg relative w-full px-3 border-2 border-gray-600 rounded-sm">
-					<div className="flex gap-2 absolute top-0 w-full left-0 p-3 bg-zinc-900">
-						<div>members</div>
-						<div>requests</div>
-					</div>
-					{showMoreMembers && (
-						<div className="mt-12 overflow-auto min-h-full">
-							{
-								memberDisplay?.map((member) => (<User key={member?.user?.id} member={member} />))
-							}
+				{showMoreMembers &&
+					<div className="w-full bg-zinc-900/50 overflow-y-auto">
+						<div className="flex border-b border-gray-700 bg-zinc-950">
+							{tabs.map((tab) => (
+								<button
+									key={tab.id}
+									onClick={() => setActiveTab(tab.id)}
+									className={`px-4 py-3 text-sm ${activeTab === tab.id
+										? "border-b-2 border-blue-500 text-white"
+										: "text-gray-400 hover:text-white"
+										}`}
+								>
+									{tab.label}
+								</button>
+							))}
 						</div>
-					)}
-				</div>
+
+						<div className="p-3 border-l border-zinc-800">
+							{activeTab === "members" && (
+								<div className="max-h-64 overflow-auto">
+									{memberDisplay?.map((member) => (
+										<User key={member.user.id} member={member} />
+									))}
+								</div>
+							)}
+
+							{activeTab === "requests" && <PendingRequests />}
+							{activeTab === "details" && <ProjectDetails />}
+						</div>
+					</div>
+
 				}
 			</div>
 			{location.pathname.includes('create-project') &&
@@ -223,4 +270,25 @@ export default function Workspace() {
 }
 
 
+// <div className="space-y-3">
+// 	<Collapsible title="Members" defaultOpen>
+// 		<div className="max-h-64 overflow-auto">
+// 			{memberDisplay?.map((member) => (
+// 				<User key={member.user.id} member={member} />
+// 			))}
+// 		</div>
+// 	</Collapsible>
+//
+// 	<Collapsible title="Project Details">
+// 		<ProjectDetails />
+// 	</Collapsible>
+//
+// 	<Collapsible title="Pending Requests">
+// 		<PendingRequests />
+// 	</Collapsible>
+//
+// 	<Collapsible title="Tasks">
+// 		<TaskList />
+// 	</Collapsible>
+// </div>
 

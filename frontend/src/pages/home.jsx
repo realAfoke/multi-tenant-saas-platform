@@ -1,7 +1,5 @@
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { useQuery } from "@tanstack/react-query"
-import { dasboardDataQueryOption, fetchUserQueryOption, workspaceQueryOption } from "@/queryOptions/queryOptions"
+import { fetchUserQueryOption, workspaceQueryOption } from "@/queryOptions/queryOptions"
 import { useOutletContext } from "react-router-dom"
 
 
@@ -9,7 +7,7 @@ export default function Home() {
 	const { data: workspaces } = useQuery(workspaceQueryOption())
 	const { data: user } = useQuery(fetchUserQueryOption())
 	const workspaceId = workspaces?.ordering[0]
-	const { data: assignedTasks } = useQuery(dasboardDataQueryOption(workspaceId))
+	// const { data: assignedTasks } = useQuery(dasboardDataQueryOption(workspaceId))
 	const { setToggle } = useOutletContext()
 	return (
 		<div className="mb-10">

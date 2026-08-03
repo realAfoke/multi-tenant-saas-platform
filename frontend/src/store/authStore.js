@@ -32,7 +32,7 @@ export const useAppStore = create(combine({
 	},
 	selectedTask: {
 		id: null,
-		name: '',
+		title:'',
 		show: false
 	}
 }

@@ -50,17 +50,10 @@ export function createTaskMutationOption(queryClient) {
 			}
 		},
 		onSuccess: (newTask, { wk, prjId }) => {
-			queryClient.setQueryData([wk, prjId, 'tasks'], (old) => {
+			queryClient.setQueryData([wk, 'project', prjId], (old) => {
 				return {
-					...(old ?? {}),
-					tasks: {
-						...(old?.tasks ?? {}),
-						[newTask?.id]: {
-							...(old?.tasks?.[newTask?.id] ?? {}),
-							...newTask
-						}
-					},
-					taskOrdering: [... new Set([newTask?.id, ...(old?.taskOrdering ?? [])])]
+					...old,
+					tasks: [newTask, ...(old?.tasks ?? [])]
 				}
 			})
 		}

@@ -9,19 +9,31 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { createTaskMutationOption } from "@/mutationOptions/mutationOption"
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 
-export default function CreateTask() {
+export default function CreateTask({ project, handleCreateTask }) {
+	const navigate = useNavigate()
+	const queryClient = useQueryClient()
+	const [title, setTitle] = useState('')
+	const [description, setDescription] = useState('')
+	const createTask = useMutation(createTaskMutationOption(queryClient))
+
 	return (
 		<div className="max-w-5xl mx-auto space-y-8 text-white">
 
 			<div>
-				<button className="flex items-center gap-2 text-zinc-500 hover:text-white transition mb-5">
+				<button className="flex items-center gap-2 text-zinc-500 hover:text-white transition mb-5" onClick={() => {
+					handleCreateTask(false)
+				}}>
 					<ArrowLeft className="w-4 h-4" />
 					Back
 				</button>
 
 				<p className="text-blue-400 text-sm font-medium">
-					Landing Page Redesign
+					{project?.name}
 				</p>
 
 				<h1 className="text-3xl font-bold mt-2">
@@ -42,8 +54,10 @@ export default function CreateTask() {
 						</label>
 
 						<Input
+							value={title}
+							onChange={(e) => setTitle(e.target.value)}
 							placeholder="e.g. Implement authentication API"
-							className="mt-2 h-12 bg-zinc-950 border-zinc-800 text-white placeholder:text-zinc-600"
+							className="mt-2 px-5 h-12 bg-zinc-950 border-zinc-800 text-white placeholder:text-zinc-600"
 						/>
 					</div>
 
@@ -56,6 +70,8 @@ export default function CreateTask() {
 							rows={6}
 							placeholder="Describe what needs to be done..."
 							className="mt-2 w-full rounded-xl bg-zinc-950 border border-zinc-800 text-white placeholder:text-zinc-600 outline-none p-4 resize-none focus:border-blue-500"
+							value={description}
+							onChange={(e) => setDescription(e.target.value)}
 						/>
 					</div>
 
@@ -191,7 +207,20 @@ export default function CreateTask() {
 							Cancel
 						</Button>
 
-						<Button className="rounded-xl bg-blue-500 hover:bg-blue-600 px-6">
+						<Button className="rounded-xl bg-blue-500 hover:bg-blue-600 px-6" onClick={() => {
+							createTask.mutate({
+								wk: project?.workspace, prjId: project?.id, data: {
+									title: title,
+									description: description
+								}
+							},
+								{
+									onSuccess: () => {
+										navigate('board')
+										handleCreateTask(false)
+									}
+								})
+						}}>
 							Create Task
 						</Button>
 

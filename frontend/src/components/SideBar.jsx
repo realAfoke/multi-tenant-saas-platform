@@ -53,7 +53,7 @@ export default function SideBar(props) {
 		return () => { document.removeEventListener('click', handleClick) }
 	}, [])
 	return (
-		<div ref={ref} className={`py-3 flex h-full flex-col absolute text-white bg-[#000] shadow-lg border-r border-[#f6f3f438] px-2 min-w-60 md:relative md:min-w-[17rem] `}>
+		<div ref={ref} className={`py-3 flex h-full flex-col absolute text-white bg-[#000] shadow-lg border-r border-[#f6f3f438] px-2 min-w-60 md:relative md:min-w-[20rem] `}>
 			<div className="border-b border-zinc-800 pb-6">
 
 				<div className="flex justify-between items-start">

@@ -51,13 +51,24 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class TaskSerializer(serializers.ModelSerializer):
     # members=UserSerializer(many=True,read_only=True)
-    created_by=UserSerializer()
+    created_by=UserSerializer(read_only=True)
     comments=serializers.SerializerMethodField()
     # comment_task=CommentSerializer(many=True,read_only=True)
     class Meta:
         model=models.Task
-        fields=['id','title','project','workspace','description','created_by','comments']
-        read_only_fields=['created_by','comments']
+        fields=[
+                'id',
+                'title',
+                'project',
+                'workspace',
+                'description',
+                'created_by',
+                'comments'
+                ]
+        read_only_fields=[
+                'created_by',
+                'comments'
+                ]
         # fields="__all__"
     # def create(self, validated_data):
     #     logger.info('validated_data:',validated_data)

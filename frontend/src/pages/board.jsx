@@ -99,7 +99,7 @@ export default function Board() {
 					{tasks?.map(task => {
 						return (
 							<TaskCard
-								key={task.id}
+								key={task?.id}
 								task={task}
 							/>
 						)

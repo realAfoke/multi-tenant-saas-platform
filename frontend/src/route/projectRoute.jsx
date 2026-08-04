@@ -8,6 +8,7 @@ import { useNavigate, useLocation } from "react-router-dom"
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import User from "@/components/User"
+import CreateTask from "@/components/CreateTask";
 
 export default function ProjectRoute() {
 	const [selected, setSelected] = useState('overview')
@@ -23,6 +24,7 @@ export default function ProjectRoute() {
 	const [activeTab, setActiveTab] = useState("members");
 	const { members } = project ?? []
 	let memberDisplay = members?.length > 5 && !showMoreMembers ? members?.slice(0, 5) : members
+	const [toggleCreateTask, setToggleCreateTask] = useState(false)
 
 	const mainTabs = ['board', 'files', 'discussion', 'timeline']
 
@@ -75,7 +77,7 @@ export default function ProjectRoute() {
 						{project?.description}
 					</p>
 				</div>
-				<Button className="rounded-xl capitalize bg-blue-500 hover:bg-blue-600 h-11 px-6" onClick={() => navigate('create-project')}>
+				<Button className="rounded-xl capitalize bg-blue-500 hover:bg-blue-600 h-11 px-6" onClick={() => setToggleCreateTask(prev => !prev)}>
 					New Task
 				</Button>
 
@@ -156,6 +158,10 @@ export default function ProjectRoute() {
 				}
 			</div>
 
+			{toggleCreateTask && <div className={`overflow-auto h-screen absolute top-0 w-full left-0 backdrop-blur-sm bg-[rgba(0,0,0,0.4)] p-5`}>
+				<CreateTask project={project} handleCreateTask={setToggleCreateTask} />
+			</div>
+			}
 		</div >
 	)
 }

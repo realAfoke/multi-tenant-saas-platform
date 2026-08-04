@@ -12,9 +12,6 @@ export default function ProjectOverview() {
 	const lastUpdatedTask = (project?.tasks) ?? []
 	const lastUpdated = dateFormatter(lastUpdatedTask[0]?.updatedAt)
 
-
-
-
 	return (
 		<div className="space-y-8">
 			<div className={`${showMoreMembers ? 'hidden md:flex' : 'flex'} flex-col gap-5`}>

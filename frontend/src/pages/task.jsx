@@ -7,13 +7,15 @@ import {
 	CheckCircle2,
 	Circle,
 	Paperclip,
+	Send,
 } from "lucide-react"
 import { ItemGroup } from "@/components/ui/item"
 import { Input } from "@/components/ui/input"
 import { useAppState } from "@/hooks/apptools"
 import { commentQueryOption, projectQueryOption } from "@/queryOptions/queryOptions"
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import Comments from "@/components/Comments"
+import { addCommentMutationOption } from "@/mutationOptions/mutationOption"
 
 export default function Task() {
 	// keep all your existing logic above this point
@@ -25,6 +27,9 @@ export default function Task() {
 	const [showDetails, setShowDetails] = useState(true)
 	const [content, setContent] = useState('')
 	const { data: comments } = useQuery(commentQueryOption(selectedTask?.id))
+	const queryClient = useQueryClient()
+
+	const addComment = useMutation(addCommentMutationOption(queryClient))
 
 	return (
 		<div className="h-screen overflow-y-auto bg-zinc-950 text-white flex -mt-25">
@@ -143,6 +148,7 @@ export default function Task() {
 									}}
 									className="h-14 w-14 shrink-0 rounded-xl bg-blue-500 hover:bg-blue-600"
 								>
+									<Send className="w-4 h-4" />
 								</Button>
 
 							</div>

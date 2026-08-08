@@ -78,3 +78,54 @@ export function addCommentMutationOption(queryClient) {
 
 	})
 }
+export function updateProjectMutationOption(queryClient) {
+	return mutationOptions({
+		mutationFn: async ({ wk, prjId, data }) => {
+			try {
+				const update = await instance.patch(`workspaces/${wk}/project/${prjId}/`, { ...data, workspace: wk })
+				return update?.data
+
+			} catch (error) {
+				console.error(error)
+
+			}
+		},
+		onSuccess: (updatedObj, { prjId, wk }) => {
+			queryClient.setQueryData(['workspace'], (old) => {
+				const workspaces = old?.workspaces ?? {}
+				const workspace = workspaces?.[wk] ?? {}
+				return {
+					...old ?? {},
+					workspaces: {
+						...workspaces,
+						[wk]: {
+							...workspace,
+							projects: {
+								...(workspace?.projects ?? {}),
+								[prjId]: {
+									...(workspace?.projects?.[prjId] ?? {}),
+									...updatedObj
+								}
+							}
+						}
+					}
+				}
+			})
+		}
+	})
+}
+
+
+export function addMemberMutationOption() {
+	return mutationOptions({
+		mutationFn: async () => {
+			try {
+				const inviteSent = await instance.post(`workspaces/${wk}/invite/`, { ...data })
+				return inviteSent?.data
+			} catch (error) {
+				console.error(error)
+				throw Error(error)
+			}
+		}
+	})
+}

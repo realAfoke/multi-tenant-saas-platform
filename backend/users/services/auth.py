@@ -26,8 +26,7 @@ def verify_email(model,request):
     return {"status":"otp sent to provided email"}
 
 def verify_otp(key,value):
-    otp_key=f'otp:{key}'
-    print('OTP:',otp_key)
+    otp_key=f'otp:{key}'  ##email or phone
     otp=cache.get(otp_key)
     if otp != value:
         raise ValidationError('otp is invalid')

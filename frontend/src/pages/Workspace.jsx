@@ -17,12 +17,13 @@ import {
 	// Circle,
 	// Paperclip,
 } from "lucide-react"
-
+import { Input } from "@/components/ui/input"
 
 
 export default function Workspace() {
 	const { selectedWorkspace } = useAppState()
 	const navigate = useNavigate()
+	const [filter, setFilter] = useState('all')
 	const location = useLocation()
 	const [showMoreProject, setShowMoreProject] = useState(false)
 	const [showMoreMembers, setShowMoreMembers] = useState(false)
@@ -30,12 +31,14 @@ export default function Workspace() {
 	const { data: allWorkspace } = useQuery(workspaceQueryOption())
 	const { workspaces } = allWorkspace ?? {}
 	const workspace = workspaces?.[selectedWorkspace?.id]
+	// console.log('workspace:', workspace)
 	let { projects, projectOrdering } = workspace ?? {}
-	const ordering = projectOrdering?.length > 4 && !showMoreProject ? projectOrdering?.slice(0, 6) : projectOrdering
+	// const projects
+	let ordering = projectOrdering?.filter((projectId) => filter === 'all' || projects?.[projectId]?.status === filter)
+
+	ordering = ordering?.length > 4 && !showMoreProject ? ordering?.slice(0, 6) : ordering
 	const { data: members } = useQuery(workspaceMemberQueryOption(workspace?.id))
 	let memberDisplay = members?.length > 5 && !showMoreMembers ? members?.slice(0, 5) : members
-
-
 
 	const tabs = [
 		{ id: "members", label: "Members" },
@@ -73,6 +76,8 @@ export default function Workspace() {
 								<Button
 									variant="secondary"
 									className="rounded-xl bg-zinc-900 text-green-500 hover:bg-zinc-800"
+
+									onClick={() => setFilter('all')}
 								>
 									All
 								</Button>
@@ -80,6 +85,7 @@ export default function Workspace() {
 								<Button
 									variant="ghost"
 									className="rounded-xl text-zinc-400 hover:text-blue-500"
+									onClick={() => setFilter('active')}
 								>
 									Active
 								</Button>
@@ -87,6 +93,8 @@ export default function Workspace() {
 								<Button
 									variant="ghost"
 									className="rounded-xl text-zinc-400 hover:text-blue-500"
+
+									onClick={() => setFilter('archived')}
 								>
 									Archived
 								</Button>
@@ -106,10 +114,8 @@ export default function Workspace() {
 
 						<div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-6">
 
-							{ordering?.map((projectId) => {
-								const project = projects?.[projectId]
-								return (<Grid key={project?.id} project={project} />)
-							})}
+							{ordering?.map((projectId) => (<Grid key={projectId} project={projects?.[projectId]} />))
+							}
 							{projectOrdering?.length > 6 &&
 								(
 									<Button className="text-gray-400 justify-self-end col-span-full" onClick={() => setShowMoreProject(prev => !prev)}>{showMoreProject ? 'show less' : 'show more'}</Button>
@@ -119,7 +125,7 @@ export default function Workspace() {
 
 					</div>
 
-					<div className={`grid ${showMoreMembers ? 'xl:grid-cols-1' : 'xl:grid-cols-[1.4fr_0.8fr]'} gap-6`}>
+					<div className={`grid ${showMoreMembers ? 'xl:grid-cols-1' : 'xl:grid-cols-[1.4fr_0.8fr]'} gap-6 overflow-hidden`}>
 
 						<Card className="bg-zinc-900 border-zinc-800">
 
@@ -228,8 +234,8 @@ export default function Workspace() {
 					</div>
 				</div>
 				{showMoreMembers &&
-					<div className="w-full bg-zinc-900/50 overflow-y-auto">
-						<div className="flex border-b border-gray-700 bg-zinc-950">
+					<div className="w-1/3 bg-zinc-900/50 pt-5 absolute bottom-0 backdrop-blur-sm bg-[rgba(0,0,0,0.5)] h-full overflow-hidden right-0">
+						<div className="flex border-b border-gray-700 bg-zinc-950 ">
 							{tabs.map((tab) => (
 								<button
 									key={tab.id}
@@ -245,8 +251,14 @@ export default function Workspace() {
 						</div>
 
 						<div className="p-3 border-l border-zinc-800">
+							<div>
+								<div className="flex gap-2">
+									<Input className="p-4 h-10 rounded-sm text-white" placeholder="Enter email to send an invite" />
+									<Button className="text-white p-4">send</Button>
+								</div>
+							</div>
 							{activeTab === "members" && (
-								<div className="max-h-64 overflow-auto">
+								<div className="max-h-64 overflow-auto my-5">
 									{memberDisplay?.map((member) => (
 										<User key={member.user.id} member={member} />
 									))}
@@ -262,7 +274,7 @@ export default function Workspace() {
 			</div>
 			{location.pathname.includes('create-project') &&
 				<div className="overflow-auto h-screen absolute top-0 w-full left-0 backdrop-blur-sm bg-[rgba(0,0,0,0.4)] p-5">
-					<Outlet context={{ workspace }} />
+					<Outlet context={{ workspace, members }} />
 				</div>
 			}
 		</div>

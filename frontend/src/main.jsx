@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import Login from './pages/login.jsx'
+import Login, { loader as loginLoader } from './pages/login.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 import './index.css'
 import Workspace from './pages/Workspace.jsx'
@@ -24,13 +24,25 @@ import CreateProject from './components/CreateProject.jsx'
 import CreateTask from './components/CreateTask.jsx'
 import Checkout from './pages/checkout.jsx'
 import ProjectRoute from './route/projectRoute.jsx'
+import SignUp, { loader as signUpLoader } from './pages/signup.jsx'
+import SignEmail from './components/SignEmail.jsx'
+import VerifyEmail from './components/VerifyEmail.jsx'
+import AccountDetails from './components/AccountDetails.jsx'
+
 
 
 const queryClient = new QueryClient()
 
 const routes = createBrowserRouter([
   {
-    path: 'login', element: <Login />, errorElement: <ErrorPage />,
+    path: 'signup', element: <SignUp />, loader: signUpLoader, children: [
+      { index: true, element: <SignEmail /> },
+      { path: 'otp-verification', element: <VerifyEmail /> },
+      { path: 'account-detail', element: <AccountDetails /> }
+    ]
+  },
+  {
+    path: 'login', element: <Login />, errorElement: <ErrorPage />, loader: loginLoader
   },
   { path: '/', element: <LandingPage /> },
   { path: '/pricing', element: <Pricing /> },

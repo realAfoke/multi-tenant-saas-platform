@@ -61,7 +61,7 @@ class WorkSpaceMembers(generics.ListAPIView):
     serializer_class=MembershipSerializer
 
     def get_queryset(self):
-        return models.Membership.objects.filter(workspace=self.kwargs.get('pk'))
+        return models.Membership.objects.filter(workspace=self.kwargs.get('wk'))
     
 class WorkSpaceDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset=models.WorkSpace.objects.all()
@@ -79,10 +79,10 @@ class Project(generics.ListCreateAPIView):
     permission_classes=[IsWorkspaceAdminOrSuperAdmin]
 
     def get_queryset(self):
-        return models.Project.objects.filter(workspace=self.kwargs.get('wk'))
+        return models.Project.objects.filter(workspace=self.kwargs.get('wk'),members=self.request.user)
 
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
+        serializer.save(created_by=self.request.user,project_members=self.request.data.get('project_members'))
 
 
 class ProjectDetail(generics.RetrieveUpdateDestroyAPIView):

@@ -1,6 +1,6 @@
 import { useAppState } from "@/hooks/apptools";
 import { projectQueryOption, workspaceQueryOption } from "@/queryOptions/queryOptions";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Outlet, useParams, Link } from "react-router-dom";
 import { useEffect } from "react";
 import { PanelRightCloseIcon } from "lucide-react"
@@ -9,11 +9,14 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import User from "@/components/User"
 import CreateTask from "@/components/CreateTask";
+import { Input } from "@/components/ui/input";
+import { addMemberMutationOption } from "@/mutationOptions/mutationOption";
 
 export default function ProjectRoute() {
 	const [selected, setSelected] = useState('overview')
 	const navigate = useNavigate()
 	const location = useLocation()
+	const [email, setEmail] = useState('')
 	const pathNames = location.pathname.split('/').filter((ptName) => ptName != '')
 	const { projectName } = useParams()
 	const { selectedWorkspace, setProject, selectedProject } = useAppState()
@@ -52,6 +55,8 @@ export default function ProjectRoute() {
 		}
 
 	}, [workspaces, selectedWorkspace, projectName])
+
+	const sendInvite = useMutation(addMemberMutationOption())
 	return (
 		<div className="space-y-8">
 			<div className="flex justify-between items-center">
@@ -121,13 +126,14 @@ export default function ProjectRoute() {
 
 			</div>
 
-			<div className="flex gap-2 ">
-				<div className="flex-2">
+			<div className={`grid  ${showMoreMembers ? 'grid-cols-1 md:grid-cols-[1.6fr_0.7fr]' : 'grid-cols-1'} gap-3 `}>
+				<div className="flex-1">
 					<Outlet context={{ project, showMoreMembers, memberDisplay, members }} />
 				</div>
+
 				{showMoreMembers &&
-					<div className="flex-1 bg-zinc-900/50 overflow-y-auto">
-						<div className="flex border-b border-gray-700 bg-zinc-950">
+					<div className="w-1/3 bg-zinc-900/50 pt-5 absolute bottom-0 backdrop-blur-sm bg-[rgba(0,0,0,0.5)] h-full overflow-hidden right-0">
+						<div className="flex border-b border-gray-700 bg-zinc-950 ">
 							{tabs.map((tab) => (
 								<button
 									key={tab.id}
@@ -143,10 +149,25 @@ export default function ProjectRoute() {
 						</div>
 
 						<div className="p-3 border-l border-zinc-800">
+							<div>
+								<div className="flex gap-2">
+									<Input className="p-4 h-10 rounded-sm text-white" placeholder="Enter email to send an invite" value={email} onChange={(e) => setEmail(e.target.value)} />
+									<Button className="text-white p-4"
+										onClick={() => sendInvite(
+											{
+												wk: selectedWorkspace?.id,
+												data: {
+													project: project?.id,
+													email: email
+												}
+											}
+										)}>send</Button>
+								</div>
+							</div>
 							{activeTab === "members" && (
-								<div className="max-h-64 overflow-auto">
+								<div className="max-h-64 overflow-auto my-5">
 									{memberDisplay?.map((member) => (
-										<User key={member?.user?.id} member={member} />
+										<User key={member.user.id} member={member} />
 									))}
 								</div>
 							)}
@@ -155,7 +176,9 @@ export default function ProjectRoute() {
 							{activeTab === "details" && <ProjectDetails />}
 						</div>
 					</div>
+
 				}
+
 			</div>
 
 			{toggleCreateTask && <div className={`overflow-auto h-screen absolute top-0 w-full left-0 backdrop-blur-sm bg-[rgba(0,0,0,0.4)] p-5`}>
@@ -165,3 +188,38 @@ export default function ProjectRoute() {
 		</div >
 	)
 }
+
+
+
+// {showMoreMembers &&
+// 	<div className="flex-1 bg-zinc-900/50 overflow-y-auto">
+// 		<div className="flex border-b border-gray-700 bg-zinc-950">
+// 			{tabs.map((tab) => (
+// 				<button
+// 					key={tab.id}
+// 					onClick={() => setActiveTab(tab.id)}
+// 					className={`px-4 py-3 text-sm ${activeTab === tab.id
+// 						? "border-b-2 border-blue-500 text-white"
+// 						: "text-gray-400 hover:text-white"
+// 						}`}
+// 				>
+// 					{tab.label}
+// 				</button>
+// 			))}
+// 		</div>
+//
+// 		<div className="p-3 border-l border-zinc-800">
+// 			{activeTab === "members" && (
+// 				<div className="max-h-64 overflow-auto">
+// 					{memberDisplay?.map((member) => (
+// 						<User key={member?.user?.id} member={member} />
+// 					))}
+// 				</div>
+// 			)}
+//
+// 			{activeTab === "requests" && <PendingRequests />}
+// 			{activeTab === "details" && <ProjectDetails />}
+// 		</div>
+// 	</div>
+// }
+

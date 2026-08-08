@@ -1,15 +1,20 @@
-import { MoreHorizontal } from "lucide-react"
+import { MoreHorizontal, Check } from "lucide-react"
 
 const User = (props) => {
 	const { member = {} } = props
 	const { user, role } = member
+	const addUserToProject = props?.addUserToProject ?? {}
+	const projectMembers = props?.projectMembers ?? []
 	const fullName = `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim()
 	const initials = `${user?.firstName?.[0] ?? ""}${user?.lastName?.[0] ?? ""}`.toUpperCase()
-	const isOnline=true
+	const isOnline = true
 
 	return (
-		<div className="flex items-center gap-3 p-3 rounded-xl hover:bg-zinc-800/60 transition-colors group">
+		<div className="flex items-center gap-3 p-3 rounded-xl hover:bg-zinc-800/60 transition-colors group" onClick={() => addUserToProject((prev) => {
+			return prev.includes(user?.id) ? prev.filter(id => id != user?.id) : [...prev, user?.id]
+		})}>
 			{/* Profile picture */}
+			{projectMembers.includes(user?.id) && <Check className="w-4 h-4" />}
 			<div className="relative shrink-0">
 				{user?.profilePic ? (
 					<img src={user.profilePic} alt={fullName} className="w-11 h-11 rounded-full object-cover" />

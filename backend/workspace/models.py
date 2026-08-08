@@ -52,6 +52,7 @@ class Project(models.Model):
     admins=models.ManyToManyField(UserModel,related_name='project_admins')
     members=models.ManyToManyField(UserModel,related_name='project_members')
     description=models.TextField()
+    status=models.CharField(max_length=200,blank=True,default='active')
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
 

@@ -9,12 +9,14 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.views import TokenRefreshView
 from users.api.serializers import UserSerializer,LoginSerializer
+import logging
  
 
 # Create your views here.
 
-
 User=get_user_model()
+
+logger=logging.getLogger(__name__)
 
 
 class SignUpView(generics.CreateAPIView):
@@ -89,6 +91,14 @@ class LoginView(TokenObtainPairView):
                 max_age=60*60*24*7
                 )
         return response
+
+
+@api_view(['POST'])
+def logout(request):
+        respone=Response({"message":"logout"})
+        respone.delete_cookie("access")
+        respone.delete_cookie("refresh")
+        return respone
 
 class RefreshTokenView(TokenRefreshView):
         def post(self, request: Request, *args, **kwargs) -> Response:

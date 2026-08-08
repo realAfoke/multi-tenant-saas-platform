@@ -14,7 +14,6 @@ UserModel=get_user_model()
 class CustomAuthentication(ModelBackend):
     # def authenticate(self, request, email=None,phone=None password=None, **kwargs):
     def authenticate(self, request, username=None, password=None, **kwargs):
-        print('HI INSIDE HERE BRO')
         email=kwargs.get('email',username)
         phone=kwargs.get('phone',username)
         if not password or len(password.strip()) == 0:

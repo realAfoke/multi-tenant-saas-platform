@@ -44,8 +44,8 @@ instance.interceptors.response.use((resp) => (resp), async (e) => {
 			processFailedRequest()
 			return instance(config)
 		} catch (error) {
-			console.log('logging error:',error)
-			console.error('MeError:',error)
+			console.log('logging error:', error)
+			console.error('MeError:', error)
 			if (window.location.pathname === '/login') {
 				console.log('inside here now from me')
 				return Promise.reject(e)
@@ -56,5 +56,5 @@ instance.interceptors.response.use((resp) => (resp), async (e) => {
 			isRefreshing = false
 		}
 	}
-
+	return Promise.reject(e)
 })

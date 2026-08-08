@@ -1,3 +1,4 @@
+from os import write
 from rest_framework import serializers
 from django.contrib.auth import get_user_model,authenticate
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer 
@@ -5,20 +6,33 @@ from rest_framework.exceptions import AuthenticationFailed
 from typing import Any
 from django.core.cache import cache
 from rest_framework.exceptions import ValidationError
+from workspace.models import WorkSpace,Membership
+import logging
+
 
 
 User=get_user_model()
 
+logger=logging.getLogger(__name__)
+
 
 class UserSerializer(serializers.ModelSerializer):
     password=serializers.CharField(write_only=True)
+    workspace=serializers.CharField(write_only=True,required=False)
+    first_name=serializers.CharField(required=True)
+    last_name=serializers.CharField(required=True)
+    email=serializers.EmailField(required=True)
     class Meta:
         model=User
-        fields=['id','password','email','phone','first_name','last_name','username']
-        read_only_fields=['phone','first_name','last_name','username']
+        fields=['id','password','email','phone','first_name','last_name','username','workspace']
+        read_only_fields=['phone','username']
 
     def create(self, validated_data):
+        workspace=validated_data.pop('workspace',None)
         user=User.objects.create_user(**validated_data)
+        if workspace:
+            workspace=WorkSpace.objects.create(name=workspace)
+            Membership.objects.create(workspace=workspace,user=user,role='owner')
         return user
 
     def validate(self, attrs):

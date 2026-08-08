@@ -100,7 +100,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     workspace_name=serializers.SerializerMethodField()
     class Meta:
         model=models.Project
-        fields=['id','name','workspace','workspace_name','created_by','admins','project_admins','members','description','tasks','updated_at']
+        fields=['id','name','status','workspace','workspace_name','created_by','admins','project_admins','members','description','tasks','updated_at']
         read_only_fields=['created_by','project_admins','updated_at','workspace_name','tasks']
 
 
@@ -108,22 +108,32 @@ class ProjectSerializer(serializers.ModelSerializer):
         if '_existing' in validated_data:
             return validated_data['_existing']
         workspace=validated_data['workspace']
+        members=validated_data.pop('project_members',[])
         member=workspace.membership.filter(workspace=workspace,role='owner').first()
         owner=member.user
         project=super().create(validated_data)
         project.admins.add(owner,validated_data['created_by'])
+        project.members.add(validated_data['created_by'],*members)
         return project
 
 
     def validate(self, attrs):
+        # if self.instance:
+        #     # remember to write real update validation later
+        #     logger.info(f'attrs:{attrs}')
+        #     return attrs
         current_user=self.context['request'].user
-        workspace=attrs['workspace']
+        workspace=attrs.get('workspace')
         if not workspace.membership.filter(user=current_user,role__in=['owner','admin']).exists():
             raise PermissionDenied('you dont have permission to perform this operation')
         existing=models.Project.objects.filter(workspace=workspace,name=attrs.get('name'),created_by=current_user).first()
         if existing:
             attrs['_existing']=existing
         return attrs
+
+    # def update(self, instance, validated_data):
+    #     logger.info(f'data:{validated_data}')
+    #     return super().update(instance, validated_data)
 
     def get_project_admins(self,obj):
         current_user=self.context['request'].user
@@ -203,7 +213,7 @@ class WorkSpaceSerializer(serializers.ModelSerializer):
         user=self.context['request'].user
         user_project=obj.projects.filter(Q(admins=user)|Q(members=user)).order_by('-updated_at')
         # return ProjectSerializer(user_project,many=True,context=self.context).data if user_project else None
-        return [{'id':project.id,'name':project.name,'description':project.description,'updated_at':project.updated_at} for project in user_project]
+        return [{'id':project.id,'name':project.name,'status':project.status,'description':project.description,'updated_at':project.updated_at} for project in user_project]
 
    
 # class FileSerializer(serializers.ModelSerializer):

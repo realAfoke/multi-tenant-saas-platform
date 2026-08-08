@@ -1,22 +1,37 @@
 import { Camera, Mail, Shield, CreditCard, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { LogOutIcon } from "lucide-react"
+import { instance } from "@/api/axios"
+import { useMutation } from "@tanstack/react-query"
 
 export default function Profile() {
 
+	const logout = useMutation({
+		mutationFn: async () => {
+			const logoutUser = await instance.post('users/logout/', {})
+			return logoutUser?.data
+		}
+	})
+
 	return (
-		<div className="space-y-8 max-w-5xl text-white">
+		<div className="space-y-8 max-w-5xl text-white flex-1">
 
-			<div>
-				<h1 className="text-3xl font-bold">
-					Profile
-				</h1>
+			<div className="flex justify-between">
+				<div>
+					<h1 className="text-3xl font-bold">
+						Profile
+					</h1>
 
-				<p className="text-zinc-400 mt-2">
-					Manage your personal information and account settings.
-				</p>
+					<p className="text-zinc-400 mt-2">
+						Manage your personal information and account settings.
+					</p>
+				</div>
+
+				<button className="bg-red-400 h-10 p-5 flex items-center rounded-md" onClick={() => logout.mutate()}>
+					<LogOutIcon className="text-white" />
+				</button>
 			</div>
-
 			{/* Profile */}
 
 			<Card className="bg-zinc-900 border-zinc-800">

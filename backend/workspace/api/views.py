@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework import permissions
 from workspace import models
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.views import APIView
 from rest_framework import permissions
 # from workspace.services.workspace import create_work_space
 from channels.layers import get_channel_layer
@@ -129,11 +130,11 @@ class Comment(generics.ListCreateAPIView):
 #         return self.instance_model.object.all()
 #
 #
-@api_view(['POST'])
-@permission_classes([IsWorkspaceAdminOrSuperAdmin])
-def send_invite_fun(request):
-    link=send_invite(request)
-    return Response(link)
+class SendInvite(APIView):
+    permission_classe=[IsWorkspaceAdminOrSuperAdmin]
+    def post(self,request,*args,**kwargs):
+        link=send_invite(request)
+        return Response(link)
 
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])

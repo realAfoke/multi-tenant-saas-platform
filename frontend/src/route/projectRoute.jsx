@@ -10,7 +10,7 @@ import { useState } from "react";
 import User from "@/components/User"
 import CreateTask from "@/components/CreateTask";
 import { Input } from "@/components/ui/input";
-import { addMemberMutationOption } from "@/mutationOptions/mutationOption";
+import { instance } from "@/api/axios";
 
 export default function ProjectRoute() {
 	const [selected, setSelected] = useState('overview')
@@ -27,7 +27,9 @@ export default function ProjectRoute() {
 	const [activeTab, setActiveTab] = useState("members");
 	const { members } = project ?? []
 	let memberDisplay = members?.length > 5 && !showMoreMembers ? members?.slice(0, 5) : members
+	const [sent, setSent] = useState(false)
 	const [toggleCreateTask, setToggleCreateTask] = useState(false)
+
 
 	const mainTabs = ['board', 'files', 'discussion', 'timeline']
 
@@ -44,6 +46,7 @@ export default function ProjectRoute() {
 			setSelected(pathNames[pathNames.length - 1])
 		}
 	}, [pathNames])
+
 	useEffect(() => {
 
 		if (!selectedWorkspace || !projectName) return
@@ -56,7 +59,22 @@ export default function ProjectRoute() {
 
 	}, [workspaces, selectedWorkspace, projectName])
 
-	const sendInvite = useMutation(addMemberMutationOption())
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			setSent(false)
+		}, [5000])
+		return () => clearTimeout(timer)
+	}, [sent])
+
+	const sendInvite = useMutation({
+		mutationFn: async () => {
+			const inviteSent = await instance.post(`workspaces/${project?.workspace}/invite/`, { email: email, project: project?.id })
+			return inviteSent?.data
+		},
+		onSuccess: () => {
+			setSent(true)
+		}
+	})
 	return (
 		<div className="space-y-8">
 			<div className="flex justify-between items-center">
@@ -152,16 +170,8 @@ export default function ProjectRoute() {
 							<div>
 								<div className="flex gap-2">
 									<Input className="p-4 h-10 rounded-sm text-white" placeholder="Enter email to send an invite" value={email} onChange={(e) => setEmail(e.target.value)} />
-									<Button className="text-white p-4"
-										onClick={() => sendInvite(
-											{
-												wk: selectedWorkspace?.id,
-												data: {
-													project: project?.id,
-													email: email
-												}
-											}
-										)}>send</Button>
+									<Button className={`${sent ? 'bg-green-400 p-2' : ''} text-white p-4`}
+										onClick={() => sendInvite.mutate()}>{sent ? 'sent' : 'send'}</Button>
 								</div>
 							</div>
 							{activeTab === "members" && (
@@ -189,37 +199,4 @@ export default function ProjectRoute() {
 	)
 }
 
-
-
-// {showMoreMembers &&
-// 	<div className="flex-1 bg-zinc-900/50 overflow-y-auto">
-// 		<div className="flex border-b border-gray-700 bg-zinc-950">
-// 			{tabs.map((tab) => (
-// 				<button
-// 					key={tab.id}
-// 					onClick={() => setActiveTab(tab.id)}
-// 					className={`px-4 py-3 text-sm ${activeTab === tab.id
-// 						? "border-b-2 border-blue-500 text-white"
-// 						: "text-gray-400 hover:text-white"
-// 						}`}
-// 				>
-// 					{tab.label}
-// 				</button>
-// 			))}
-// 		</div>
-//
-// 		<div className="p-3 border-l border-zinc-800">
-// 			{activeTab === "members" && (
-// 				<div className="max-h-64 overflow-auto">
-// 					{memberDisplay?.map((member) => (
-// 						<User key={member?.user?.id} member={member} />
-// 					))}
-// 				</div>
-// 			)}
-//
-// 			{activeTab === "requests" && <PendingRequests />}
-// 			{activeTab === "details" && <ProjectDetails />}
-// 		</div>
-// 	</div>
-// }
 

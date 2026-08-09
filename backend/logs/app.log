@@ -2,249 +2,53 @@ Starting server at tcp:port=8000:interface=0.0.0.0
 HTTP/2 support not enabled (install the http2 and tls Twisted extras)
 Configuring endpoint tcp:port=8000:interface=0.0.0.0
 Listening on TCP address 0.0.0.0:8000
-OPTIONS /api/v1/users/verify-email/
-POST /api/v1/users/verify-email/
-OPTIONS /api/v1/users/$confirm-otp/
-POST /api/v1/users/$confirm-otp/
-Not Found: /api/v1/users/$confirm-otp/
-OPTIONS /api/v1/users/confirm-otp/
-POST /api/v1/users/confirm-otp/
-Bad Request: /api/v1/users/confirm-otp/
-Killed 0 pending application instances
-Starting server at tcp:port=8000:interface=0.0.0.0
-HTTP/2 support not enabled (install the http2 and tls Twisted extras)
-Configuring endpoint tcp:port=8000:interface=0.0.0.0
-Listening on TCP address 0.0.0.0:8000
-POST /api/v1/users/verify-email/
-POST /api/v1/users/confirm-otp/
-POST /api/v1/users/confirm-otp/
-Bad Request: /api/v1/users/confirm-otp/
-POST /api/v1/users/verify-email/
-POST /api/v1/users/confirm-otp/
-POST /api/v1/users/verify-email/
-POST /api/v1/users/confirm-otp/
-Bad Request: /api/v1/users/confirm-otp/
-POST /api/v1/users/verify-email/
-POST /api/v1/users/confirm-otp/
-OPTIONS /api/v1/users/signup/
-POST /api/v1/users/signup/
 GET /api/v1/workspaces/
-GET /api/v1/users/me/
+GET /api/v1/workspaces/1/project/15/
 GET /api/v1/users/me/
 GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-Unauthorized: /api/v1/workspaces/
-Unauthorized: /api/v1/users/me/
-OPTIONS /api/v1/auth/refresh-token/
-POST /api/v1/auth/refresh-token/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-POST /api/v1/users/verify-email/
-POST /api/v1/users/confirm-otp/
-POST /api/v1/users/signup/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/users/me/
-Unauthorized: /api/v1/users/me/
-POST /api/v1/auth/refresh-token/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/users/me/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-Unauthorized: /api/v1/workspaces/
-POST /api/v1/auth/refresh-token/
-GET /api/v1/workspaces/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-Unauthorized: /api/v1/workspaces/
-Unauthorized: /api/v1/users/me/
-POST /api/v1/auth/refresh-token/
-GET /api/v1/workspaces/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-Unauthorized: /api/v1/workspaces/
-Unauthorized: /api/v1/users/me/
-POST /api/v1/auth/refresh-token/
-GET /api/v1/workspaces/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-Killed 0 pending application instances
-Starting server at tcp:port=8000:interface=0.0.0.0
-HTTP/2 support not enabled (install the http2 and tls Twisted extras)
-Configuring endpoint tcp:port=8000:interface=0.0.0.0
-Listening on TCP address 0.0.0.0:8000
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-Unauthorized: /api/v1/workspaces/
-Unauthorized: /api/v1/users/me/
-POST /api/v1/auth/refresh-token/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-OPTIONS /api/v1/users/logout/
-POST /api/v1/users/logout/
-GET /api/v1/workspaces/
-Unauthorized: /api/v1/workspaces/
-GET /api/v1/users/me/
-Unauthorized: /api/v1/users/me/
-POST /api/v1/auth/refresh-token/
-Bad Request: /api/v1/auth/refresh-token/
-GET /api/v1/users/me/
-Unauthorized: /api/v1/users/me/
-POST /api/v1/auth/refresh-token/
-Bad Request: /api/v1/auth/refresh-token/
-OPTIONS /api/v1/auth/login/
-POST /api/v1/auth/login/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-POST /api/v1/users/logout/
-GET /api/v1/workspaces/
-Unauthorized: /api/v1/workspaces/
-POST /api/v1/auth/refresh-token/
-Bad Request: /api/v1/auth/refresh-token/
-GET /api/v1/users/me/
-Unauthorized: /api/v1/users/me/
-POST /api/v1/auth/refresh-token/
-Bad Request: /api/v1/auth/refresh-token/
-POST /api/v1/auth/login/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
 GET /api/v1/users/me/
 Starting server at tcp:port=8000:interface=0.0.0.0
 HTTP/2 support not enabled (install the http2 and tls Twisted extras)
 Configuring endpoint tcp:port=8000:interface=0.0.0.0
 Listening on TCP address 0.0.0.0:8000
-GET /api/v1/users/me/
-Unauthorized: /api/v1/users/me/
-OPTIONS /api/v1/auth/refresh-token/
-POST /api/v1/auth/refresh-token/
-GET /api/v1/users/me/
-Unauthorized: /api/v1/users/me/
-GET /api/v1/users/me/
-OPTIONS /api/v1/auth/login/
-POST /api/v1/auth/login/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-OPTIONS /api/v1/users/logout/
-POST /api/v1/users/logout/
+GET /admin/
+GET /static/admin/css/base.css
+GET /static/admin/js/theme.js
+GET /static/admin/css/dark_mode.css
+GET /static/admin/css/nav_sidebar.css
+GET /static/admin/css/responsive.css
+GET /static/admin/css/dashboard.css
+GET /static/admin/js/nav_sidebar.js
+GET /static/admin/img/icon-changelink.svg
+GET /static/admin/img/icon-addlink.svg
+GET /static/admin/img/icon-deletelink.svg
+GET /favicon.ico
+Not Found: /favicon.ico
 GET /api/v1/workspaces/
 Unauthorized: /api/v1/workspaces/
 GET /api/v1/users/me/
-Unauthorized: /api/v1/users/me/
 POST /api/v1/auth/refresh-token/
-Bad Request: /api/v1/auth/refresh-token/
-GET /api/v1/users/me/
 Unauthorized: /api/v1/users/me/
-POST /api/v1/auth/refresh-token/
-Bad Request: /api/v1/auth/refresh-token/
-GET /api/v1/users/me/
-Unauthorized: /api/v1/users/me/
-POST /api/v1/auth/refresh-token/
-Bad Request: /api/v1/auth/refresh-token/
-POST /api/v1/auth/login/
 GET /api/v1/workspaces/
-GET /api/v1/users/me/
+GET /api/v1/workspaces/1/project/15/
 GET /api/v1/users/me/
 GET /api/v1/workspaces/
-POST /api/v1/users/logout/
-GET /api/v1/users/me/
-Unauthorized: /api/v1/users/me/
-POST /api/v1/auth/refresh-token/
-Bad Request: /api/v1/auth/refresh-token/
-GET /api/v1/users/me/
-Unauthorized: /api/v1/users/me/
-POST /api/v1/auth/refresh-token/
-Bad Request: /api/v1/auth/refresh-token/
-POST /api/v1/auth/login/
+GET /api/v1/workspaces/1/project/15/
 GET /api/v1/workspaces/
 GET /api/v1/users/me/
+GET /api/v1/workspaces/1/project/15/
+POST /api/v1/workspaces/1/invite/
+GET /api/v1/workspaces/
+GET /api/v1/workspaces/1/project/15/
+GET /api/v1/users/me/
+Unauthorized: /api/v1/workspaces/
+Unauthorized: /api/v1/users/me/
+POST /api/v1/auth/refresh-token/
+Unauthorized: /api/v1/workspaces/1/project/15/
+POST /api/v1/auth/refresh-token/
+GET /api/v1/workspaces/
+GET /api/v1/workspaces/1/project/15/
+GET /api/v1/users/me/
+GET /api/v1/workspaces/
+GET /api/v1/workspaces/1/project/15/
 GET /api/v1/users/me/

@@ -4,14 +4,17 @@ import { Card, CardContent } from "@/components/ui/card"
 import { LogOutIcon } from "lucide-react"
 import { instance } from "@/api/axios"
 import { useMutation } from "@tanstack/react-query"
+import { useNavigate } from "react-router-dom"
 
 export default function Profile() {
+	const navigate = useNavigate()
 
 	const logout = useMutation({
 		mutationFn: async () => {
 			const logoutUser = await instance.post('users/logout/', {})
 			return logoutUser?.data
-		}
+		},
+		onSuccess: () => navigate('/')
 	})
 
 	return (

@@ -26,4 +26,5 @@ export function useAppHook(workspaces, wkName, setWorkspace, selectedWorkspace, 
 			setTask({ id: task?.id, title: task?.title, show: false })
 		}
 	}, [project, taskId])
+
 }

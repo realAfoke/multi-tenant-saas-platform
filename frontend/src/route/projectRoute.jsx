@@ -1,7 +1,7 @@
 import { useAppState } from "@/hooks/apptools";
-import { projectQueryOption, workspaceQueryOption } from "@/queryOptions/queryOptions";
+import { fetchUserQueryOption, projectQueryOption, workspaceQueryOption } from "@/queryOptions/queryOptions";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Outlet, useParams, Link } from "react-router-dom";
+import { Outlet, useParams } from "react-router-dom";
 import { useEffect } from "react";
 import { PanelRightCloseIcon } from "lucide-react"
 import { useNavigate, useLocation } from "react-router-dom"
@@ -13,11 +13,16 @@ import { Input } from "@/components/ui/input";
 import { instance } from "@/api/axios";
 
 export default function ProjectRoute() {
+	const [sent, setSent] = useState(false)
+	const [toggleCreateTask, setToggleCreateTask] = useState(false)
 	const [selected, setSelected] = useState('overview')
 	const navigate = useNavigate()
 	const location = useLocation()
 	const [email, setEmail] = useState('')
+
+
 	const pathNames = location.pathname.split('/').filter((ptName) => ptName != '')
+	const { data: user } = useQuery(fetchUserQueryOption())
 	const { projectName } = useParams()
 	const { selectedWorkspace, setProject, selectedProject } = useAppState()
 	const { data: allWorkspaces } = useQuery(workspaceQueryOption())
@@ -27,8 +32,6 @@ export default function ProjectRoute() {
 	const [activeTab, setActiveTab] = useState("members");
 	const { members } = project ?? []
 	let memberDisplay = members?.length > 5 && !showMoreMembers ? members?.slice(0, 5) : members
-	const [sent, setSent] = useState(false)
-	const [toggleCreateTask, setToggleCreateTask] = useState(false)
 
 
 	const mainTabs = ['board', 'files', 'discussion', 'timeline']
@@ -100,53 +103,58 @@ export default function ProjectRoute() {
 						{project?.description}
 					</p>
 				</div>
-				<Button className="rounded-xl capitalize bg-blue-500 hover:bg-blue-600 h-11 px-6" onClick={() => setToggleCreateTask(prev => !prev)}>
-					New Task
-				</Button>
+				{['admin', 'owner'].includes(user?.role) &&
+					<Button className="rounded-xl capitalize bg-blue-500 hover:bg-blue-600 h-11 px-6" onClick={() => setToggleCreateTask(prev => !prev)}>
+						New Task
+					</Button>
+				}
 
 
 			</div>
 
 			{/* Tabs */}
 
-			<div className="border-b border-zinc-800 flex justify-between">
-
-				<div className="flex gap-8 overflow-x-auto">
-					<button className={`${selected == 'overview' ? 'border-b-2 border-blue-500 text-white' : 'text-zinc-500 hover:text-white'} pb-4 text-white font-medium whitespace-nowrap`} onClick={() => {
-						setSelected('overview')
-						navigate('./', { replace: true })
-					}}>
-						Overview
-					</button>
-
-					{mainTabs.map((tab) => (
-						<button key={tab} className={`${selected == tab ? 'border-b-2 border-blue-500 text-white' : 'text-zinc-500 hover:text-white'} pb-4 text-white font-medium whitespace-nowrap`} onClick={() => {
-							setSelected(tab)
-							navigate(`${tab}`, { replace: true })
-						}}>
-							{tab}
-						</button>
-
-					))}
-
-
-				</div>
-				<Button
-					variant="ghost"
-					size="icon"
-					className="text-zinc-500 hover:text-white"
-					onClick={() => setShowMoreMembers(prev => !prev)}
-				>
-					<PanelRightCloseIcon className="w-5 h-5 hover:bg-transparent" />
-				</Button>
-
-
-
-			</div>
-
 			<div className={`grid  ${showMoreMembers ? 'grid-cols-1 md:grid-cols-[1.6fr_0.7fr]' : 'grid-cols-1'} gap-3 `}>
+
 				<div className="flex-1">
-					<Outlet context={{ project, showMoreMembers, memberDisplay, members }} />
+					<div className="border-b border-zinc-800 flex justify-between">
+
+						<div className="flex gap-8 overflow-x-auto">
+							<button className={`${selected == 'overview' ? 'border-b-2 border-blue-500 text-white' : 'text-zinc-500 hover:text-white'} pb-4 text-white font-medium whitespace-nowrap`} onClick={() => {
+								setSelected('overview')
+								navigate('./', { replace: true })
+							}}>
+								Overview
+							</button>
+
+							{mainTabs.map((tab) => (
+								<button key={tab} className={`${selected == tab ? 'border-b-2 border-blue-500 text-white' : 'text-zinc-500 hover:text-white'} pb-4 text-white font-medium whitespace-nowrap`} onClick={() => {
+									setSelected(tab)
+									navigate(`${tab}`, { replace: true })
+								}}>
+									{tab}
+								</button>
+
+							))}
+
+
+						</div>
+						<Button
+							variant="ghost"
+							size="icon"
+							className="text-zinc-500 hover:text-white"
+							onClick={() => setShowMoreMembers(prev => !prev)}
+						>
+							<PanelRightCloseIcon className="w-5 h-5 hover:bg-transparent" />
+						</Button>
+
+
+
+					</div>
+
+					<div className="flex-1">
+						<Outlet context={{ project, showMoreMembers, memberDisplay, setShowMoreMembers, members }} />
+					</div>
 				</div>
 
 				{showMoreMembers &&
@@ -167,13 +175,14 @@ export default function ProjectRoute() {
 						</div>
 
 						<div className="p-3 border-l border-zinc-800">
-							<div>
+							{['owner', 'admin'].includes(user.role) && <div>
 								<div className="flex gap-2">
 									<Input className="p-4 h-10 rounded-sm text-white" placeholder="Enter email to send an invite" value={email} onChange={(e) => setEmail(e.target.value)} />
 									<Button className={`${sent ? 'bg-green-400 p-2' : ''} text-white p-4`}
 										onClick={() => sendInvite.mutate()}>{sent ? 'sent' : 'send'}</Button>
 								</div>
 							</div>
+							}
 							{activeTab === "members" && (
 								<div className="max-h-64 overflow-auto my-5">
 									{memberDisplay?.map((member) => (

@@ -6,11 +6,12 @@ import { useAppState } from "@/hooks/apptools"
 
 export default function ProjectOverview() {
 	const { wkName, projectName } = useParams()
-	const { project, showMoreMembers, memberDisplay, members } = useOutletContext()
+	const { project, showMoreMembers,setShowMoreMembers, memberDisplay, members } = useOutletContext()
 	const navigate = useNavigate()
 	const { setTask } = useAppState()
 	const lastUpdatedTask = (project?.tasks) ?? []
 	const lastUpdated = dateFormatter(lastUpdatedTask[0]?.updatedAt)
+
 
 	return (
 		<div className="space-y-8">
@@ -137,7 +138,6 @@ export default function ProjectOverview() {
 							</CardContent>
 						</Card>
 						}
-
 
 						<Card className="bg-zinc-900 border-zinc-800">
 

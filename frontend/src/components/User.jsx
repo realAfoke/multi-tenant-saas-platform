@@ -11,7 +11,7 @@ const User = (props) => {
 
 	return (
 		<div className="flex items-center gap-3 p-3 rounded-xl hover:bg-zinc-800/60 transition-colors group" onClick={() => addUserToProject((prev) => {
-			return prev.includes(user?.id) ? prev.filter(id => id != user?.id) : [...prev, user?.id]
+			return prev.includes(member?.id) ? prev.filter(id => id != member?.id) : [...prev, member?.id]
 		})}>
 			{/* Profile picture */}
 			{projectMembers.includes(user?.id) && <Check className="w-4 h-4" />}

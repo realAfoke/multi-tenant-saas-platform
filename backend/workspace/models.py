@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.db.models import constraints
 from django.utils import choices
 
 # from django.utils.text import slugify
@@ -40,6 +41,11 @@ class Membership(models.Model):
 
     class Meta:
         db_table='membership'
+        constraints=[
+                models.UniqueConstraint(
+                    fields=['workspace','user'],name='unique_workspace_membership'
+                    )
+                ]
 
     def __str__(self):
         return getattr(self.user,'email')
@@ -48,9 +54,9 @@ class Membership(models.Model):
 class Project(models.Model):
     name=models.CharField(max_length=100)
     workspace=models.ForeignKey(WorkSpace,related_name='projects',on_delete=models.CASCADE)
-    created_by=models.ForeignKey(UserModel,related_name='creator',on_delete=models.CASCADE)
-    admins=models.ManyToManyField(UserModel,related_name='project_admins')
-    members=models.ManyToManyField(UserModel,related_name='project_members')
+    created_by=models.ForeignKey(Membership,related_name='creator',on_delete=models.CASCADE)
+    admins=models.ManyToManyField(Membership,related_name='project_admins')
+    members=models.ManyToManyField(Membership,related_name='project_members')
     description=models.TextField()
     status=models.CharField(max_length=200,blank=True,default='active')
     created_at=models.DateTimeField(auto_now_add=True)
@@ -68,9 +74,9 @@ class Task(models.Model):
     workspace=models.ForeignKey(WorkSpace,related_name='task_workspace',on_delete=models.CASCADE)
     description=models.TextField()
     status=models.CharField(max_length=200,choices=Choices.choices,default=Choices.IN_PROGRESS)
-    admins=models.ManyToManyField(UserModel,related_name='task_admins')
-    created_by=models.ForeignKey(UserModel,related_name='task_creator',on_delete=models.CASCADE)
-    members=models.ManyToManyField(UserModel,related_name='task_members')
+    admins=models.ManyToManyField(Membership,related_name='task_admins')
+    created_by=models.ForeignKey(Membership,related_name='task_creator',on_delete=models.CASCADE)
+    members=models.ManyToManyField(Membership,related_name='task_members')
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
 
@@ -144,24 +150,25 @@ class InviteTokenAuditLog(models.Model):
     def __str__(self):
         return str(self.action)
 
-class InviteRequest(models.Model):
-    pending_user=models.ForeignKey(UserModel,related_name='pending_user',on_delete=models.CASCADE)
+class Invite(models.Model):
+    invited_by=models.ForeignKey(UserModel,related_name='invite',on_delete=models.SET_NULL,null=True,blank=True)
+    email=models.EmailField()
+    token=models.ForeignKey(InviteToken,related_name='invites',on_delete=models.SET_NULL,null=True,blank=True)
     status=models.CharField(max_length=200,default='pending',)
-    project=models.ForeignKey(Project,related_name='request_project',on_delete=models.CASCADE)
-    workspace=models.ForeignKey(WorkSpace,related_name='workspace_request',on_delete=models.CASCADE)
+    project=models.ForeignKey(Project,related_name='project_invite',on_delete=models.CASCADE)
     timestamp=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table='invite_request'
+        db_table='invite'
         constraints=[
                 models.UniqueConstraint(
-                    fields=['pending_user','workspace'],name='unique_workspace_request'
+                    fields=['invited_by','email'],name='unique_project_request'
                     )
                 ]
 
     def __str__(self):
-        return str(self.pending_user)
+        return str(self.email)
 
 
 class ActivityLog(models.Model):

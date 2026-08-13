@@ -2,53 +2,466 @@ Starting server at tcp:port=8000:interface=0.0.0.0
 HTTP/2 support not enabled (install the http2 and tls Twisted extras)
 Configuring endpoint tcp:port=8000:interface=0.0.0.0
 Listening on TCP address 0.0.0.0:8000
-GET /api/v1/workspaces/
-GET /api/v1/workspaces/1/project/15/
+GET /api/v1/workspaces/1/project/75/
 GET /api/v1/users/me/
 GET /api/v1/workspaces/
+task:<QuerySet [<Task: saas first task>]>
+GET /api/v1/workspaces/
+GET /api/v1/workspaces/1/project/75/
 GET /api/v1/users/me/
+task:<QuerySet [<Task: saas first task>]>
+GET /api/v1/workspaces/
+GET /api/v1/workspaces/1/members/
+POST /api/v1/workspaces/1/projects/
+here
+True
+passed here
+member:[11]
+validated_data:{'name': 'trying', 'workspace': <WorkSpace: user first workspace>, 'description': 'still trying', 'created_by': <Membership: user@example.com>}
+task:<QuerySet [<Task: saas first task>]>
+GET /api/v1/workspaces/
+GET /api/v1/workspaces/1/project/75/
+GET /api/v1/workspaces/1/members/
+GET /api/v1/users/me/
+task:<QuerySet [<Task: saas first task>]>
+GET /api/v1/workspaces/1/project/77/
+GET /api/v1/workspaces/
+GET /api/v1/users/me/
+task:<QuerySet [<Task: saas first task>]>
 Starting server at tcp:port=8000:interface=0.0.0.0
 HTTP/2 support not enabled (install the http2 and tls Twisted extras)
 Configuring endpoint tcp:port=8000:interface=0.0.0.0
 Listening on TCP address 0.0.0.0:8000
-GET /admin/
-GET /static/admin/css/base.css
-GET /static/admin/js/theme.js
-GET /static/admin/css/dark_mode.css
-GET /static/admin/css/nav_sidebar.css
-GET /static/admin/css/responsive.css
-GET /static/admin/css/dashboard.css
-GET /static/admin/js/nav_sidebar.js
-GET /static/admin/img/icon-changelink.svg
-GET /static/admin/img/icon-addlink.svg
-GET /static/admin/img/icon-deletelink.svg
-GET /favicon.ico
-Not Found: /favicon.ico
 GET /api/v1/workspaces/
-Unauthorized: /api/v1/workspaces/
-GET /api/v1/users/me/
-POST /api/v1/auth/refresh-token/
-Unauthorized: /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/workspaces/1/project/15/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/
-GET /api/v1/workspaces/1/project/15/
-GET /api/v1/workspaces/
-GET /api/v1/users/me/
-GET /api/v1/workspaces/1/project/15/
-POST /api/v1/workspaces/1/invite/
-GET /api/v1/workspaces/
-GET /api/v1/workspaces/1/project/15/
+GET /api/v1/workspaces/1/project/77/
 GET /api/v1/users/me/
 Unauthorized: /api/v1/workspaces/
 Unauthorized: /api/v1/users/me/
 POST /api/v1/auth/refresh-token/
-Unauthorized: /api/v1/workspaces/1/project/15/
+Unauthorized: /api/v1/workspaces/1/project/77/
+GET /api/v1/workspaces/
+GET /api/v1/workspaces/
+GET /api/v1/workspaces/1/members/
+GET /api/v1/workspaces/1/project/77/
+GET /api/v1/users/me/
+Internal Server Error: /api/v1/workspaces/1/project/77/
+Traceback (most recent call last):
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/asgiref/sync.py", line 557, in thread_handler
+    raise exc_info[1]
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/django/core/handlers/exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/asgiref/sync.py", line 557, in thread_handler
+    raise exc_info[1]
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/django/core/handlers/base.py", line 254, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/asgiref/sync.py", line 506, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/asgiref/current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/asgiref/sync.py", line 561, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/django/views/generic/base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/generics.py", line 286, in get
+    return self.retrieve(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/mixins.py", line 56, in retrieve
+    return Response(serializer.data)
+                    ^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 585, in data
+    ret = super().data
+          ^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 537, in to_representation
+    for field in fields:
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 398, in _readable_fields
+    for field in self.fields.values():
+                 ^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 386, in fields
+    for key, value in self.get_fields().items():
+                      ^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 1101, in get_fields
+    field_names = self.get_field_names(declared_fields, info)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 1204, in get_field_names
+    assert field_name in fields, (
+           ^^^^^^^^^^^^^^^^^^^^
+AssertionError: The field 'project_members' was declared on serializer ProjectSerializer, but has not been included in the 'fields' option.
+GET /api/v1/workspaces/1/project/77/
+Internal Server Error: /api/v1/workspaces/1/project/77/
+Traceback (most recent call last):
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/asgiref/sync.py", line 557, in thread_handler
+    raise exc_info[1]
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/django/core/handlers/exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/asgiref/sync.py", line 557, in thread_handler
+    raise exc_info[1]
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/django/core/handlers/base.py", line 254, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/asgiref/sync.py", line 506, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/asgiref/current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/asgiref/sync.py", line 561, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/django/views/generic/base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/generics.py", line 286, in get
+    return self.retrieve(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/mixins.py", line 56, in retrieve
+    return Response(serializer.data)
+                    ^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 585, in data
+    ret = super().data
+          ^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 537, in to_representation
+    for field in fields:
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 398, in _readable_fields
+    for field in self.fields.values():
+                 ^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 386, in fields
+    for key, value in self.get_fields().items():
+                      ^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 1101, in get_fields
+    field_names = self.get_field_names(declared_fields, info)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 1204, in get_field_names
+    assert field_name in fields, (
+           ^^^^^^^^^^^^^^^^^^^^
+AssertionError: The field 'project_members' was declared on serializer ProjectSerializer, but has not been included in the 'fields' option.
+GET /api/v1/workspaces/1/project/77/
+Internal Server Error: /api/v1/workspaces/1/project/77/
+Traceback (most recent call last):
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/asgiref/sync.py", line 557, in thread_handler
+    raise exc_info[1]
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/django/core/handlers/exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/asgiref/sync.py", line 557, in thread_handler
+    raise exc_info[1]
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/django/core/handlers/base.py", line 254, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/asgiref/sync.py", line 506, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/asgiref/current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/asgiref/sync.py", line 561, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/django/views/generic/base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/generics.py", line 286, in get
+    return self.retrieve(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/mixins.py", line 56, in retrieve
+    return Response(serializer.data)
+                    ^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 585, in data
+    ret = super().data
+          ^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 537, in to_representation
+    for field in fields:
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 398, in _readable_fields
+    for field in self.fields.values():
+                 ^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 386, in fields
+    for key, value in self.get_fields().items():
+                      ^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 1101, in get_fields
+    field_names = self.get_field_names(declared_fields, info)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 1204, in get_field_names
+    assert field_name in fields, (
+           ^^^^^^^^^^^^^^^^^^^^
+AssertionError: The field 'project_members' was declared on serializer ProjectSerializer, but has not been included in the 'fields' option.
+POST /api/v1/workspaces/1/projects/
+here
+True
+passed here
+Internal Server Error: /api/v1/workspaces/1/projects/
+Traceback (most recent call last):
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/asgiref/sync.py", line 557, in thread_handler
+    raise exc_info[1]
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/django/core/handlers/exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/asgiref/sync.py", line 557, in thread_handler
+    raise exc_info[1]
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/django/core/handlers/base.py", line 254, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/asgiref/sync.py", line 506, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/asgiref/current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/asgiref/sync.py", line 561, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/django/views/generic/base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/generics.py", line 246, in post
+    return self.create(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/mixins.py", line 18, in create
+    serializer.is_valid(raise_exception=True)
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 225, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 456, in run_validation
+    value = self.to_internal_value(data)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 509, in to_internal_value
+    for field in fields:
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 392, in _writable_fields
+    for field in self.fields.values():
+                 ^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 386, in fields
+    for key, value in self.get_fields().items():
+                      ^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 1101, in get_fields
+    field_names = self.get_field_names(declared_fields, info)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 1204, in get_field_names
+    assert field_name in fields, (
+           ^^^^^^^^^^^^^^^^^^^^
+AssertionError: The field 'project_members' was declared on serializer ProjectSerializer, but has not been included in the 'fields' option.
+POST /api/v1/workspaces/1/projects/
+here
+True
+passed here
+Internal Server Error: /api/v1/workspaces/1/projects/
+Traceback (most recent call last):
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/asgiref/sync.py", line 557, in thread_handler
+    raise exc_info[1]
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/django/core/handlers/exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/asgiref/sync.py", line 557, in thread_handler
+    raise exc_info[1]
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/django/core/handlers/base.py", line 254, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/asgiref/sync.py", line 506, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/asgiref/current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/asgiref/sync.py", line 561, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/django/views/generic/base.py", line 106, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/generics.py", line 246, in post
+    return self.create(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/mixins.py", line 18, in create
+    serializer.is_valid(raise_exception=True)
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 225, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 456, in run_validation
+    value = self.to_internal_value(data)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 509, in to_internal_value
+    for field in fields:
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 392, in _writable_fields
+    for field in self.fields.values():
+                 ^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/django/utils/functional.py", line 47, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+                                         ^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 386, in fields
+    for key, value in self.get_fields().items():
+                      ^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 1101, in get_fields
+    field_names = self.get_field_names(declared_fields, info)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/reality/multi-tenant-sass/backend/venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 1204, in get_field_names
+    assert field_name in fields, (
+           ^^^^^^^^^^^^^^^^^^^^
+AssertionError: The field 'project_members' was declared on serializer ProjectSerializer, but has not been included in the 'fields' option.
+Killed 0 pending application instances
+Starting server at tcp:port=8000:interface=0.0.0.0
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+GET /api/v1/workspaces/1/members/
+GET /api/v1/workspaces/
+GET /api/v1/users/me/
+GET /api/v1/workspaces/1/project/77/
+task:<QuerySet [<Task: saas first task>]>
+POST /api/v1/workspaces/1/projects/
+here
+True
+passed here
+Bad Request: /api/v1/workspaces/1/projects/
+Killed 0 pending application instances
+Starting server at tcp:port=8000:interface=0.0.0.0
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+GET /api/v1/workspaces/
+GET /api/v1/workspaces/1/project/77/
+GET /api/v1/workspaces/1/members/
+GET /api/v1/users/me/
+Unauthorized: /api/v1/workspaces/
+Unauthorized: /api/v1/users/me/
 POST /api/v1/auth/refresh-token/
-GET /api/v1/workspaces/
-GET /api/v1/workspaces/1/project/15/
+Unauthorized: /api/v1/workspaces/1/project/77/
 GET /api/v1/users/me/
 GET /api/v1/workspaces/
-GET /api/v1/workspaces/1/project/15/
+GET /api/v1/workspaces/1/project/77/
+task:<QuerySet [<Task: saas first task>]>
+POST /api/v1/workspaces/1/projects/
+here
+True
+passed here
+member:[<Membership: user@example.com>]
+validated_data:{'name': 'member', 'workspace': <WorkSpace: user first workspace>, 'description': 'mem', 'created_by': <Membership: user@example.com>}
+task:<QuerySet [<Task: saas first task>]>
+Starting server at tcp:port=8000:interface=0.0.0.0
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
 GET /api/v1/users/me/
+Unauthorized: /api/v1/users/me/
+OPTIONS /api/v1/auth/refresh-token/
+POST /api/v1/auth/refresh-token/
+GET /api/v1/users/me/
+Unauthorized: /api/v1/users/me/
+GET /api/v1/users/me/
+GET /api/v1/users/me/
+GET /api/v1/users/me/
+GET /api/v1/workspaces/
+GET /api/v1/users/me/
+GET /api/v1/workspaces/
+GET /api/v1/users/me/
+GET /api/v1/workspaces/
+GET /api/v1/workspaces/
+GET /api/v1/workspaces/1/members/
+GET /api/v1/workspaces/1/project/15/
+GET /api/v1/workspaces/1/15/tasks/
+True
+task:<QuerySet []>
+GET /api/v1/workspaces/
+GET /api/v1/users/me/
+GET /api/v1/workspaces/
+GET /api/v1/workspaces/1/15/tasks/
+True
+GET /api/v1/workspaces/1/project/15/
+GET /api/v1/workspaces/
+GET /api/v1/workspaces/1/members/
+GET /api/v1/users/me/
+task:<QuerySet []>
+GET /api/v1/workspaces/
+GET /api/v1/workspaces/1/15/tasks/
+True
+GET /api/v1/workspaces/
+GET /api/v1/workspaces/1/members/

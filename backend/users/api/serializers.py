@@ -28,17 +28,25 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields=['phone','username']
 
     def create(self, validated_data):
+        if validated_data.get('_existing',None):
+            return validated_data['_existing']
         workspace=validated_data.pop('workspace',None)
         user=User.objects.create_user(**validated_data)
         if workspace:
-            workspace=WorkSpace.objects.create(name=workspace)
-            Membership.objects.create(workspace=workspace,user=user,role='owner')
+            workspace=workspace(name=workspace)
+            workspace.save()
+            memb=Membership(workspace=workspace,user=user,role='owner')
+            memb.save()
         return user
 
     def validate(self, attrs):
         if 'email' not in attrs and 'phone' not in attrs:
             raise ValueError('credentials not provided')
         user_detail=attrs.get('email') or attrs.get('phone')
+        _existing=User.objects.filter(email=user_detail).first()
+        if _existing:
+            attrs['_existing']=_existing
+            return attrs
         if not cache.get(f'confirm:{user_detail}'): 
             raise ValidationError(f'{user_detail} is not verified ')
         return attrs

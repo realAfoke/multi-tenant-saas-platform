@@ -1,8 +1,9 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import generics
 import workspace
 from workspace.permission import CommentPermission,IsWorkspaceMemeber,IsWorkspaceAdminOrSuperAdmin
-# from .serializers import CommentSerializer, FileSerializer, InviteRequestSerializer, TaskSerializer, WorkSpaceSerializer,ProjectSerializer
-from .serializers import CommentSerializer, MembershipSerializer, TaskSerializer,WorkSpaceSerializer,ProjectSerializer,InviteRequestSerializer
+# from .serializers import CommentSerializer, FileSerializer, InviteSerializer, TaskSerializer, WorkSpaceSerializer,ProjectSerializer
+from .serializers import CommentSerializer, MembershipSerializer, TaskSerializer,WorkSpaceSerializer,ProjectSerializer,InviteSerializer
 from rest_framework.response import Response
 from rest_framework import permissions
 from workspace import models
@@ -11,14 +12,16 @@ from rest_framework.views import APIView
 from rest_framework import permissions
 # from workspace.services.workspace import create_work_space
 from channels.layers import get_channel_layer
-from workspace.services.invite import send_invite,accept_invite
+from workspace.services.invite import InviteService
 import logging
 
 
 
 
 
+
 logger=logging.getLogger(__name__)
+
 
 class DashBoard(generics.ListAPIView):
     queryset=models.Task.objects.all()
@@ -82,8 +85,8 @@ class Project(generics.ListCreateAPIView):
     def get_queryset(self):
         return models.Project.objects.filter(workspace=self.kwargs.get('wk'),members=self.request.user)
 
-    def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user,project_members=self.request.data.get('project_members'))
+    # def perform_create(self, serializer):
+    #     serializer.save(project_members=self.request.data.get('project_members'))
 
 
 class ProjectDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -130,33 +133,31 @@ class Comment(generics.ListCreateAPIView):
 #         return self.instance_model.object.all()
 #
 #
-class SendInvite(APIView):
-    permission_classe=[IsWorkspaceAdminOrSuperAdmin]
+class SendInviteView(APIView):
+    permission_classes=[IsWorkspaceAdminOrSuperAdmin]
     def post(self,request,*args,**kwargs):
-        link=send_invite(request)
+        email=request.data.get('email')
+        project_id=request.data.get('project')
+        user=request.user
+        project=get_object_or_404(models.Project,id=project_id)
+        link=InviteService.send_invite(project,email,user,request)
         return Response(link)
 
-@api_view(['GET'])
-@permission_classes([permissions.IsAuthenticated])
-def accept_invite_fun(request,token,pk):
-    resp=accept_invite(request,token,pk)
-    return Response(resp)
+class GetInviteView(generics.RetrieveAPIView):
+    queryset=models.Invite.objects.all()
+    serializer_class=InviteSerializer
+
+class AcceptInviteView(APIView):
+    permission_classes=[permissions.IsAuthenticated]
+    def patch(self,request,pk):
+        token=request.data.get('token')
+        user=request.user
+        invite=get_object_or_404(models.Invite,id=pk)
+        InviteService.accept_invite(invite,user,token,request)
+        return Response({'detail':'Invite accepted'})
 
 
-class GetInviteRequest(generics.ListAPIView):
-    permission_classes=[IsWorkspaceAdminOrSuperAdmin]
-    serializer_class=InviteRequestSerializer
 
-    def get_queryset(self):
-        return models.InviteRequest.objects.filter(workspace=self.kwargs.get('pk'),status='pending')
-
-class AcceptInviteRequest(generics.RetrieveUpdateDestroyAPIView):
-    queryset=models.InviteRequest.objects.all()
-    permission_classes=[IsWorkspaceAdminOrSuperAdmin]
-    serializer_class=InviteRequestSerializer
-
-    def get_object(self):
-        return models.InviteRequest.objects.filter(id=self.kwargs.get('invite_pk')).first()
 
 #
 # class CreateTask(generics.ListCreateAPIView):
@@ -168,5 +169,3 @@ class AcceptInviteRequest(generics.RetrieveUpdateDestroyAPIView):
 #     queryset=models.Task.objects.all()
 #     serializer_class=TaskSerializer
 #     permission_classes=[permissions.IsAuthenticated]
-#
-

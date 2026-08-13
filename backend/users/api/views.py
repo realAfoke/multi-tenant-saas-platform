@@ -10,6 +10,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.views import TokenRefreshView
 from users.api.serializers import UserSerializer,LoginSerializer
 import logging
+from workspace.api.serializers import MembershipSerializer
+from workspace.models import Membership
  
 
 # Create your views here.
@@ -122,10 +124,12 @@ class RefreshTokenView(TokenRefreshView):
 
 
 class Me(generics.RetrieveUpdateAPIView):
-        queryset=User.objects.all()
-        serializer_class=UserSerializer
+        queryset=Membership.objects.all()
+        serializer_class=MembershipSerializer
         permission_classes=[permissions.IsAuthenticated]
 
         def get_object(self):
-            return self.request.user
+            user=self.request.user
+            member=Membership.objects.filter(user=user).first()
+            return member
 

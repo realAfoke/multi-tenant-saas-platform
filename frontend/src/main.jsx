@@ -28,12 +28,14 @@ import SignUp, { loader as signUpLoader } from './pages/signup.jsx'
 import SignEmail from './components/SignEmail.jsx'
 import VerifyEmail from './components/VerifyEmail.jsx'
 import AccountDetails from './components/AccountDetails.jsx'
+import AcceptInvite from './pages/acceptInvite.jsx'
 
 
 
 const queryClient = new QueryClient()
 
 const routes = createBrowserRouter([
+  { path: 'accept-invite', element: <AcceptInvite /> },
   {
     path: 'signup', element: <SignUp />, loader: signUpLoader, children: [
       { index: true, element: <SignEmail /> },

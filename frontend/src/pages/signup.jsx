@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react"
 import { Outlet, useNavigate } from "react-router-dom"
-import { useLocation,redirect } from "react-router-dom"
+import { useLocation, redirect } from "react-router-dom"
 import { instance } from "@/api/axios"
+import { useAppState } from "@/hooks/apptools"
 
 
 export default function SignUp() {
 	const navigate = useNavigate()
-	const [email, setEmail] = useState("")
+	const [email, setEmail] = useState("mrcrab@example.com")
 	const [showBackWarning, setShowBackWarning] = useState(false)
 	const [step, setStep] = useState('')
+	const { inviteDetail } = useAppState()
 	const location = useLocation()
 
 	const paths = location.pathname.split('/').filter(path => path != '')
@@ -80,9 +82,10 @@ export default function SignUp() {
 						</h1>
 
 					</div>
+					{inviteDetail && <span className="text-blue-400 text-sm">creating account for invite email {inviteDetail?.email}</span>}
 
 					<div className="grid grid-cols-2 justify-between">
-						<div className="flex items-center gap-2 mb-10">
+						<div className={`${inviteDetail ? 'my-5' : ''} flex items-center gap-2 mb-10`}>
 
 							{Array.from({ length: step }, (_, i) => i + 1).map((i) => (<span key={i} className="w-7 h-1 rounded-full bg-blue-500" />))}
 

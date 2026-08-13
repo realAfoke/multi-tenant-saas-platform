@@ -32,8 +32,13 @@ export const useAppStore = create(combine({
 	},
 	selectedTask: {
 		id: null,
-		title:'',
+		title: '',
 		show: false
+	},
+	invites: {
+		token: null,
+		id: null,
+		email: ''
 	}
 }
 	, (set, get) => (
@@ -67,8 +72,19 @@ export const useAppStore = create(combine({
 				}
 				))
 			},
+			setInvite: (invite) => {
+				set((state) => (
+					{
+						invites: {
+							...state.invites,
+							...invite
+						}
+					}
+				))
+			},
 			getWorkspace: () => get().selectedWorkspace,
 			getProject: () => get().selectedProject,
-			getTask: () => get().selectedTask
+			getTask: () => get().selectedTask,
+			getInvite: () => get().state.invite
 		}
 	)))

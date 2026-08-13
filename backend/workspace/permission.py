@@ -23,11 +23,9 @@ class IsWorkspaceMemeber(BasePermission):
 
 class IsWorkspaceAdminOrSuperAdmin(IsWorkspaceMemeber):
     def has_permission(self, request, view):
-        logger.info('here')
         logger.info(request.user.is_authenticated)
         if not request.user.is_authenticated:
             return False
-        logger.info('passed here')
         wk=view.kwargs.get('wk')
         user=request.user
         if request.method in SAFE_METHODS:

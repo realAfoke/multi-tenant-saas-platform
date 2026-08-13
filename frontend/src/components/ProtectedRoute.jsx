@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useAppHook } from "@/hooks/appHook.js"
 import { fetchUserQueryOption, workspaceQueryOption, projectQueryOption } from "@/queryOptions/queryOptions"
 import { useParams, Navigate } from "react-router-dom"
@@ -22,7 +22,8 @@ export default function ProtectedRoute() {
 	const { workspaces } = userWorkspaces ?? {}
 
 	const { data: user } = useQuery(fetchUserQueryOption())
-	useAppHook(workspaces, wkName, setWorkspace, selectedWorkspace, project, projectName, setProject, taskId, setTask)
+	useAppHook(workspaces, wkName, setWorkspace, selectedWorkspace, project, projectName, setProject, taskId, setTask, user)
+	const queryClient = useQueryClient()
 
 
 	if (!user) {

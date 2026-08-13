@@ -1,34 +1,36 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { instance } from "@/api/axios"
-import useAuthStore from "@/store/authStore"
-import { useNavigate, redirect, Navigate, Link } from "react-router-dom"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { fetchUserQueryOption } from "@/queryOptions/queryOptions"
+import { useNavigate, redirect, Link } from "react-router-dom"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useAppState } from "@/hooks/apptools"
 
 
 export default function Login() {
 	const [email, setEmail] = useState('user@example.com')
 	const [password, setPassword] = useState('user')
-	const setUser = useAuthStore((state) => state.setUser)
-	const queryClient = useQueryClient()
 	const navigate = useNavigate()
+	const { inviteDetail } = useAppState()
+	const queryClient = useQueryClient()
 	// const { data: user } = useQueryClient(fetchUserQueryOption())
 
 	const mutate = useMutation({
-		mutationFn: ({ email, password, navigate }) => login(email, password, navigate),
+		mutationFn: async () => {
+			await instance.post('auth/login/', { email: email, password: password })
+		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({
 				queryKey: ['user']
 			})
+			if (inviteDetail?.token) {
+				navigate(`/accept-invite/?token=${inviteDetail?.token}&invite=${inviteDetail?.id}`)
+				return
+			}
+			navigate('/dashboard', { replace: true })
+
 		}
 	})
-	// console.log('user:', user)
-	// if (user) {
-	// return <Navigate to='/dashboard' />
-	// }
 	return (
 		<div className="min-h-screen bg-zinc-950 text-white lg:grid lg:grid-cols-2">
 
@@ -80,7 +82,6 @@ export default function Login() {
 
 			</div>
 
-			{/* Right Side */}
 
 			<div className="flex items-center justify-center px-6 py-10">
 
@@ -99,10 +100,16 @@ export default function Login() {
 					</h2>
 
 					<p className="text-zinc-400 mt-2">
-						Sign in to continue to your workspace.
+						Sign in to continue to your workspace {inviteDetail && <span className="text-blue-400 text-sm">{inviteDetail?.email}</span>}
 					</p>
 
 					<div className="mt-10 space-y-6">
+						{mutate.error && !mutate.isPending &&
+							<p className="text-red-400 text-sm">
+								{Object.values(mutate.error?.response?.data).join()}
+							</p>
+						}
+
 
 						<div>
 
@@ -141,12 +148,6 @@ export default function Login() {
 
 						</div>
 
-						{mutate.error && !mutate.isPending &&
-							<p className="text-red-400 text-sm">
-								Unable to login.
-							</p>
-						}
-
 						<Button
 							className="w-full h-12 rounded-xl bg-blue-500 hover:bg-blue-600"
 							disabled={!email || !password}
@@ -183,15 +184,7 @@ export default function Login() {
 
 	)
 }
-async function login(email, password, navigate) {
-	try {
-		await instance.post('auth/login/', { email: email, password: password })
-		navigate('/dashboard', { replace: true })
-	}
-	catch (err) {
-		console.error('Error:', err)
-	}
-}
+
 
 export async function loader() {
 	try {

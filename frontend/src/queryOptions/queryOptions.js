@@ -42,7 +42,7 @@ async function workspaceFn() {
 			return ({
 				...workspace,
 				projects: Object.fromEntries(workspace?.projects?.map((obj) => [obj?.id, obj])),
-				projectOrdering: workspace?.projects?.map(prj => prj?.id)
+				projectOrdering: [...new Set(workspace?.projects?.map(prj => prj?.id))]
 			})
 		})
 		return {

@@ -38,6 +38,7 @@ class Membership(models.Model):
     workspace=models.ForeignKey(WorkSpace,related_name='membership',on_delete=models.CASCADE)
     user=models.ForeignKey(UserModel,related_name='user_membership',on_delete=models.CASCADE)
     role=models.CharField(choices=[('owner','Owner'),('admin','Admin'),('member','Member')])
+    created_on=models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table='membership'

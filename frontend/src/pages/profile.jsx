@@ -5,6 +5,8 @@ import { LogOutIcon } from "lucide-react"
 import { instance } from "@/api/axios"
 import { useMutation } from "@tanstack/react-query"
 import { useNavigate } from "react-router-dom"
+import { fetchUserQueryOption } from "@/queryOptions/queryOptions"
+import { useQuery } from "@tanstack/react-query"
 
 export default function Profile() {
 	const navigate = useNavigate()
@@ -16,6 +18,9 @@ export default function Profile() {
 		},
 		onSuccess: () => navigate('/')
 	})
+	const { data: user } = useQuery(fetchUserQueryOption())
+	const loggedInUser = user?.user ?? {}
+	console.log(loggedInUser)
 
 	return (
 		<div className="space-y-8 max-w-5xl text-white flex-1">
@@ -46,7 +51,7 @@ export default function Profile() {
 						<div className="relative">
 
 							<div className="w-24 h-24 rounded-full bg-blue-500 flex items-center justify-center text-3xl font-semibold">
-								D
+								{loggedInUser.firstName?.slice(0, 1)?.toUpperCase()}
 							</div>
 
 							<button className="absolute -bottom-1 -right-1 w-9 h-9 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center hover:bg-zinc-700 transition">
@@ -57,12 +62,12 @@ export default function Profile() {
 
 						<div>
 
-							<h2 className="text-2xl font-semibold">
-								Daniel
+							<h2 className=" text-white text-2xl font-semibold">
+								{`${loggedInUser?.firstName} ${loggedInUser?.lastName}`}
 							</h2>
 
 							<p className="text-zinc-400 mt-1">
-								daniel@example.com
+								{loggedInUser?.email}
 							</p>
 
 							<p className="text-sm text-zinc-500 mt-3">
@@ -112,8 +117,7 @@ export default function Profile() {
 							</p>
 
 							<p className="text-white mt-2">
-								Daniel
-							</p>
+								{loggedInUser?.firstName} 							</p>
 						</div>
 
 						<div>
@@ -122,7 +126,7 @@ export default function Profile() {
 							</p>
 
 							<p className="text-white mt-2">
-								Smith
+								{loggedInUser?.lastName}
 							</p>
 						</div>
 
@@ -134,7 +138,7 @@ export default function Profile() {
 							<div className="flex items-center gap-2 mt-2">
 								<Mail className="w-4 h-4 text-zinc-500" />
 								<span className="text-white">
-									daniel@example.com
+									{loggedInUser?.email}
 								</span>
 							</div>
 						</div>

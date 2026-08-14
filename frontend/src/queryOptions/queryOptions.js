@@ -3,6 +3,16 @@ import { instance } from "@/api/axios";
 
 
 
+export function fetchRoleQueryOption(id) {
+	return queryOptions({
+		queryKey: ['role', id],
+		queryFn: async () => {
+			const response = await instance.get(`workspaces/${id}/role/`)
+			return response.data
+		},
+		enabled: !!id
+	})
+}
 export function fetchUserQueryOption() {
 	return queryOptions({
 		queryKey: ['user'],

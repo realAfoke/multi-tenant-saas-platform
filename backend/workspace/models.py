@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.db.models import constraints
 from django.utils import choices
+from django.utils.module_loading import module_dir
 
 # from django.utils.text import slugify
 
@@ -56,8 +57,6 @@ class Project(models.Model):
     name=models.CharField(max_length=100)
     workspace=models.ForeignKey(WorkSpace,related_name='projects',on_delete=models.CASCADE)
     created_by=models.ForeignKey(Membership,related_name='creator',on_delete=models.CASCADE)
-    admins=models.ManyToManyField(Membership,related_name='project_admins')
-    members=models.ManyToManyField(Membership,related_name='project_members')
     description=models.TextField()
     status=models.CharField(max_length=200,blank=True,default='active')
     created_at=models.DateTimeField(auto_now_add=True)
@@ -68,6 +67,27 @@ class Project(models.Model):
 
     def __str__(self):
         return self.name
+
+class ProjectMember(models.Model):
+    class Role(models.TextChoices):
+        ADMIN='admin'
+        MEMBER='member'
+    role=models.CharField(max_length=200,choices=Role.choices,default=Role.MEMBER)
+    project=models.ForeignKey(Project,related_name='project_members',on_delete=models.CASCADE)
+    members=models.ForeignKey(Membership,related_name='members_project',on_delete=models.CASCADE)
+
+    class Meta:
+        db_table='project_member'
+        constraints=[
+                models.UniqueConstraint(
+                    fields=['project','members'],name='unique_project_membership'
+                    )
+                ]
+
+    def __str__(self):
+        return self.role
+
+
 
 class Task(models.Model):
     title=models.CharField(max_length=250)
@@ -164,7 +184,7 @@ class Invite(models.Model):
         db_table='invite'
         constraints=[
                 models.UniqueConstraint(
-                    fields=['invited_by','email'],name='unique_project_request'
+                    fields=['invited_by','email','project'],name='unique_project_request'
                     )
                 ]
 

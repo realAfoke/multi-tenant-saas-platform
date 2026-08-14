@@ -25,7 +25,8 @@ export default function SideBar(props) {
 	const { workspaces, ordering } = userWorkspaces ?? {}
 	const { projects, projectOrdering } = workspaces?.[selectedWorkspace?.id] ?? {}
 
-	const user = queryClient.getQueryData(['user'])
+	const loggedInUser = queryClient.getQueryData(['user'])
+	const {user}=loggedInUser
 	const { data: projectTasks } = useQuery(taskQueryOption(selectedWorkspace?.id, selectedProject?.id))
 	const { tasks, taskOrdering } = projectTasks ?? {}
 

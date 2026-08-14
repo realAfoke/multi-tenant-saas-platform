@@ -26,7 +26,12 @@ export default function AcceptInvite() {
 
 	const [loading, setLoading] = useState(false)
 
-	const { data: user } = useQuery(fetchUserQueryOption())
+	const { data: loggedInUser } = useQuery(fetchUserQueryOption())
+	const user = loggedInUser?.user ?? {}
+	console.log('loggedUser:', user)
+	console.log('loggedUserEmail:', user?.email)
+	console.log("invite:", inviteDetail)
+	console.log("inviteEmail:", inviteDetail?.email)
 
 	const { data: invite } = useQuery({
 		queryKey: ['invite', inviteId],
@@ -114,7 +119,7 @@ export default function AcceptInvite() {
 			</div>
 		)
 	}
-	if (!cancel && (user && user?.email != invite?.email)) {
+	if (user?.email != invite?.email) {
 		return (<WrongAccount onSwitchAccount={handleSwtich} onCancel={setCancel} inviteEmail={invite?.email} currentEmail={user?.email} />)
 	}
 

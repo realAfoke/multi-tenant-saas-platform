@@ -98,7 +98,7 @@ export default function CreateProject() {
 								</Button>
 
 								<Button className="rounded-xl bg-blue-500 hover:bg-blue-600 px-6" onClick={() => {
-									createProject.mutate({ wk: workspace?.id, data: { name: name, description: description, projectMembers: projectMembers } }, { onSuccess: () => navigate('../') })
+									createProject.mutate({ wk: workspace?.id, data: { name: name, description: description, members: projectMembers } }, { onSuccess: () => navigate('../') })
 								}}>
 									Create Project
 								</Button>

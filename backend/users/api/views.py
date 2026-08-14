@@ -124,12 +124,16 @@ class RefreshTokenView(TokenRefreshView):
 
 
 class Me(generics.RetrieveUpdateAPIView):
-        queryset=Membership.objects.all()
-        serializer_class=MembershipSerializer
+        queryset=User.objects.all()
+        serializer_class=UserSerializer
         permission_classes=[permissions.IsAuthenticated]
 
+
         def get_object(self):
-            user=self.request.user
-            member=Membership.objects.filter(user=user).first()
-            return member
+              return self.request.user
+
+        # def get_object(self):
+        #     user=self.request.user
+        #     member=Membership.objects.filter(user=user).first()
+        #     return member
 

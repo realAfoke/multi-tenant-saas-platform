@@ -4,6 +4,7 @@ from . import views
 
 urlpatterns=[
                 ## create endpoint
+        path('<int:pk>/role/',views.RoleView.as_view(),name='role_view'),
         path('dashboard/<int:wk>/',views.DashBoard.as_view(),name='dashboard_view'),
         path('',views.WorkSpace.as_view(),name='workspace_view'),
         path('<int:wk>/projects/',views.Project.as_view(),name='project_view'),

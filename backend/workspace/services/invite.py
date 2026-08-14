@@ -94,6 +94,8 @@ class InviteService:
         project=invite.project
         if user in set(project.members.all()):
             raise ValidationError('invalid request')
+        logger.info(f"model token:{invite.token.token}")
+        logger.info(f"incoming token:{token}")
         if not invite.token.token == token:
             raise ValidationError('invalid operation')
 

@@ -178,7 +178,7 @@ export default function ProjectRoute() {
 							{['owner', 'admin'].includes(user.role) && <div>
 								<div className="flex gap-2">
 									<Input className="p-4 h-10 rounded-sm text-white" placeholder="Enter email to send an invite" value={email} onChange={(e) => setEmail(e.target.value)} />
-									<Button className={`${sent ? 'bg-green-400 p-2' : ''} text-white p-4`}
+									<Button className={`${!sent ? 'bg-green-400 rounded-sm' : ''} text-white p-4`}
 										onClick={() => sendInvite.mutate()}>{sent ? 'sent' : 'send'}</Button>
 								</div>
 							</div>

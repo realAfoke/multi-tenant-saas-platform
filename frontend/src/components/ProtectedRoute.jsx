@@ -1,10 +1,10 @@
 import { Outlet } from "react-router-dom"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useAppHook } from "@/hooks/appHook.js"
-import { fetchUserQueryOption, workspaceQueryOption, projectQueryOption } from "@/queryOptions/queryOptions"
+import { fetchUserQueryOption, workspaceQueryOption, projectQueryOption, fetchRoleQueryOption } from "@/queryOptions/queryOptions"
 import { useParams, Navigate } from "react-router-dom"
 import { useAppState } from "@/hooks/apptools"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import SideBar from "@/components/SideBar"
 import TopBar from "./TopBar"
 
@@ -23,8 +23,8 @@ export default function ProtectedRoute() {
 
 	const { data: user } = useQuery(fetchUserQueryOption())
 	useAppHook(workspaces, wkName, setWorkspace, selectedWorkspace, project, projectName, setProject, taskId, setTask, user)
-	const queryClient = useQueryClient()
 
+	useQuery(fetchRoleQueryOption(selectedWorkspace?.id))
 
 	if (!user) {
 		<Navigate to='/login' replace />

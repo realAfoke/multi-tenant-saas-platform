@@ -35,6 +35,17 @@ class DashBoard(generics.ListAPIView):
         # return models.Task.objects.all()
 
 
+class RoleView(generics.RetrieveAPIView):
+    queryset=models.Membership.objects.all()
+    permission_classes=[permissions.IsAuthenticated]
+    serializer_class=MembershipSerializer
+
+    def get_object(self):
+        user=self.request.user
+        return user.user_membership.filter(workspace=self.kwargs.get('pk')).first()
+
+
+
 class Base(generics.ListCreateAPIView):
     permission_classes=[IsWorkspaceMemeber]
     serializer_class=None

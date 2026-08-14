@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useQuery } from "@tanstack/react-query"
-import { fetchUserQueryOption, workspaceMemberQueryOption, workspaceQueryOption } from "@/queryOptions/queryOptions"
+import { fetchRoleQueryOption, fetchUserQueryOption, workspaceMemberQueryOption, workspaceQueryOption } from "@/queryOptions/queryOptions"
 import { Outlet, useNavigate } from "react-router-dom"
 import Grid from "@/components/itemDisplayOption/Option"
 import { useState } from "react"
@@ -34,6 +34,8 @@ export default function Workspace() {
 	let { projects, projectOrdering } = workspace ?? {}
 	let ordering = projectOrdering?.filter((projectId) => filter === 'all' || projects?.[projectId]?.status === filter)
 	const { data: user } = useQuery(fetchUserQueryOption())
+	const { data: role } = useQuery(fetchRoleQueryOption(selectedWorkspace?.id))
+
 
 	ordering = ordering?.length > 4 && !showMoreProject ? ordering?.slice(0, 6) : ordering
 	const { data: members } = useQuery(workspaceMemberQueryOption(workspace?.id))
@@ -60,7 +62,7 @@ export default function Workspace() {
 						{workspace?.description}
 					</p>
 				</div>
-				{['admin', 'owner'].includes(user?.role) &&
+				{['admin', 'owner'].includes(role?.role) &&
 					<Button className="rounded-xl bg-blue-500 hover:bg-blue-600 h-11 px-6" onClick={() => navigate('create-project')}>
 						New Project
 					</Button>

@@ -3,7 +3,14 @@ from django.db.models.signals import post_save,m2m_changed
 from workspace import models
 # from django.core.mail import send_mail
 from django.core.mail import send_mass_mail
+from django.contrib.auth import get_user_model
+ 
+import logging
 
+
+
+logger=logging.getLogger(__name__)
+User=get_user_model()
 
 
 
@@ -23,15 +30,25 @@ def send_task_update(sender,instance,created,**kwargs):
 @receiver(m2m_changed,sender=models.Task.members.through)
 def members_add(sender,instance,action,pk_set,**kwargs):
     users=User.objects.filter(pk__in=pk_set)
-    action=None
+    status=None
     if action == 'post_add':
-        action='added'
+        status='added'
     elif action == 'post_remove':
-        action ='removed'
-    message=[(f'You\'ve been {action} to Task',f'You were {action} as member to {instance.title.upper()}','noreply@example.com',[user.email]) for user in users]
-
-
-    send_mass_mail(message)
+        status ='removed'
+    message=[
+            (
+                f'You\'ve been {status} to Task',
+                f'You were {action} as member to {instance.title.upper()}',
+                'noreply@example.com',
+                [user.email]
+                )
+            for user in users if user.email
+            ]
+    try:
+        if message:
+            send_mass_mail(message,fail_silently=False)
+    except Exception as e:
+        logger.exception(e)
 
 
 @receiver(m2m_changed,sender=models.Task.admins.through)

@@ -2,24 +2,31 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth import get_user_model
+from rest_framework.generics import RetrieveAPIView
+import manage
 from workspace import models
-from users.api.serializers import UserSerializer
-from django.db.models import Q
+from django.db.models import Q, QuerySet
+import logging
 
 import workspace
 
 
 
+
+logger=logging.getLogger(__name__)
 UserModel=get_user_model()
 
 class MembershipSerializer(serializers.ModelSerializer):
-    user=UserSerializer(read_only=True)
+    user=serializers.SerializerMethodField()
     class Meta:
         model=models.Membership
-        fields=['role','user']
+        fields=['id','role','user']
+
+    def get_user(self,obj):
+        user=obj.user
+        return {'id':user.id,'first_name':user.first_name,'last_name':user.last_name,'email':user.email}
  
 class CommentSerializer(serializers.ModelSerializer):
-    # user=UserSerializer()
     user=serializers.SerializerMethodField()
     class Meta:
         model=models.Comment
@@ -34,7 +41,7 @@ class CommentSerializer(serializers.ModelSerializer):
         task=attrs['task']
         if not workspace.membership.filter(user=user).exists():
             raise PermissionDenied('you dont have permission to perform this operation')
-        if not project.members.filter(id=user.id).exists():
+        if not (project.members.filter(id=user.id).exists() or project.admins.filter(id=user.id).exists()):
             raise PermissionDenied('you dont have permission to perform this operation')
         if not task.members.filter(id=user.id).exists():
             raise PermissionDenied('you dont have permission to perform this operation')
@@ -45,111 +52,173 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class TaskSerializer(serializers.ModelSerializer):
-    members=UserSerializer(many=True,read_only=True)
-    comment_task=CommentSerializer(many=True,read_only=True)
+    created_by=MembershipSerializer(read_only=True)
+    comments=serializers.SerializerMethodField()
+    # comment_task=CommentSerializer(many=True,read_only=True)
     class Meta:
         model=models.Task
-        fields=['id','title','project','workspace','comment_task','description','members','created_by']
-        read_only_fields=['created_by']
-
+        fields=[
+                'id',
+                'title',
+                'project',
+                'workspace',
+                'description',
+                'created_by',
+                'comments'
+                ]
+        read_only_fields=[
+                'created_by',
+                'comments'
+                ]
 
     def validate(self, attrs):
         auth_user=self.context['request'].user
-        print('auth user',auth_user)
         workspace=attrs['workspace']
+        attrs['members']=[]
         attrs['members'].append(auth_user)
+        # logger.info('attrs:',attrs)
         if not workspace.membership.filter(user=auth_user,role__in=['owner','admin']).exists():
-            print( workspace.membership.filter(role__in=['owner','admin'],user=auth_user))
-            print('WORKSPACE:',workspace)
             raise PermissionDenied('you dont have the permissions to perform this operation')
         return attrs
 
+    def get_comments(self,obj):
+        comments_count=obj.comment_task.count()
+        return comments_count
 
+
+class ProjectMemberSerializer(serializers.ModelSerializer):
+    member=MembershipSerializer()
+    class Meta:
+        model=models.ProjectMember
+        fields='__all__'
 
 class ProjectSerializer(serializers.ModelSerializer):
-    members=UserSerializer(many=True,required=False)
-    # task_project=TaskSerializer(many=True,read_only=True)
-    project_tasks=serializers.SerializerMethodField()
-    admins=serializers.PrimaryKeyRelatedField(queryset=UserModel.objects.all(),many=True,required=False,write_only=True)
-    project_admins=serializers.SerializerMethodField()
+    # tasks=serializers.SerializerMethodField()
+    # project_tasks=serializers.SerializerMethodField()
+    project_members=serializers.SerializerMethodField()
+    member=serializers.PrimaryKeyRelatedField(queryset=models.Membership.objects.all(),many=True,write_only=True,required=False)
+    # project_admins=serializers.SerializerMethodField()
+    workspace_name=serializers.SerializerMethodField()
     class Meta:
         model=models.Project
-        fields=['id','name','workspace','created_by','admins','project_admins','members','project_tasks','description']
-        read_only_fields=['created_by','project_admins']
+        fields=[
+                'id',
+                'name',
+                'status',
+                'workspace',
+                'workspace_name',
+                'created_by',
+                'member',
+                'project_members',
+                'description',
+                'updated_at'
+                ]
+        read_only_fields=['created_by','updated_at','members','workspace_name']
 
 
     def create(self, validated_data):
         if '_existing' in validated_data:
             return validated_data['_existing']
+
+        member_to_add=validated_data.pop('member',[])
         workspace=validated_data['workspace']
-        member=workspace.membership.filter(workspace=workspace,role='owner').first()
-        owner=member.user
         project=super().create(validated_data)
-        project.admins.add(owner,validated_data['created_by'])
+
+
+        #project member
+        creater=self.context['request'].user
+        project_member_manager=getattr(models.ProjectMember,'objects')
+
+        #add creator and workspace owner as admin
+        admins=workspace.membership.filter(Q(role='owner')|Q(user=creater),workspace=workspace)
+        admin_mapping={member.id:member for member in admins}
+        project_member_manager.bulk_create([
+            models.ProjectMember(project=project,members=member,role='admin') for member in list(admin_mapping.values())
+            ])
+        #add members
+        member_mapping={member.id:member for member in member_to_add}
+        manager=getattr(models.Membership,'objects')
+        project_member_manager.bulk_create([
+            models.ProjectMember(project=project,members=member) for member in list(member_mapping.values())
+            ])
         return project
 
 
     def validate(self, attrs):
         current_user=self.context['request'].user
-        workspace=attrs['workspace']
-        if not workspace.membership.filter(user=current_user,role__in=['owner','admin']).exists():
+        workspace=attrs.get('workspace')
+        membership=current_user.user_membership.filter(workspace=workspace).first()
+        if membership.role not in {'admin','owner'}:
             raise PermissionDenied('you dont have permission to perform this operation')
-        existing=models.Project.objects.filter(workspace=workspace,name=attrs.get('name'),created_by=current_user).first()
+        manager=getattr(models.Project,'objects')
+        existing=manager.filter(workspace=workspace,name=attrs.get('name'),created_by=membership).first()
         if existing:
             attrs['_existing']=existing
+        attrs['created_by']=membership
         return attrs
 
-    def get_project_admins(self,obj):
+    def get_project_members(self,obj):
         current_user=self.context['request'].user
-        workspace=obj.workspace
-        wk_owner=workspace.membership.filter(role='owner').first()
-        # if current_user in set(obj.admins.all()):
-        if current_user != wk_owner.user:
-            not_ex=obj.admins.all()
-            admins=obj.admins.all().exclude(id=wk_owner.user.id)
-            return UserSerializer(admins,many=True,context=self.context).data
-        owner_admin_list=obj.admins.all()
-        return UserSerializer(owner_admin_list,many=True,context=self.context).data
-    def get_project_tasks(self,obj):
-        current_user=self.context['request'].user
-        if obj.task_project.filter(Q(members=current_user) | Q(admins=current_user)).exists():
-            return obj.task_project.values('id','title')
-        return None
+        membership=current_user.user_membership.filter(workspace=obj.workspace).first()
+        members=obj.project_member.all().exclude(member=membership)
+
+        if membership and membership.role != 'owner':
+            members=members.exclude(member__role='owner')
+
+        return ProjectMemberSerializer(members,many=True,context=self.context).data
+
+
+    def get_workspace_name(self,obj):
+        return obj.workspace.name
+    # def get_tasks(self,obj):
+    #     current_user=self.context['request'].user
+    #     membership=current_user.user_membership.filter(workspace=obj.workspace).first()
+    #     tasks=membership.task_members.all()
+    #     logger.info(f'task:{tasks}')
+    #     return TaskSerializer(tasks,many=True,context=self.context).data
+    #     # return obj.task_project.values('id','created_by','title','description','comments','updated_at') if task else None
 
 class InviteTokenSerializer(serializers.ModelSerializer):
     class Meta:
         model=models.InviteToken
         fields=['id','token','workspace']
 
-    def create(self, validated_data):
-        if '_existing_token' in validated_data:
-            return validated_data['_existing_token']
-        user=self.context['request'].user
-        token=models.InviteToken.objects.create(**validated_data)
-        log=models.InviteTokenAuditLog.objects.create(user=user,token=token)
-        return token
+    ###might come back to this late i moved token and  token audit to invite serialiser i believe it's more compact there
 
-    def validate(self, attrs):
-        user=self.context['request'].user
-        log=models.InviteTokenAuditLog.objects.filter(user=user,action='token created').first()
-        if log and not log.token.revoked:
-            attrs['_existing_token']=log.token
-        return attrs
+    # def create(self, validated_data):
+    #     if '_existing_token' in validated_data:
+    #         return validated_data['_existing_token']
+    #     token=models.InviteToken.objects.create(**validated_data)
+    #     log=models.InviteTokenAuditLog.objects.create(user=user,token=token)
+    #     return token
+    #
+    # def validate(self, attrs):
+    #     user=self.context['request'].user
+    #     log=models.InviteTokenAuditLog.objects.filter(user=user,action='token created').first()
+    #     if log and not log.token.revoked:
+    #         attrs['_existing_token']=log.token
+    #     attrs['user']=user
+    #     return attrs
 
 class WorkSpaceSerializer(serializers.ModelSerializer):
     projects=serializers.SerializerMethodField()
     # project_ids=serializers.PrimaryKeyRelatedField(source='projects',many=True,read_only=True)
     class Meta:
         model=models.WorkSpace
-        fields=['id','name','description','projects','created_at','updated_at']
+        # fields=['id','name','description','projects','created_at','updated_at']
+        fields='__all__'
+        read_only_fields=['projects']
 
 
     def create(self, validated_data):
         owner=self.context['request'].user
         if '_existing' in validated_data:
             return validated_data['_existing']
-        workspace=models.WorkSpace.objects.create(**validated_data)
-        models.Membership.objects.create(workspace=workspace,user=owner,role='owner')
+        
+        manger=getattr(models.WorkSpace,'objects')
+        workspace=manger.create(**validated_data)
+        member=models.Membership(workspace=workspace,user=owner,role='owner')
+        member.save()
         return workspace
 
     def validate(self, attrs):
@@ -157,7 +226,8 @@ class WorkSpaceSerializer(serializers.ModelSerializer):
         if not self.instance:
             if attrs.get('name') is None:
                 raise ValidationError('workspace cannot be null, please specify a workspace name')
-            existing=models.WorkSpace.objects.filter(name=attrs.get('name'),membership__role__in=['owner']).first()
+            manger=getattr(models.WorkSpace,'objects')
+            existing=manger.filter(name=attrs.get('name'),membership__role__in=['owner']).first()
             if existing:
                 attrs['_existing']=existing
             return attrs
@@ -171,8 +241,11 @@ class WorkSpaceSerializer(serializers.ModelSerializer):
             return attrs
     def get_projects(self,obj):
         user=self.context['request'].user
-        user_project=obj.projects.filter(Q(admins=user)|Q(members=user))
-        return [{'id':project.id,'name':project.name} for project in user_project]
+        workspace_membership=user.user_membership.filter(workspace=obj).first()
+        projects=obj.projects.filter(project_member__member=workspace_membership)
+        # projects=obj.projects.filter(Q(admins=workspace_membership)|Q(members=workspace_membership)).order_by('-updated_at')
+
+        return [{'id':project.id,'name':project.name,'status':project.status,'description':project.description,'updated_at':project.updated_at} for project in projects]
 
    
 # class FileSerializer(serializers.ModelSerializer):
@@ -192,20 +265,47 @@ class WorkSpaceSerializer(serializers.ModelSerializer):
 #             raise PermissionDenied('you dont have permission to perform this operation')
 #         if not task.members.filter(id=user.id).exists():
 #             raise PermissionDenied('you dont have permission to perform this operation')
-#
-#
+
+
+
+
 class TokenAuditTrailSerializer(serializers.ModelSerializer):
     class Meta:
         model=models.InviteTokenAuditLog
         fields=['id','token','action']
 
 
-class InviteRequestSerializer(serializers.ModelSerializer):
-    pending_user=UserSerializer(read_only=True)
+class InviteSerializer(serializers.ModelSerializer):
+    workspace=serializers.CharField(source='project.workspace.name',read_only=True)
+    project_name=serializers.CharField(source='project.name',read_only=True)
+    invited_by=MembershipSerializer(read_only=True)
+    token=serializers.CharField(write_only=True)
+    is_valid=serializers.SerializerMethodField()
     class Meta:
-        model=models.InviteRequest
+        model=models.Invite
         fields='__all__'
 
+    def create(self, validated_data):
+        project=validated_data.pop('project',None)
+        email=validated_data.pop('email',None)
+        workspace=getattr(project,'workspace')
+        manager=getattr(models.InviteToken,'objects')
+        token,_=manager.get_or_create(token=validated_data.pop('token'),defaults={'workspace':workspace,**validated_data})
+        validated_data['token']=token
+        user=self.context['request'].user
+        invited_by=user.user_membership.filter(workspace=workspace).first()
+        invite=models.Invite(invited_by=invited_by,project=project,email=email,**validated_data)
+        invite.save()
+        manager=getattr(models.InviteTokenAuditLog,'objects')
+        manager.create(user=invited_by,token=token)
+        return invite
+
+    def get_is_valid(self,obj):
+        token=obj.token
+        return token.no_used <= 0 and not token.revoked
+
+    def get_invited_by(self,obj):
+        return obj.invitd_by.invite.values('id','first_name','last_name')
 
     def update(self, instance, validated_data):
         if validated_data.get('status') == 'accept':
@@ -214,7 +314,6 @@ class InviteRequestSerializer(serializers.ModelSerializer):
             plan_limit=workspace.subscription.filter(status='active').first().plan.members_limit
             if wk_members_count >= plan_limit:
                 raise ValidationError('Members limit exceeded for this plan, upgrade your plan to add/accept more user invite')
-
             project=getattr(self.instance,'project')
             project.members.add(instance.pending_user)
             # wk_memb=models.Membership.objects.create(workspace=project.workspace,user=instance.pending_user,role='member')

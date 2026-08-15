@@ -1,12 +1,17 @@
 # from rest_framework.permissions import IsAdminUser
-from django.contrib.auth import PermissionDenied
+from inspect import istraceback
+from django.utils.ipv6 import ValidationError
 from rest_framework.permissions import SAFE_METHODS, BasePermission
 from django.db.models import Q
+import logging
+
+
+logger=logging.getLogger(__name__)
 
 class IsWorkspaceMemeber(BasePermission):
    def has_object_permission(self, request, view, obj):
         if not request.user.is_authenticated:
-            raise PermissionDenied('You\' not authenticated')
+            return False
         if hasattr(obj,'workspace'):
             obj=obj.workspace
         is_member=obj.membership.filter(role__in=['admin','owner','member'],user=request.user).exists()
@@ -18,16 +23,20 @@ class IsWorkspaceMemeber(BasePermission):
 
 class IsWorkspaceAdminOrSuperAdmin(IsWorkspaceMemeber):
     def has_permission(self, request, view):
-        wk=view.kwargs.get('pk')
+        logger.info(request.user.is_authenticated)
+        if not request.user.is_authenticated:
+            return False
+        wk=view.kwargs.get('wk')
         user=request.user
-        return bool(request.user.is_authenticated and user.user_membership.filter(Q(role='admin') | Q(role='owner'),workspace=wk).exists())
+        if request.method in SAFE_METHODS:
+            return True
+        return bool(user.user_membership.filter(Q(role='admin') | Q(role='owner'),workspace=wk).exists())
 
 
 class CommentPermission(BasePermission):
     def has_permission(self, request, view):
         if not request.user.is_authenticated:
-            raise PermissionDenied('You\' not authenticated')
-        tk=view.kwargs.get('pk')
+            return False
         is_member=request.user.task_members.filter(Q(members=request.user)|Q(admins=request.user)).exists()
         return is_member
 

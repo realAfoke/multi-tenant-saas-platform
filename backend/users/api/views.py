@@ -1,17 +1,24 @@
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.decorators import api_view
-from rest_framework import generics
+from rest_framework import generics, permissions,status
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from users.services.auth import verify_email,verify_otp
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenRefreshView
 from users.api.serializers import UserSerializer,LoginSerializer
+import logging
+from workspace.api.serializers import MembershipSerializer
+from workspace.models import Membership
+ 
 
 # Create your views here.
 
-
 User=get_user_model()
+
+logger=logging.getLogger(__name__)
 
 
 class SignUpView(generics.CreateAPIView):
@@ -88,4 +95,45 @@ class LoginView(TokenObtainPairView):
         return response
 
 
+@api_view(['POST'])
+def logout(request):
+        respone=Response({"message":"logout"})
+        respone.delete_cookie("access")
+        respone.delete_cookie("refresh")
+        return respone
+
+class RefreshTokenView(TokenRefreshView):
+        def post(self, request: Request, *args, **kwargs) -> Response:
+                serializer=self.get_serializer(data={'refresh':request.COOKIES.get('refresh')})
+                try:
+                        serializer.is_valid(raise_exception=True)
+                except TokenError as e:
+                        raise InvalidToken(e.args[0]) from e
+                access=serializer.validated_data.get('access')
+                response=Response(status=status.HTTP_200_OK)
+                response.set_cookie(
+                                key='access',
+                                value=str(access),
+                                httponly=True,
+                                secure=True,
+                                samesite='None',
+                                path='/',
+                                max_age=60*5
+                                )
+                return response
+
+
+class Me(generics.RetrieveUpdateAPIView):
+        queryset=User.objects.all()
+        serializer_class=UserSerializer
+        permission_classes=[permissions.IsAuthenticated]
+
+
+        def get_object(self):
+              return self.request.user
+
+        # def get_object(self):
+        #     user=self.request.user
+        #     member=Membership.objects.filter(user=user).first()
+        #     return member
 

@@ -12,9 +12,11 @@ import os
 from datetime import datetime
 from rest_framework.response import Response
 from django.core.mail import send_mail
+import logging
 
 load_dotenv()
 
+logger=logging.getLogger(__name__)
 
 
 ##views start here
@@ -34,23 +36,26 @@ class GetPlans(generics.ListAPIView):
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def create_checkout(request):
-    print('GOT HERE')
     plan_id=request.data.get('plan_id')
-    workspace_id=request.data.get('workspace_id')
+    # workspace_id=request.data.get('workspace_id')
     try:
         plan=Plan.objects.get(id=plan_id)
     except Plan.DoesNotExist:
         return Response('Select a plan to make payment')
-    if not request.user.user_membership.filter(workspace_id=workspace_id,role__in=['owner','admin']).exists():
+
+    workspace=request.user.user_membership.filter(role='owner').first().workspace
+    if not workspace:
         raise ValidationError('cant make payment to this workspace')
 
     checkout=client.v1.checkout.sessions.create({
-        "mode":"subscription","line_items":[{"price":getattr(plan,'stripe_price_id'),"quantity":1}],"success_url":"http://localhost/success"
-        ,"subscription_data":{"metadata":{"workspace_id":workspace_id,"plan_id":plan_id}}})
+        "mode":"subscription","line_items":[{"price":getattr(plan,'stripe_price_id'),"quantity":1}],"success_url":"https://localhost:5173/dashboard"
+        ,"subscription_data":{"metadata":{"workspace_id":workspace.id,"plan_id":plan_id}}})
     if hasattr(checkout,'url'):
         return Response({'status':checkout.url})
-    return response({"status":"successfull"})
-    
+    return Response({"status":"successfull"})
+   
+
+
 @api_view(['PUT','PATCH'])
 def cancel_subscription(request,workspace_id):
     subscription=Subscription.objects.filter(workspace_id=workspace_id,status='active')
@@ -68,69 +73,83 @@ def upgrade_subscription_plan(request,workspace_id):
     wk_sub=Subscription.objects.filter(workspace_id=workspace_id,status='active').first()
     client.v1.subscriptions.update(wk_sub.stripe_subscription_id,{"items":[{"id":wk_sub.subscription_item_id,"price":plan.stripe_price_id}],"metadata":{"plan_id":plan_id}})
  
+
+
+##webhook
 @api_view(['POST'])
 def stripe_webhook(request):
+    logger.info('inside webhook')
     payload=request.body
 
     sig=request.META.get('HTTP_STRIPE_SIGNATURE')
     endpoint_secret=os.getenv('STRIPE_WEBHOOK_SECRET')
-
     try:
-        event=stripe.Webhook.construct_event(payload,sig,endpoint_secret)
-    except stripe.APIError:
+        event = client.parse_event_notification(
+            payload,
+            sig,
+            endpoint_secret,
+        )
+        logger.info(f'RELATED OBJECT:{event.related_object.type}')
+        logger.info(f'DIR:{dir(event.related_object.type)}')
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+
         return HttpResponse(status=400)
-
-    subscription=event.data.object
-    stripe_sub_id=subscription.id
-    period_start=datetime.fromtimestamp(subscription.items.data[0].current_period_start)
-    period_end=datetime.fromtimestamp(subscription.items.data[0].current_period_end)
-    item_id=subscription.items.data[0].id
-
-    if event.type== 'customer.subscription.created':
-        workspace_id=subscription.metadata.workspace_id
-        plan_id=subscription.metadata.plan_id
-        Subscription.objects.filter(workspace_id=workspace_id).update(status='cancelled')
-        
-        Subscription.objects.create(workspace_id=workspace_id,plan_id=plan_id,subcription_item_id=item_id,stripe_subscription_id=subscription.id,status=subscription.status,current_period_start=period_start,current_period_end=period_end)
-
-    elif event.type == 'customer.subscription.deleted':
-        Subscription.objects.filter(stripe_subscription_id=stripe_sub_id,status='active').update(status='active')
-    elif event.type == 'customer.subscription.updated':
-        plan_id=subscription.metadata.plan_id
-        sub=Subscription.objects.filter(stripe_subscription_id=stripe_sub_id,status='active').first()
-        sub.subscription_item_id=item_id
-        sub.plan_id=plan_id
-        sub.current_period_start=period_start
-        sub.current_period_end=period_end
-        sub.save()
-
-    elif event.type == 'charge.failed':
-        subs=Subscription.objects.filter(stripe_subscription_id=stripe).first()
-        subs.status='past_due'
-        owner=subs.workspace.membership.filter(role='owner').first()
-
-        send_mail('Payment Failed - Action Required',
-                  f"""
-                  Hi {owner.user.first_name} {owner.user.last_name},
-
-                  Your payment for {subs.workspace.name} subscription failed.
-
-                  Card:****
-                  Amount:****
-                  Date:****
-
-                  Please updte your payment method to keep your workspace active.
-
-                  After 3 days without payment, your workspace will be restricted
-
-                  Update payment:****
-
-                  Thanks,
-                  Orbit Team
-                  """,'noreply@example.com',[owner.email])
-
-
-
+    # try:
+    #     event=stripe.Webhook.construct_event(payload,sig,endpoint_secret)
+    # except stripe.APIError:
+    #     return HttpResponse(status=400)
+    #
+    # subscription=event.data.object
+    # stripe_sub_id=subscription.id
+    # period_start=datetime.fromtimestamp(subscription.items.data[0].current_period_start)
+    # period_end=datetime.fromtimestamp(subscription.items.data[0].current_period_end)
+    # item_id=subscription.items.data[0].id
+    #
+    # if event.type== 'customer.subscription.created':
+    #     workspace_id=subscription.metadata.workspace_id
+    #     plan_id=subscription.metadata.plan_id
+    #     Subscription.objects.filter(workspace_id=workspace_id).update(status='cancelled')
+    #
+    #     Subscription.objects.create(workspace_id=workspace_id,plan_id=plan_id,subcription_item_id=item_id,stripe_subscription_id=subscription.id,status=subscription.status,current_period_start=period_start,current_period_end=period_end)
+    #
+    # elif event.type == 'customer.subscription.deleted':
+    #     Subscription.objects.filter(stripe_subscription_id=stripe_sub_id,status='active').update(status='active')
+    # elif event.type == 'customer.subscription.updated':
+    #     plan_id=subscription.metadata.plan_id
+    #     sub=Subscription.objects.filter(stripe_subscription_id=stripe_sub_id,status='active').first()
+    #     sub.subscription_item_id=item_id
+    #     sub.plan_id=plan_id
+    #     sub.current_period_start=period_start
+    #     sub.current_period_end=period_end
+    #     sub.save()
+    #
+    # elif event.type == 'charge.failed':
+    #     subs=Subscription.objects.filter(stripe_subscription_id=stripe).first()
+    #     subs.status='past_due'
+    #     owner=subs.workspace.membership.filter(role='owner').first()
+    #
+    #     send_mail('Payment Failed - Action Required',
+    #               f"""
+    #               Hi {owner.user.first_name} {owner.user.last_name},
+    #
+    #               Your payment for {subs.workspace.name} subscription failed.
+    #
+    #               Card:****
+    #               Amount:****
+    #               Date:****
+    #
+    #               Please updte your payment method to keep your workspace active.
+    #
+    #               After 3 days without payment, your workspace will be restricted
+    #
+    #               Update payment:****
+    #
+    #               Thanks,
+    #               Orbit Team
+    #               """,'noreply@example.com',[owner.email])
+    #
+    #
+    #
     return HttpResponse({'status':'successfull'})
-
-   

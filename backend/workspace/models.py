@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.db.models import constraints
 from django.utils import choices
+from django.utils.module_loading import module_dir
 
 # from django.utils.text import slugify
 
@@ -37,9 +39,15 @@ class Membership(models.Model):
     workspace=models.ForeignKey(WorkSpace,related_name='membership',on_delete=models.CASCADE)
     user=models.ForeignKey(UserModel,related_name='user_membership',on_delete=models.CASCADE)
     role=models.CharField(choices=[('owner','Owner'),('admin','Admin'),('member','Member')])
+    created_on=models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table='membership'
+        constraints=[
+                models.UniqueConstraint(
+                    fields=['workspace','user'],name='unique_workspace_membership'
+                    )
+                ]
 
     def __str__(self):
         return getattr(self.user,'email')
@@ -48,10 +56,9 @@ class Membership(models.Model):
 class Project(models.Model):
     name=models.CharField(max_length=100)
     workspace=models.ForeignKey(WorkSpace,related_name='projects',on_delete=models.CASCADE)
-    created_by=models.ForeignKey(UserModel,related_name='creator',on_delete=models.CASCADE)
-    admins=models.ManyToManyField(UserModel,related_name='project_admins')
-    members=models.ManyToManyField(UserModel,related_name='project_members')
+    created_by=models.ForeignKey(Membership,related_name='creator',on_delete=models.CASCADE)
     description=models.TextField()
+    status=models.CharField(max_length=200,blank=True,default='active')
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
 
@@ -61,15 +68,36 @@ class Project(models.Model):
     def __str__(self):
         return self.name
 
+class ProjectMember(models.Model):
+    class Role(models.TextChoices):
+        ADMIN='admin'
+        MEMBER='member'
+    role=models.CharField(max_length=200,choices=Role.choices,default=Role.MEMBER)
+    project=models.ForeignKey(Project,related_name='project_member',on_delete=models.CASCADE)
+    member=models.ForeignKey(Membership,related_name='members_project',on_delete=models.CASCADE)
+
+    class Meta:
+        db_table='project_member'
+        constraints=[
+                models.UniqueConstraint(
+                    fields=['project','member'],name='unique_project_membership'
+                    )
+                ]
+
+    def __str__(self):
+        return self.role
+
+
+
 class Task(models.Model):
     title=models.CharField(max_length=250)
     project=models.ForeignKey(Project,related_name='task_project',on_delete=models.CASCADE)
     workspace=models.ForeignKey(WorkSpace,related_name='task_workspace',on_delete=models.CASCADE)
     description=models.TextField()
     status=models.CharField(max_length=200,choices=Choices.choices,default=Choices.IN_PROGRESS)
-    admins=models.ManyToManyField(UserModel,related_name='task_admins')
-    created_by=models.ForeignKey(UserModel,related_name='task_creator',on_delete=models.CASCADE)
-    members=models.ManyToManyField(UserModel,related_name='task_members')
+    admins=models.ManyToManyField(Membership,related_name='task_admins')
+    created_by=models.ForeignKey(Membership,related_name='task_creator',on_delete=models.CASCADE)
+    members=models.ManyToManyField(Membership,related_name='task_members')
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
 
@@ -132,7 +160,7 @@ class InviteTokenActions(models.TextChoices):
     TOKEN_REVOKED='token revoked'
 
 class InviteTokenAuditLog(models.Model):
-    user=models.ForeignKey(UserModel,related_name='invite_token_user',on_delete=models.CASCADE)
+    user=models.ForeignKey(Membership,related_name='invite_token_user',on_delete=models.SET_NULL,null=True,blank=True)
     action=models.CharField(max_length=200,choices=InviteTokenActions.choices,default=InviteTokenActions.TOKEN_CREATED)
     token=models.ForeignKey(InviteToken,related_name='token_log',on_delete=models.CASCADE)
     time=models.DateTimeField(auto_now=True)
@@ -143,22 +171,38 @@ class InviteTokenAuditLog(models.Model):
     def __str__(self):
         return str(self.action)
 
-class InviteRequest(models.Model):
-    pending_user=models.ForeignKey(UserModel,related_name='pending_user',on_delete=models.CASCADE)
+class Invite(models.Model):
+    invited_by=models.ForeignKey(Membership,related_name='invite',on_delete=models.SET_NULL,null=True,blank=True)
+    email=models.EmailField()
+    token=models.ForeignKey(InviteToken,related_name='invites',on_delete=models.SET_NULL,null=True,blank=True)
     status=models.CharField(max_length=200,default='pending',)
-    project=models.ForeignKey(Project,related_name='request_project',on_delete=models.CASCADE)
-    workspace=models.ForeignKey(WorkSpace,related_name='workspace_request',on_delete=models.CASCADE)
+    project=models.ForeignKey(Project,related_name='project_invite',on_delete=models.CASCADE)
     timestamp=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table='invite_request'
+        db_table='invite'
         constraints=[
                 models.UniqueConstraint(
-                    fields=['pending_user','workspace'],name='unique_workspace_request'
+                    fields=['invited_by','email','project'],name='unique_project_request'
                     )
                 ]
 
     def __str__(self):
-        return str(self.pending_user)
+        return str(self.email)
 
+
+class ActivityLog(models.Model):
+    user=models.ForeignKey(Membership,related_name='activity_user',on_delete=models.SET_NULL,null=True,blank=True)
+    workspace=models.ForeignKey(WorkSpace,related_name='workspace_activity',on_delete=models.CASCADE)
+    project=models.ForeignKey(Project,related_name='activity_project',on_delete=models.CASCADE,null=True)
+    task=models.ForeignKey(Task,related_name='activity_task',on_delete=models.CASCADE,null=True)
+    action=models.CharField(max_length=200)
+    created_at=models.DateTimeField(auto_now_add=True)
+
+
+    def __str__(self):
+        return self.action
+
+    class Meta:
+        db_table='activityLog'

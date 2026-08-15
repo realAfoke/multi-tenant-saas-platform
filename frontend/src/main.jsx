@@ -1,22 +1,96 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import Login from './pages/Login.jsx'
+import Login, { loader as loginLoader } from './pages/login.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
-import Dashboard from './pages/Dashboard.jsx'
 import './index.css'
+import Workspace from './pages/Workspace.jsx'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import Create from './components/Create.jsx'
+import Task from './pages/task.jsx'
+import Profile from './pages/profile.jsx'
 // import App from './App.jsx'
+import ErrorPage from './components/Error.jsx'
+import LandingPage from './pages/landing.jsx'
+import Pricing from './pages/pricing.jsx'
+import Home from './pages/home.jsx'
+import ProjectOverview from './pages/projectOverview.jsx'
+import Board from './pages/board.jsx'
+import Discussion from './pages/discussion.jsx'
+import { Files } from 'lucide-react'
+import Settings from './pages/setting.jsx'
+import Notifications from './pages/notification.jsx'
+import CreateProject from './components/CreateProject.jsx'
+import CreateTask from './components/CreateTask.jsx'
+import Checkout from './pages/checkout.jsx'
+import ProjectRoute from './route/projectRoute.jsx'
+import SignUp, { loader as signUpLoader } from './pages/signup.jsx'
+import SignEmail from './components/SignEmail.jsx'
+import VerifyEmail from './components/VerifyEmail.jsx'
+import AccountDetails from './components/AccountDetails.jsx'
+import AcceptInvite from './pages/acceptInvite.jsx'
+
+
+
+const queryClient = new QueryClient()
 
 const routes = createBrowserRouter([
+  { path: 'accept-invite', element: <AcceptInvite /> },
   {
-    path: 'login', element: <Login />,
+    path: 'signup', element: <SignUp />, loader: signUpLoader, children: [
+      { index: true, element: <SignEmail /> },
+      { path: 'otp-verification', element: <VerifyEmail /> },
+      { path: 'account-detail', element: <AccountDetails /> }
+    ]
   },
-  { path: 'dashboard', element: <ProtectedRoute><Dashboard /></ProtectedRoute> },
-  { path: '/', element: <ProtectedRoute><Dashboard /></ProtectedRoute> },
+  {
+    path: 'login', element: <Login />, errorElement: <ErrorPage />, loader: loginLoader
+  },
+  { path: '/', element: <LandingPage /> },
+  { path: '/pricing', element: <Pricing /> },
+  {
+    path: '/dashboard', element: <ProtectedRoute />, errorElement: <ErrorPage />,
+    children: [
+      { index: true, element: <Home /> },
+      {
+        path: ':wkName', element: <Workspace />, children: [
+          { path: 'create-project', element: <CreateProject /> },
+        ]
+      },
+      {
+        path: ':wkName/add-new-project', element: <Create />
+      },
+      {
+        path: ':wkName/:projectName', element: <ProjectRoute />, children: [
+          { index: true, element: <ProjectOverview /> },
+          { path: 'board', element: <Board /> },
+          { path: 'files', element: <Files /> },
+          { path: 'discussion', element: <Discussion /> },
+        ]
+      },
+      {
+        path: ':wkName/:projectName/:taskId', element: <Task />,
+      },
+      {
+        path: ':wkName/:prjName/add-new-task', element: <Create />
+      },
+      {
+        path: 'create-new-workspace', element: <Create />
+      },
+
+      { path: 'profile', element: <Profile /> },
+      { path: 'setting', element: <Settings /> },
+      { path: 'notification', element: <Notifications /> },
+      { path: 'createtask', element: <CreateTask /> },
+      { path: 'checkout', element: <Checkout /> },
+    ]
+  },
 ])
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <RouterProvider router={routes} />
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={routes} />
+    </QueryClientProvider>
   </StrictMode>,
 )

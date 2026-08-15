@@ -3,6 +3,7 @@
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/noto-sans";
 @import "@fontsource-variable/playfair-display";
+@plugin "tailwind-scrollbar";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -129,3 +130,9 @@
     @apply font-sans;
     }
 }
+@layer components{
+  .sunk{
+    box-shadow:inset 0px 4px 8px rgba(0,0,0,0.2),inset -5px -5px -8px rgba(0,0,0,0.2)
+  }
+}
+

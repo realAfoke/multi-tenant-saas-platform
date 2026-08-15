@@ -3,6 +3,10 @@ import re
 from django.core.cache import cache
 from django.core.mail import send_mail
 from rest_framework.exceptions import ValidationError
+import logging
+
+
+logger=logging.getLogger(__name__)
 
 
 def verify_email(model,request):
@@ -13,6 +17,8 @@ def verify_email(model,request):
         pattern=r'^[a-zA-Z0-9.%_+-]+@[a-zA-Z0-9.%+_-]+\.[a-zA-Z]{2,}$'
         match =re.match(pattern,request.data.get('email'))
         if not match:
+            logger.info('inside here')
+            logger.info(f'email:{request.data.get("email")}')
             raise ValidationError('invalid crendentials') 
         query['email']=request.data.get('email')
     is_used=model.objects.filter(**query).exists()
@@ -26,8 +32,7 @@ def verify_email(model,request):
     return {"status":"otp sent to provided email"}
 
 def verify_otp(key,value):
-    otp_key=f'otp:{key}'
-    print('OTP:',otp_key)
+    otp_key=f'otp:{key}'  ##email or phone
     otp=cache.get(otp_key)
     if otp != value:
         raise ValidationError('otp is invalid')

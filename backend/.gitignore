@@ -6,4 +6,6 @@ __pycache__/
 #folders
 staticfiles/
 media/
+*log
+*logs
 

@@ -7,7 +7,7 @@ import { useAppState } from "@/hooks/apptools"
 
 export default function SignUp() {
 	const navigate = useNavigate()
-	const [email, setEmail] = useState("mrcrab@example.com")
+	const [email, setEmail] = useState("")
 	const [showBackWarning, setShowBackWarning] = useState(false)
 	const [step, setStep] = useState('')
 	const { inviteDetail } = useAppState()
@@ -24,6 +24,12 @@ export default function SignUp() {
 			default: setStep(1)
 		}
 	}, [paths])
+
+	useEffect(() => {
+		if (inviteDetail?.email) {
+			setEmail(inviteDetail?.email)
+		}
+	}, [inviteDetail])
 
 
 	const handleChange = () => {

@@ -1,8 +1,13 @@
 import { MoreHorizontal, Check } from "lucide-react"
+import { use } from "react"
 
 const User = (props) => {
-	const { member = {} } = props
-	const { user, role } = member
+	let { member = {} } = props
+	const role = member?.role
+	member = member?.member ? member?.member : member
+	const user = member?.user
+	console.log(member)
+	console.log(user)
 	const addUserToProject = props?.addUserToProject ?? {}
 	const projectMembers = props?.projectMembers ?? []
 	const fullName = `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim()

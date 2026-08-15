@@ -3,6 +3,7 @@ from rest_framework.exceptions import ValidationError
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth import get_user_model
 from rest_framework.generics import RetrieveAPIView
+import manage
 from workspace import models
 from django.db.models import Q, QuerySet
 import logging
@@ -86,16 +87,16 @@ class TaskSerializer(serializers.ModelSerializer):
 
 
 class ProjectMemberSerializer(serializers.ModelSerializer):
-    member=MembershipSerializer(many=True)
+    member=MembershipSerializer()
     class Meta:
         model=models.ProjectMember
         fields='__all__'
 
 class ProjectSerializer(serializers.ModelSerializer):
-    # members=MembershipSerializer(many=True,required=False)
     # tasks=serializers.SerializerMethodField()
     # project_tasks=serializers.SerializerMethodField()
-    members=serializers.PrimaryKeyRelatedField(queryset=models.Membership.objects.all(),many=True,write_only=True,required=False)
+    project_members=serializers.SerializerMethodField()
+    member=serializers.PrimaryKeyRelatedField(queryset=models.Membership.objects.all(),many=True,write_only=True,required=False)
     # project_admins=serializers.SerializerMethodField()
     workspace_name=serializers.SerializerMethodField()
     class Meta:
@@ -107,7 +108,8 @@ class ProjectSerializer(serializers.ModelSerializer):
                 'workspace',
                 'workspace_name',
                 'created_by',
-                'members',
+                'member',
+                'project_members',
                 'description',
                 'updated_at'
                 ]
@@ -118,7 +120,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         if '_existing' in validated_data:
             return validated_data['_existing']
 
-        member_to_add=validated_data.pop('members',[])
+        member_to_add=validated_data.pop('member',[])
         workspace=validated_data['workspace']
         project=super().create(validated_data)
 
@@ -136,11 +138,9 @@ class ProjectSerializer(serializers.ModelSerializer):
         #add members
         member_mapping={member.id:member for member in member_to_add}
         manager=getattr(models.Membership,'objects')
-        logger.info(f'member:{member_to_add}')
         project_member_manager.bulk_create([
             models.ProjectMember(project=project,members=member) for member in list(member_mapping.values())
             ])
-        logger.info('logger is here about to return ')
         return project
 
 
@@ -157,15 +157,16 @@ class ProjectSerializer(serializers.ModelSerializer):
         attrs['created_by']=membership
         return attrs
 
-    # def get_project_admins(self,obj):
-    #     current_user=self.context['request'].user
-    #     membership=current_user.user_membership.filter(workspace=obj.workspace).first()
-    #
-    #     admins=obj.admins.all()
-    #     if membership and membership.role != 'owner':
-    #         admins=obj.admins.exclude(user=current_user)
-    #     return MembershipSerializer(admins,many=True,context=self.context).data
-    #
+    def get_project_members(self,obj):
+        current_user=self.context['request'].user
+        membership=current_user.user_membership.filter(workspace=obj.workspace).first()
+        members=obj.project_member.all().exclude(member=membership)
+
+        if membership and membership.role != 'owner':
+            members=members.exclude(member__role='owner')
+
+        return ProjectMemberSerializer(members,many=True,context=self.context).data
+
 
     def get_workspace_name(self,obj):
         return obj.workspace.name
@@ -241,7 +242,7 @@ class WorkSpaceSerializer(serializers.ModelSerializer):
     def get_projects(self,obj):
         user=self.context['request'].user
         workspace_membership=user.user_membership.filter(workspace=obj).first()
-        projects=obj.projects.filter(project_members__members=workspace_membership)
+        projects=obj.projects.filter(project_member__member=workspace_membership)
         # projects=obj.projects.filter(Q(admins=workspace_membership)|Q(members=workspace_membership)).order_by('-updated_at')
 
         return [{'id':project.id,'name':project.name,'status':project.status,'description':project.description,'updated_at':project.updated_at} for project in projects]
@@ -288,12 +289,15 @@ class InviteSerializer(serializers.ModelSerializer):
         project=validated_data.pop('project',None)
         email=validated_data.pop('email',None)
         workspace=getattr(project,'workspace')
-        token,_=models.InviteToken.objects.get_or_create(token=validated_data.pop('token'),defaults={'workspace':workspace,**validated_data})
+        manager=getattr(models.InviteToken,'objects')
+        token,_=manager.get_or_create(token=validated_data.pop('token'),defaults={'workspace':workspace,**validated_data})
         validated_data['token']=token
-        invited_by=self.context['request'].user
+        user=self.context['request'].user
+        invited_by=user.user_membership.filter(workspace=workspace).first()
         invite=models.Invite(invited_by=invited_by,project=project,email=email,**validated_data)
         invite.save()
-        models.InviteTokenAuditLog.objects.create(user=invited_by,token=token)
+        manager=getattr(models.InviteTokenAuditLog,'objects')
+        manager.create(user=invited_by,token=token)
         return invite
 
     def get_is_valid(self,obj):

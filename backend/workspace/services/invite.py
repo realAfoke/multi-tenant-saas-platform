@@ -92,10 +92,8 @@ class InviteService:
     @staticmethod
     def accept_invite(invite,user,token,request):
         project=invite.project
-        if user in set(project.members.all()):
+        if project.project_member.filter(member__user=user).exists():
             raise ValidationError('invalid request')
-        logger.info(f"model token:{invite.token.token}")
-        logger.info(f"incoming token:{token}")
         if not invite.token.token == token:
             raise ValidationError('invalid operation')
 
@@ -114,11 +112,13 @@ class InviteService:
                         user=user,
                         defaults={'role':'member'}
                         )
-                project.members.add(member)
+                project.project_member.create(role='member',member=member)
+                audit=TokenAuditTrailSerializer(data={'action':'token used','token':invite.token.id,'user':member},context={'request':request})
+            else:
+                audit=TokenAuditTrailSerializer(data={'action':'declined','token':invite.token.id,},context={'request':request})
             invite.token.no_used=1
             invite.token.save()
-            audit=TokenAuditTrailSerializer(data={'action':'token used','token':invite.token.id,'user':user},context={'request':request})
             audit.is_valid(raise_exception=True)
-            audit.save(user=user)
+            audit.save()
             # return {'status':'thanks for accepting to join the workspace,our admins will get your request approved immediately'}
 

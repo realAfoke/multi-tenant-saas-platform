@@ -73,14 +73,14 @@ class ProjectMember(models.Model):
         ADMIN='admin'
         MEMBER='member'
     role=models.CharField(max_length=200,choices=Role.choices,default=Role.MEMBER)
-    project=models.ForeignKey(Project,related_name='project_members',on_delete=models.CASCADE)
-    members=models.ForeignKey(Membership,related_name='members_project',on_delete=models.CASCADE)
+    project=models.ForeignKey(Project,related_name='project_member',on_delete=models.CASCADE)
+    member=models.ForeignKey(Membership,related_name='members_project',on_delete=models.CASCADE)
 
     class Meta:
         db_table='project_member'
         constraints=[
                 models.UniqueConstraint(
-                    fields=['project','members'],name='unique_project_membership'
+                    fields=['project','member'],name='unique_project_membership'
                     )
                 ]
 
@@ -160,7 +160,7 @@ class InviteTokenActions(models.TextChoices):
     TOKEN_REVOKED='token revoked'
 
 class InviteTokenAuditLog(models.Model):
-    user=models.ForeignKey(UserModel,related_name='invite_token_user',on_delete=models.CASCADE)
+    user=models.ForeignKey(Membership,related_name='invite_token_user',on_delete=models.SET_NULL,null=True,blank=True)
     action=models.CharField(max_length=200,choices=InviteTokenActions.choices,default=InviteTokenActions.TOKEN_CREATED)
     token=models.ForeignKey(InviteToken,related_name='token_log',on_delete=models.CASCADE)
     time=models.DateTimeField(auto_now=True)
@@ -172,7 +172,7 @@ class InviteTokenAuditLog(models.Model):
         return str(self.action)
 
 class Invite(models.Model):
-    invited_by=models.ForeignKey(UserModel,related_name='invite',on_delete=models.SET_NULL,null=True,blank=True)
+    invited_by=models.ForeignKey(Membership,related_name='invite',on_delete=models.SET_NULL,null=True,blank=True)
     email=models.EmailField()
     token=models.ForeignKey(InviteToken,related_name='invites',on_delete=models.SET_NULL,null=True,blank=True)
     status=models.CharField(max_length=200,default='pending',)
@@ -193,7 +193,7 @@ class Invite(models.Model):
 
 
 class ActivityLog(models.Model):
-    user=models.ForeignKey(UserModel,related_name='activity_user',on_delete=models.CASCADE)
+    user=models.ForeignKey(Membership,related_name='activity_user',on_delete=models.SET_NULL,null=True,blank=True)
     workspace=models.ForeignKey(WorkSpace,related_name='workspace_activity',on_delete=models.CASCADE)
     project=models.ForeignKey(Project,related_name='activity_project',on_delete=models.CASCADE,null=True)
     task=models.ForeignKey(Task,related_name='activity_task',on_delete=models.CASCADE,null=True)

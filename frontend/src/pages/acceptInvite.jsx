@@ -26,12 +26,7 @@ export default function AcceptInvite() {
 
 	const [loading, setLoading] = useState(false)
 
-	const { data: loggedInUser } = useQuery(fetchUserQueryOption())
-	const user = loggedInUser?.user ?? {}
-	console.log('loggedUser:', user)
-	console.log('loggedUserEmail:', user?.email)
-	console.log("invite:", inviteDetail)
-	console.log("inviteEmail:", inviteDetail?.email)
+	const { data: user } = useQuery(fetchUserQueryOption())
 
 	const { data: invite } = useQuery({
 		queryKey: ['invite', inviteId],
@@ -45,6 +40,7 @@ export default function AcceptInvite() {
 			}
 		}
 	})
+	const inviter = invite?.invitedBy?.user ?? {}
 	useEffect(() => {
 		if (inviteDetail && inviteDetail?.email === invite?.email) return
 		setInvite({ token: token, id: inviteId, email: invite?.email })
@@ -155,7 +151,7 @@ export default function AcceptInvite() {
 							<p className="text-zinc-400 mt-3 leading-relaxed">
 
 								<span className="text-zinc-200 font-medium">
-									{`${invite?.invitedBy?.firstName} ${invite?.invitedBy?.lastName}`}
+									{`${inviter?.firstName} ${inviter?.lastName}`}
 								</span>{" "}
 
 								invited you to join

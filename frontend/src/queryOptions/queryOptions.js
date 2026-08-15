@@ -69,30 +69,13 @@ async function workspaceFn() {
 export function projectQueryOption(wkId, projectId) {
 	return queryOptions({
 		queryKey: [wkId, 'project', projectId],
-		queryFn: () => projectFn(wkId, projectId),
+		queryFn: async ({ queryKey }) => {
+			const [wkId, , projectId] = queryKey
+			const project = await instance.get(`workspaces/${wkId}/project/${projectId}/`)
+			return project?.data
+		},
 		enabled: !!projectId,
-		// select: (data) => {
-		// 	const projectMap = Object.fromEntries(data.map((obj) => [obj.id, obj]))
-		// 	return {
-		// 		projects: projectMap,
-		// 		projectOrdering: data.map((obj) => obj.id)
-		// 	}
-		// },
 	})
-}
-
-async function projectFn(wkId, projectId) {
-	try {
-		const project = await instance.get(`workspaces/${wkId}/project/${projectId}/`)
-		return project?.data
-		// return {
-		// 	projects: Object.fromEntries(projects?.data?.map((obj) => [obj?.id, obj])),
-		// 	projectOrdering: projects?.data?.map((obj) => obj?.id)
-		// }
-	} catch (error) {
-		console.error(error)
-		throw new Error(error)
-	}
 }
 
 

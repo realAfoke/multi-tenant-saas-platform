@@ -2,10 +2,9 @@ import { ItemGroup, Item, ItemContent, ItemTitle, ItemMedia } from "@/components
 import NestedList from "@/components/NestedList"
 import searchIcon from "@/assets/search1.svg"
 import cog from "@/assets/project.svg"
-import edit from "@/assets/edit1.svg"
 import closeMenu from '@/assets/close.svg'
 import { Fragment, useState, useRef, useEffect } from "react"
-import { useNavigate, Link, useParams } from "react-router-dom"
+import { Link } from "react-router-dom"
 import profile from "@/assets/profileIcon.svg"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { workspaceQueryOption, taskQueryOption } from "@/queryOptions/queryOptions"
@@ -15,18 +14,15 @@ import { Button } from "./ui/button"
 export default function SideBar(props) {
 	const ref = useRef(null)
 	const { setToggle, handleToggleWorkspace, toggleWorkspace } = props
-	const { setWorkspace, setProject, setTask, selectedWorkspace, selectedProject, selectedTask } = useAppState()
+	const { setWorkspace, setProject, setTask, selectedWorkspace, selectedProject } = useAppState()
 	const [showOptions, setShowOptions] = useState(false)
-	const navigate = useNavigate()
 	const queryClient = useQueryClient()
 
-	const { wkName, projectName } = useParams()
 	const { data: userWorkspaces } = useQuery(workspaceQueryOption())
 	const { workspaces, ordering } = userWorkspaces ?? {}
 	const { projects, projectOrdering } = workspaces?.[selectedWorkspace?.id] ?? {}
 
-	const loggedInUser = queryClient.getQueryData(['user'])
-	const {user}=loggedInUser
+	const user = queryClient.getQueryData(['user'])
 	const { data: projectTasks } = useQuery(taskQueryOption(selectedWorkspace?.id, selectedProject?.id))
 	const { tasks, taskOrdering } = projectTasks ?? {}
 

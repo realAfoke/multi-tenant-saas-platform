@@ -6,7 +6,7 @@ import { useAppState } from "@/hooks/apptools"
 
 export default function ProjectOverview() {
 	const { wkName, projectName } = useParams()
-	const { project, showMoreMembers,setShowMoreMembers, memberDisplay, members } = useOutletContext()
+	const { project, showMoreMembers, setShowMoreMembers, memberDisplay, projectMembers } = useOutletContext()
 	const navigate = useNavigate()
 	const { setTask } = useAppState()
 	const lastUpdatedTask = (project?.tasks) ?? []
@@ -116,13 +116,13 @@ export default function ProjectOverview() {
 								</h2>
 								<div className="flex -space-x-4 mt-6">
 									{memberDisplay?.map((member) => {
-										const { user = {} } = member ?? {}
+										const user = member?.member?.user ?? {}
 										const name = user?.firstName?.slice(0, 1)?.toUpperCase()
 										return (
 											<div key={user?.id} className="flex justify-center items-center rounded-full font-bold text-lg w-12 h-12 bg-blue-500 border-2 border-zinc-900">{name}</div>
 										)
 									})}
-									{members?.length > 1 &&
+									{projectMembers?.length > 1 &&
 										<button
 											type="button"
 											className="ml-5 text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors"
@@ -133,7 +133,7 @@ export default function ProjectOverview() {
 									}
 								</div>
 								<p className="text-zinc-400 mt-6 leading-relaxed">
-									{`${members?.length} members are collaborating in this project.`}
+									{`${projectMembers?.length} members are collaborating in this project.`}
 								</p>
 							</CardContent>
 						</Card>

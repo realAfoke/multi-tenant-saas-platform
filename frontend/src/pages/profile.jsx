@@ -23,8 +23,6 @@ export default function Profile() {
 		}
 	})
 	const { data: user } = useQuery(fetchUserQueryOption())
-	const loggedInUser = user?.user ?? {}
-	console.log(loggedInUser)
 
 	return (
 		<div className="space-y-8 max-w-5xl text-white flex-1">
@@ -55,7 +53,7 @@ export default function Profile() {
 						<div className="relative">
 
 							<div className="w-24 h-24 rounded-full bg-blue-500 flex items-center justify-center text-3xl font-semibold">
-								{loggedInUser.firstName?.slice(0, 1)?.toUpperCase()}
+								{user.firstName?.slice(0, 1)?.toUpperCase()}
 							</div>
 
 							<button className="absolute -bottom-1 -right-1 w-9 h-9 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center hover:bg-zinc-700 transition">
@@ -67,11 +65,11 @@ export default function Profile() {
 						<div>
 
 							<h2 className=" text-white text-2xl font-semibold">
-								{`${loggedInUser?.firstName} ${loggedInUser?.lastName}`}
+								{`${user?.firstName} ${user?.lastName}`}
 							</h2>
 
 							<p className="text-zinc-400 mt-1">
-								{loggedInUser?.email}
+								{user?.email}
 							</p>
 
 							<p className="text-sm text-zinc-500 mt-3">
@@ -121,7 +119,7 @@ export default function Profile() {
 							</p>
 
 							<p className="text-white mt-2">
-								{loggedInUser?.firstName} 							</p>
+								{user?.firstName} 							</p>
 						</div>
 
 						<div>
@@ -130,7 +128,7 @@ export default function Profile() {
 							</p>
 
 							<p className="text-white mt-2">
-								{loggedInUser?.lastName}
+								{user?.lastName}
 							</p>
 						</div>
 
@@ -142,7 +140,7 @@ export default function Profile() {
 							<div className="flex items-center gap-2 mt-2">
 								<Mail className="w-4 h-4 text-zinc-500" />
 								<span className="text-white">
-									{loggedInUser?.email}
+									{user?.email}
 								</span>
 							</div>
 						</div>

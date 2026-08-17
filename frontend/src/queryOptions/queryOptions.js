@@ -100,6 +100,24 @@ async function taskFn(wk, prjId) {
 	}
 }
 
+
+export function selectedTaskQueryOption(wk, prj, tk) {
+	return queryOptions({
+		queryKey: ['task', wk, prj, tk],
+		queryFn: async ({ queryKey }) => {
+			try {
+				const [, wk, prj, tk] = queryKey
+				const response = await instance.get(`workspaces/${wk}/${prj}/task/${tk}/`)
+				return response.data
+			} catch (error) {
+				console.error(error)
+				throw Error(error)
+			}
+		},
+		enabled: !!tk
+	})
+}
+
 export function commentQueryOption(taskId) {
 	return queryOptions({
 		queryKey: [taskId, 'comments'],

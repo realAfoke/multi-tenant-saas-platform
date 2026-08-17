@@ -5,7 +5,10 @@ import { TimerIcon } from "lucide-react";
 
 export default function Comments(props) {
 	const { comment = {} } = props ?? {}
-	const { user } = comment
+	const user = comment?.user?.user ?? {}
+	console.log(comment)
+	const date = new Date(comment?.createdAt)
+	const time = `${date.getHours()}:${date.getMinutes()} PM`
 	return (
 		<div className="flex gap-3">
 
@@ -17,11 +20,11 @@ export default function Comments(props) {
 
 				<div className="flex items-center gap-2">
 					<p className="text-sm font-medium">
-						Sarah
+						{`${user?.firstName} ${user?.lastName}`}
 					</p>
 
 					<span className="text-xs text-zinc-600">
-						<TimerIcon />
+						{time}
 					</span>
 				</div>
 

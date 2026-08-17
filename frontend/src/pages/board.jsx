@@ -16,38 +16,6 @@ export default function Board() {
 		["Review", 2],
 		["Done", 14],
 	]
-	// const tasks = [
-	// 	{
-	// 		id: 1,
-	// 		title: "Authentication API",
-	// 		description: "Implement JWT authentication, refresh token rotation and secure session handling.",
-	// 		priority: "High",
-	// 		assignee: "Daniel",
-	// 		dueDate: "Tomorrow",
-	// 		comments: 6,
-	// 		attachments: 2,
-	// 	},
-	// 	{
-	// 		id: 2,
-	// 		title: "Landing Page",
-	// 		description: "Build the responsive landing page following the new OrbitSpace design.",
-	// 		priority: "Medium",
-	// 		assignee: "Sarah",
-	// 		dueDate: "Jul 31",
-	// 		comments: 3,
-	// 		attachments: 1,
-	// 	},
-	// 	{
-	// 		id: 3,
-	// 		title: "Billing Integration",
-	// 		description: "Connect Stripe checkout and customer portal.",
-	// 		priority: "Low",
-	// 		assignee: "Michael",
-	// 		dueDate: "Aug 2",
-	// 		comments: 1,
-	// 		attachments: 0,
-	// 	},
-	// ]
 
 	return (
 		<div className="space-y-8">
@@ -113,9 +81,4 @@ export default function Board() {
 		</div>
 	)
 }
-
-// <h1 className="text-3xl font-bold text-white">
-// 	Board
-// </h1>
-//
 

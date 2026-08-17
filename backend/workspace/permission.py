@@ -33,10 +33,3 @@ class IsWorkspaceAdminOrSuperAdmin(IsWorkspaceMemeber):
         return bool(user.user_membership.filter(Q(role='admin') | Q(role='owner'),workspace=wk).exists())
 
 
-class CommentPermission(BasePermission):
-    def has_permission(self, request, view):
-        if not request.user.is_authenticated:
-            return False
-        is_member=request.user.task_members.filter(Q(members=request.user)|Q(admins=request.user)).exists()
-        return is_member
-

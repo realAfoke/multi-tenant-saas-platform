@@ -1,7 +1,8 @@
+from enum import member
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
 import workspace
-from workspace.permission import CommentPermission,IsWorkspaceMemeber,IsWorkspaceAdminOrSuperAdmin
+from workspace.permission import IsWorkspaceMemeber,IsWorkspaceAdminOrSuperAdmin
 # from .serializers import CommentSerializer, FileSerializer, InviteSerializer, TaskSerializer, WorkSpaceSerializer,ProjectSerializer
 from .serializers import CommentSerializer, MembershipSerializer, TaskSerializer,WorkSpaceSerializer,ProjectSerializer,InviteSerializer
 from rest_framework.response import Response
@@ -127,15 +128,19 @@ class TaskDetail(generics.RetrieveUpdateDestroyAPIView):
 class Comment(generics.ListCreateAPIView):
     queryset=models.Comment.objects.all()
     serializer_class=CommentSerializer
-    permission_classes=[CommentPermission]
+    permission_classes=[permissions.IsAuthenticated]
 
+    # def perform_create(self, serializer):
+    #     user=self.request.user
+    #     memer=user.user_membership.filter(workspace=self.request.data.get('workspace')).first()
+    #     logger.info(f'member:{member}')
+    #     serializer.save(user=member)
+    #
 
     def get_queryset(self):
         return models.Comment.objects.filter(task_id=self.kwargs.get('pk')).order_by('-updated_at')
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-
+    
 
 # class File(Base):
 #     queryset=models.FileAttachment.objects.all()

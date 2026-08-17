@@ -96,7 +96,7 @@ export default function TaskCard({ task }) {
 							<MessageCircle className="w-4 h-4 text-white" />
 
 							<span className="text-xs text-white">
-								{task?.comments}
+								{task?.comment}
 							</span>
 
 						</div>

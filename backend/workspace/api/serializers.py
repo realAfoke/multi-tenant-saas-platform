@@ -1,3 +1,4 @@
+from django.core.validators import validate_image_file_extension
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from django.core.exceptions import PermissionDenied
@@ -26,28 +27,20 @@ class MembershipSerializer(serializers.ModelSerializer):
         return {'id':user.id,'first_name':user.first_name,'last_name':user.last_name,'email':user.email}
  
 class CommentSerializer(serializers.ModelSerializer):
-    user=serializers.SerializerMethodField()
+    user=MembershipSerializer(read_only=True)
     class Meta:
         model=models.Comment
         fields='__all__'
-        read_only_fields=['user']
 
-    def validate(self, attrs):
+    def create(self, validated_data):
         user=self.context['request'].user
-        workspace=attrs['workspace']
-        project=attrs['project']
-        task=attrs['task']
-        if not workspace.membership.filter(user=user).exists():
-            raise PermissionDenied('you dont have permission to perform this operation')
-        if not (project.members.filter(id=user.id).exists() or project.admins.filter(id=user.id).exists()):
-            raise PermissionDenied('you dont have permission to perform this operation')
-        if not task.members.filter(id=user.id).exists():
-            raise PermissionDenied('you dont have permission to perform this operation')
+        member=user.user_membership.filter(workspace=validated_data.get('workspace')).first()
+        validated_data['user']=member
+        logger.info(f'validated:{validated_data}')
+        return super().create(validated_data)
 
-        return attrs
-    def get_user(self,obj):
-        return {'id':obj.user.id,'email':obj.user.email,'first_name':obj.user.first_name,'last_name':obj.user.last_name}
-
+    # def get_user(self,obj):
+    #     return {'id':obj.user.id,'email':obj.user.email,'first_name':obj.user.first_name,'last_name':obj.user.last_name}
 
 class TaskMemberSerializer(serializers.ModelSerializer):
     member=MembershipSerializer()
@@ -69,13 +62,11 @@ class TaskSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
-        logger.info(f'validated_data:{validated_data}')
         if '_existing' in validated_data.keys():
             return validated_data.get('_existing')
         user=self.context['request'].user
         creator=user.user_membership.filter(members_project__project=validated_data.get('project')).first()
         task_members=validated_data.pop('members',None)
-        logger.info(f'task_members:{task_members}')
         validated_data['created_by']=creator
         task =super().create(validated_data)
         manager=getattr(models.TaskMember,'objects')

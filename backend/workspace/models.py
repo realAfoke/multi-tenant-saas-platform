@@ -137,7 +137,7 @@ class TaskMember(models.Model):
 
 class Comment(models.Model):
     content=models.TextField()
-    user=models.ForeignKey(UserModel,related_name='commentor',on_delete=models.CASCADE)
+    user=models.ForeignKey(Membership,related_name='commentor',on_delete=models.CASCADE)
     workspace=models.ForeignKey(WorkSpace,related_name='comment_workspace',on_delete=models.CASCADE)
     project=models.ForeignKey(Project,related_name='comment_project',on_delete=models.CASCADE)
     task=models.ForeignKey(Task,related_name='comment_task',on_delete=models.CASCADE)

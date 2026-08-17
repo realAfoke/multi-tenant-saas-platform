@@ -19,10 +19,6 @@ import { addCommentMutationOption } from "@/mutationOptions/mutationOption"
 
 export default function Task() {
 	const { selectedWorkspace, selectedProject, selectedTask } = useAppState()
-	// const { data: project } = useQuery(projectQueryOption(selectedWorkspace?.id, selectedProject?.id))
-	// const tasks = (project?.tasks) ?? []
-	// const task = tasks?.find(tk => tk?.id == selectedTask?.id)
-	// console.log(task)
 	const { data: task } = useQuery(selectedTaskQueryOption(selectedWorkspace?.id, selectedProject?.id, selectedTask?.id))
 	const checkList = task?.checkList ?? []
 	const assigner = task?.createdBy?.user ?? {}

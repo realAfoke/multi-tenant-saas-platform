@@ -17,8 +17,15 @@ User=get_user_model()
 
 @receiver(post_save,sender=models.Comment,dispatch_uid='send_task_update')
 def send_task_update(sender,instance,created,**kwargs):
+    members=instance.task.task_member.all().exclude(member=instance.user)
     if instance:
-            messages=[(f'Update on task {instance.task.title.upper()}',f'{instance.user.email} drop an update on the task go check it out','noreply@example.com',[email]) for email in instance.task.members.all().exclude(id=instance.user.id).values_list('email',flat=True)]
+            messages=[(
+                f'Update on task {instance.task.title.upper()}',
+                f'{instance.user.user.first_name} {instance.user.user.last_name} drop an update on the task go check it out',
+                'noreply@example.com',
+                [member.member.user.email]
+                )
+                      for member in members]
             send_mass_mail(messages)
         # send_mail(
         #         f'Update on task {instance.task.title}',

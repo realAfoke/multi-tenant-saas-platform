@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.db.models import constraints
+from django.db.models.fields.files import default_storage
 from django.utils import choices
 from django.utils.module_loading import module_dir
 
@@ -90,14 +91,19 @@ class ProjectMember(models.Model):
 
 
 class Task(models.Model):
+    class Priority(models.TextChoices):
+        HIGH='high'
+        NORMAL='normal'
+        MEDIUM='medium'
+
     title=models.CharField(max_length=250)
+    description=models.TextField()
+    priority=models.CharField(max_length=100,choices=Priority.choices,default=Priority.NORMAL)
+    check_list=models.JSONField(default=list)
+    status=models.CharField(max_length=200,choices=Choices.choices,default=Choices.IN_PROGRESS)
     project=models.ForeignKey(Project,related_name='task_project',on_delete=models.CASCADE)
     workspace=models.ForeignKey(WorkSpace,related_name='task_workspace',on_delete=models.CASCADE)
-    description=models.TextField()
-    status=models.CharField(max_length=200,choices=Choices.choices,default=Choices.IN_PROGRESS)
-    admins=models.ManyToManyField(Membership,related_name='task_admins')
     created_by=models.ForeignKey(Membership,related_name='task_creator',on_delete=models.CASCADE)
-    members=models.ManyToManyField(Membership,related_name='task_members')
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
 
@@ -107,6 +113,27 @@ class Task(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class TaskMember(models.Model):
+    class Role(models.TextChoices):
+        ADMIN='admin'
+        MEMBER='member'
+    role=models.CharField(max_length=200,choices=Role.choices,default=Role.MEMBER)
+    task=models.ForeignKey(Task,related_name='task_member',on_delete=models.CASCADE)
+    member=models.ForeignKey(Membership,related_name='members_task',on_delete=models.CASCADE)
+
+    class Meta:
+        db_table='task_member'
+        constraints=[
+                models.UniqueConstraint(
+                    fields=['task','member'],name='unique_task_membership'
+                    )
+                ]
+
+    def __str__(self):
+        return self.role
+
 
 class Comment(models.Model):
     content=models.TextField()

@@ -12,18 +12,22 @@ import {
 import { ItemGroup } from "@/components/ui/item"
 import { Input } from "@/components/ui/input"
 import { useAppState } from "@/hooks/apptools"
-import { commentQueryOption, projectQueryOption } from "@/queryOptions/queryOptions"
+import { commentQueryOption, selectedTaskQueryOption } from "@/queryOptions/queryOptions"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import Comments from "@/components/Comments"
 import { addCommentMutationOption } from "@/mutationOptions/mutationOption"
 
 export default function Task() {
-	// keep all your existing logic above this point
 	const { selectedWorkspace, selectedProject, selectedTask } = useAppState()
-	const { data: project } = useQuery(projectQueryOption(selectedWorkspace?.id, selectedProject?.id))
-	const tasks = (project?.tasks) ?? []
-	const task = tasks?.find(tk => tk?.id == selectedTask?.id)
-	// const task = { title: 'testing', description: 'descritpion' }
+	// const { data: project } = useQuery(projectQueryOption(selectedWorkspace?.id, selectedProject?.id))
+	// const tasks = (project?.tasks) ?? []
+	// const task = tasks?.find(tk => tk?.id == selectedTask?.id)
+	// console.log(task)
+	const { data: task } = useQuery(selectedTaskQueryOption(selectedWorkspace?.id, selectedProject?.id, selectedTask?.id))
+	const checkList = task?.checkList ?? []
+	const assigner = task?.createdBy?.user ?? {}
+
+	const initials = `${assigner?.firstName?.[0] ?? ""}${assigner?.lastName?.[0] ?? ""}`.toUpperCase()
 	const [showDetails, setShowDetails] = useState(true)
 	const [content, setContent] = useState('')
 	const { data: comments } = useQuery(commentQueryOption(selectedTask?.id))
@@ -34,11 +38,9 @@ export default function Task() {
 	return (
 		<div className="h-screen overflow-y-auto bg-zinc-950 text-white flex -mt-25">
 
-			{/* Main */}
 
 			<div className="flex-1 min-w-0 flex flex-col mt-30">
 
-				{/* Header */}
 
 				<div className="px-4 md:px-8 lg:px-12 pt-7 pb-6 border-b border-zinc-800">
 
@@ -78,7 +80,6 @@ export default function Task() {
 
 				</div>
 
-				{/* Discussion */}
 
 				<div className="flex-1 overflow-hidden px-4 md:px-8 lg:px-12 py-6">
 
@@ -118,14 +119,7 @@ export default function Task() {
 								<Input
 									value={content}
 									onChange={e => setContent(e.target.value)}
-									className="
-										bg-zinc-900
-										border-zinc-800
-										text-white
-										placeholder:text-zinc-500
-										min-h-14
-										rounded-xl
-									"
+									className="bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-500 min-h-14 p-5 rounded-xl"
 									placeholder="Write a comment..."
 								/>
 
@@ -161,7 +155,6 @@ export default function Task() {
 
 			</div>
 
-			{/* Details Sidebar */}
 
 			{showDetails && (
 
@@ -203,8 +196,8 @@ export default function Task() {
 									Priority
 								</p>
 
-								<p className="mt-2 text-sm text-red-400">
-									High
+								<p className={`mt-2 text-sm capitalize ${task?.priority === 'high' ? 'text-red-400' : task?.priority === 'normal' ? 'text-green-400' : 'text-blue-400'}`}>
+									{task?.priority}
 								</p>
 							</div>
 
@@ -216,11 +209,11 @@ export default function Task() {
 								<div className="flex items-center gap-3 mt-2">
 
 									<div className="w-9 h-9 rounded-full bg-blue-500 flex items-center justify-center text-sm font-semibold">
-										D
+										{initials}
 									</div>
 
 									<span className="text-sm">
-										Daniel
+										{assigner?.firstName}
 									</span>
 
 								</div>
@@ -248,7 +241,7 @@ export default function Task() {
 								</p>
 
 								<p className="mt-2 text-sm text-white">
-									Landing Page Redesign
+									{selectedProject?.name}
 								</p>
 							</div>
 
@@ -261,40 +254,24 @@ export default function Task() {
 									</p>
 
 									<span className="text-xs text-zinc-500">
-										2 / 4
+										{`${checkList.filter(list => list.status).length}/${checkList.length}`}
 									</span>
 
 								</div>
 
 								<div className="space-y-3 mt-4">
+									{checkList.map((list) => (
+										<div key={list?.id} className="flex items-center gap-2">
+											{list?.status ? <CheckCircle2 className="w-4 h-4 text-blue-400" /> :
+												<Circle className="w-4 h-4 text-zinc-600" />}
+											<span className={`text-sm ${list?.status ? 'line-through text-zinc-400 ' : 'text-white'}`}>
+												{list?.title}
+											</span>
+										</div>
 
-									<div className="flex items-center gap-2">
-										<CheckCircle2 className="w-4 h-4 text-blue-400" />
-										<span className="text-sm text-zinc-400 line-through">
-											JWT Login
-										</span>
-									</div>
+									))}
 
-									<div className="flex items-center gap-2">
-										<CheckCircle2 className="w-4 h-4 text-blue-400" />
-										<span className="text-sm text-zinc-400 line-through">
-											Session Handling
-										</span>
-									</div>
 
-									<div className="flex items-center gap-2">
-										<Circle className="w-4 h-4 text-zinc-600" />
-										<span className="text-sm text-white">
-											Refresh Token
-										</span>
-									</div>
-
-									<div className="flex items-center gap-2">
-										<Circle className="w-4 h-4 text-zinc-600" />
-										<span className="text-sm text-white">
-											Password Reset
-										</span>
-									</div>
 
 								</div>
 
@@ -349,4 +326,27 @@ export default function Task() {
 		</div>
 	)
 }
+
+
+
+// <div className="flex items-center gap-2">
+// 	<CheckCircle2 className="w-4 h-4 text-blue-400" />
+// 	<span className="text-sm text-zinc-400 line-through">
+// 		Session Handling
+// 	</span>
+// </div>
+//
+// <div className="flex items-center gap-2">
+// 	<Circle className="w-4 h-4 text-zinc-600" />
+// 	<span className="text-sm text-white">
+// 		Refresh Token
+// 	</span>
+// </div>
+//
+// <div className="flex items-center gap-2">
+// 	<Circle className="w-4 h-4 text-zinc-600" />
+// 	<span className="text-sm text-white">
+// 		Password Reset
+// 	</span>
+// </div>
 

@@ -6,11 +6,10 @@ from rest_framework.generics import RetrieveAPIView
 import manage
 from workspace import models
 from django.db.models import Q, QuerySet
+from django.core.mail import send_mail,send_mass_mail
 import logging
-
 import workspace
-
-
+from django.db import transaction
 
 
 logger=logging.getLogger(__name__)
@@ -33,7 +32,6 @@ class CommentSerializer(serializers.ModelSerializer):
         fields='__all__'
         read_only_fields=['user']
 
-
     def validate(self, attrs):
         user=self.context['request'].user
         workspace=attrs['workspace']
@@ -51,34 +49,67 @@ class CommentSerializer(serializers.ModelSerializer):
         return {'id':obj.user.id,'email':obj.user.email,'first_name':obj.user.first_name,'last_name':obj.user.last_name}
 
 
+class TaskMemberSerializer(serializers.ModelSerializer):
+    member=MembershipSerializer()
+    class Meta:
+        model=models.TaskMember
+        fields='__all__'
+
+
+
 class TaskSerializer(serializers.ModelSerializer):
     created_by=MembershipSerializer(read_only=True)
     comments=serializers.SerializerMethodField()
+    check_list=serializers.ListField()
+    members=serializers.PrimaryKeyRelatedField(queryset=models.Membership.objects.all(),many=True,write_only=True,required=False)
     # comment_task=CommentSerializer(many=True,read_only=True)
     class Meta:
         model=models.Task
-        fields=[
-                'id',
-                'title',
-                'project',
-                'workspace',
-                'description',
-                'created_by',
-                'comments'
-                ]
-        read_only_fields=[
-                'created_by',
-                'comments'
-                ]
+        fields='__all__'
+
+    @transaction.atomic
+    def create(self, validated_data):
+        logger.info(f'validated_data:{validated_data}')
+        if '_existing' in validated_data.keys():
+            return validated_data.get('_existing')
+        user=self.context['request'].user
+        creator=user.user_membership.filter(members_project__project=validated_data.get('project')).first()
+        task_members=validated_data.pop('members',None)
+        logger.info(f'task_members:{task_members}')
+        validated_data['created_by']=creator
+        task =super().create(validated_data)
+        manager=getattr(models.TaskMember,'objects')
+        manager.create(role='admin',task=task,member=task.created_by)
+
+        member_mapping={member.id:member for member in task_members}
+        manager.bulk_create([
+            models.TaskMember(role='member',member=member,task=task) for member in list(member_mapping.values())
+            ])
+        message=[
+            (
+                f'You\'ve been added to a Task',
+                f'You were added as member to {task.title.upper()}',
+                'noreply@example.com',
+                [member.user.email]
+                )
+            for member in task_members if member.user.email
+            ]
+        send_mass_mail(message,fail_silently=False)
+
+        return task
+
+
+        
 
     def validate(self, attrs):
-        auth_user=self.context['request'].user
-        workspace=attrs['workspace']
-        attrs['members']=[]
-        attrs['members'].append(auth_user)
-        # logger.info('attrs:',attrs)
-        if not workspace.membership.filter(user=auth_user,role__in=['owner','admin']).exists():
+        user=self.context['request'].user
+        if not user.user_membership.filter(members_project__project=attrs.get('project'),members_project__role='admin').exists():
             raise PermissionDenied('you dont have the permissions to perform this operation')
+        manager=getattr(models.Task,'objects')
+        existing=manager.filter(title=attrs.get('title')).first()
+        if existing:
+            attrs['_existing']=existing
+
         return attrs
 
     def get_comments(self,obj):
@@ -93,7 +124,7 @@ class ProjectMemberSerializer(serializers.ModelSerializer):
         fields='__all__'
 
 class ProjectSerializer(serializers.ModelSerializer):
-    # tasks=serializers.SerializerMethodField()
+    tasks=serializers.SerializerMethodField()
     # project_tasks=serializers.SerializerMethodField()
     project_members=serializers.SerializerMethodField()
     member=serializers.PrimaryKeyRelatedField(queryset=models.Membership.objects.all(),many=True,write_only=True,required=False)
@@ -101,19 +132,20 @@ class ProjectSerializer(serializers.ModelSerializer):
     workspace_name=serializers.SerializerMethodField()
     class Meta:
         model=models.Project
-        fields=[
-                'id',
-                'name',
-                'status',
-                'workspace',
-                'workspace_name',
-                'created_by',
-                'member',
-                'project_members',
-                'description',
-                'updated_at'
-                ]
-        read_only_fields=['created_by','updated_at','members','workspace_name']
+        fields='__all__'
+        # fields=[
+        #         'id',
+        #         'name',
+        #         'status',
+        #         'workspace',
+        #         'workspace_name',
+        #         'created_by',
+        #         'member',
+        #         'project_members',
+        #         'description',
+        #         'updated_at'
+        #         ]
+        # read_only_fields=['created_by','updated_at','members','workspace_name']
 
 
     def create(self, validated_data):
@@ -123,7 +155,6 @@ class ProjectSerializer(serializers.ModelSerializer):
         member_to_add=validated_data.pop('member',[])
         workspace=validated_data['workspace']
         project=super().create(validated_data)
-
 
         #project member
         creater=self.context['request'].user
@@ -170,13 +201,11 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     def get_workspace_name(self,obj):
         return obj.workspace.name
-    # def get_tasks(self,obj):
-    #     current_user=self.context['request'].user
-    #     membership=current_user.user_membership.filter(workspace=obj.workspace).first()
-    #     tasks=membership.task_members.all()
-    #     logger.info(f'task:{tasks}')
-    #     return TaskSerializer(tasks,many=True,context=self.context).data
-    #     # return obj.task_project.values('id','created_by','title','description','comments','updated_at') if task else None
+    def get_tasks(self,obj):
+        current_user=self.context['request'].user
+        membership=current_user.user_membership.filter(workspace=obj.workspace).first()
+        tasks=obj.task_project.filter(task_member__member=membership)
+        return [{'id':task.id,'title':task.title,'description':task.description,'priority':task.priority,'comment':task.comment_task.count()} for task in tasks] if tasks else []
 
 class InviteTokenSerializer(serializers.ModelSerializer):
     class Meta:

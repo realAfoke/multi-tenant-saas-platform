@@ -114,13 +114,15 @@ class Task(generics.ListCreateAPIView):
     def get_queryset(self):
         return models.Task.objects.filter(workspace=self.kwargs.get('wk'),project=self.kwargs.get('pk'))
 
-    def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
 
 class TaskDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset=models.Task
     serializer_class=TaskSerializer
     permission_classes=[IsWorkspaceMemeber]
+
+    def get_object(self):
+        manager=getattr(models.Task,'objects')
+        return manager.filter(id=self.kwargs.get('tk')).first()
 
 class Comment(generics.ListCreateAPIView):
     queryset=models.Comment.objects.all()

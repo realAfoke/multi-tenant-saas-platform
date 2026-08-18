@@ -1,7 +1,7 @@
 import profile from "@/assets/profileIcon.svg"
 import searchIcon from "@/assets/search1.svg"
 import menuIcon from "@/assets/menu3.svg"
-import NotificationPopover from "./Notification"
+import NotificationPopover from "./NotificationPopover"
 
 export default function TopBar({ setToggle, toggle }) {
 	return (

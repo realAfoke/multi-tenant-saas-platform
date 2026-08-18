@@ -12,8 +12,13 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover"
+import { useParams, useNavigate } from "react-router-dom"
+import { useState } from "react"
 
 export default function NotificationPopover() {
+	const { wkName } = useParams()
+	const navigate = useNavigate()
+	const [open, setOpen] = useState(false)
 
 	const notifications = [
 		{
@@ -43,7 +48,7 @@ export default function NotificationPopover() {
 	]
 
 	return (
-		<Popover>
+		<Popover open={open} onOpenChange={setOpen} className="border-2 borer-green-500">
 
 			<PopoverTrigger asChild>
 
@@ -60,7 +65,7 @@ export default function NotificationPopover() {
 
 			<PopoverContent
 				align="end"
-				className="w-[380px] p-0 bg-zinc-950 border-zinc-800 text-white"
+				className="w-screen md:w-[380px] p-0 bg-zinc-950 border border-zinc-800 text-white"
 			>
 
 				<div className="flex items-center justify-between px-5 py-4 border-b border-zinc-800">
@@ -152,8 +157,10 @@ export default function NotificationPopover() {
 
 
 				<div className="p-3">
-
-					<button className="w-full py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-zinc-900 transition">
+					<button className="w-full py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-zinc-900 transition" onClick={() => {
+						setOpen(false)
+						navigate(`${wkName}/notifications`)
+					}}>
 						View all notifications
 					</button>
 

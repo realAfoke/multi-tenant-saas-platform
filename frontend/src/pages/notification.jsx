@@ -1,11 +1,16 @@
 import {
 	Bell,
-	CheckCircle2,
+	Check,
 	MessageCircle,
+	CheckCircle2,
+	UserPlus,
+	CalendarDays,
 	AtSign,
 	Clock,
 	MoreHorizontal,
 } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
 
 export default function Notifications() {
 
@@ -74,17 +79,26 @@ export default function Notifications() {
 	}
 
 	return (
-		<div className="max-w-4xl space-y-8 text-white">
+		<div className=" max-w-4xl mx-auto space-y-8 text-white">
 
-			{/* Header */}
 
 			<div className="flex items-end justify-between gap-4">
 
 				<div>
+					<div className="flex items-center gap-3">
 
-					<h1 className="text-3xl font-bold">
-						Notifications
-					</h1>
+						<div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+
+							<Bell className="w-5 h-5 text-blue-400" />
+
+						</div>
+
+						<h1 className="text-3xl font-bold">
+							Notifications
+						</h1>
+
+					</div>
+
 
 					<p className="text-zinc-400 mt-2">
 						Stay up to date with activity that matters to you.
@@ -98,7 +112,6 @@ export default function Notifications() {
 
 			</div>
 
-			{/* Filters */}
 
 			<div className="flex items-center gap-2 overflow-x-auto">
 
@@ -116,7 +129,6 @@ export default function Notifications() {
 
 			</div>
 
-			{/* Notifications */}
 
 			<div className="space-y-2">
 

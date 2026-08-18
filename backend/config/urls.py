@@ -23,4 +23,5 @@ urlpatterns = [
     path('api/v1/users/',include('users.api.urls')),
     path('api/v1/workspaces/',include('workspace.api.urls')),
     path('api/v1/billing/',include('billing.api.urls')),
+    path('api/v1/notification/',include('notification.api.urls')),
 ]

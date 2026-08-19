@@ -1,4 +1,3 @@
-from django import dispatch
 from django.dispatch import receiver
 from django.db.models.signals import post_save,m2m_changed
 from workspace import models

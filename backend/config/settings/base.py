@@ -161,14 +161,16 @@ CACHE={
             }
         }
 
-# CHANNEL_LAYERS={
-#         'default':{
-#             'BACKEND':'channels_redis.core.RedisChannelLayer',
-#             'CONFIG':{
-#                 'host':[(os.getenv('REDIS_URL'))]
-#                 }
-#             }
-#                 }
+CHANNEL_LAYERS={
+        'default':{
+            'BACKEND':'chanels_redis.core.RedisChannelLayer',
+            'CONFIG':{
+                'hosts':[(os.getenv('CHANNEL_REDIS'))]
+                }
+            }
+        }
+
+
 LOGGING={
         "version":1,
         "disable_existing_loggers":False,

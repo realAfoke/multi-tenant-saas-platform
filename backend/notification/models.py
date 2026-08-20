@@ -8,7 +8,8 @@ from workspace.models import Membership,WorkSpace,Task
 
 class Notification(models.Model):
     title=models.CharField(max_length=500)
-    user=models.ForeignKey(Membership,related_name='nofication',on_delete=models.CASCADE)
+    # user=models.ForeignKey(Membership,related_name='nofication',on_delete=models.CASCADE)
+    user=models.ManyToManyField(Membership,related_name='notification')
     workspace=models.ForeignKey(WorkSpace,related_name="workspace_notification",on_delete=models.CASCADE)
     type=models.CharField(max_length=250)
     task=models.ForeignKey(Task,related_name='task_notification',on_delete=models.SET_NULL,null=True,blank=True)

@@ -3,15 +3,12 @@ import { instance } from "@/api/axios";
 
 
 export function notificationQueryOption(wk) {
-	console.log('wk:',wk)
 	return queryOptions({
-		queryKey: ['notificaiton','workspace', wk],
+		queryKey: ['notificaiton', 'workspace', wk],
 		queryFn: async ({ queryKey }) => {
 			try {
-				console.log('inside')
-				const [,,wk] = queryKey
+				const [, , wk] = queryKey
 				const response = await instance.get(`notification/workspace/${wk}/`)
-				console.log('done')
 				return response.data
 			} catch (error) {
 				console.error(error)

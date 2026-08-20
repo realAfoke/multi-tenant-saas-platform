@@ -14,21 +14,18 @@ def send_task_nofitication(sender,instance,created,**kwargs):
     channel=get_channel_layer()
     members=instance.task_member.all()
     manager=getattr(Notification,'objects')
-    notification_instances=manager.bulk_create(
-            [
-                Notification(
+    notification=manager.create(
             title=f'{instance.created_by} assigned you to a task',
-            user=member,
             workspace=instance.workspace,
             type='assignment',
             message=instance.description,
             task=instance,
-                    )
-               for member in members ]
+
             )
-    for notification in notification_instances:
-        notification_data=NotificationSerializer(notification).data
-        async_to_sync(channel.group_send)(f'member_{notification.user.user.id}',{'type':'send_notification','notification':notification_data})
+    notification.user.add(*members)
+    serializer=NotificationSerializer(notification)
+    for member in members:
+        async_to_sync(channel.group_send)(f'member_{member.user.user.id}',{'type':'send_notification','notification':serializer.data})
 
 
 

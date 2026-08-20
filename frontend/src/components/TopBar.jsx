@@ -8,7 +8,6 @@ import { useAppState } from "@/hooks/apptools"
 
 export default function TopBar({ setToggle, toggle }) {
 	const { selectedWorkspace } = useAppState()
-	console.log(selectedWorkspace?.id)
 	const { data: notifications } = useQuery(notificationQueryOption(selectedWorkspace?.id))
 	const noOfUnread = notifications?.filter((notification) => !notification?.read)?.length
 	return (

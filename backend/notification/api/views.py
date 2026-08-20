@@ -13,4 +13,4 @@ class NotificationView(generics.ListAPIView):
 
     def get_queryset(self):
         manager=getattr(Notification,'objects')
-        return manager.filter(user__user=self.request.user,workspace=self.kwargs.get('pk')).order_by('-created_at')[:20]
+        return manager.filter(user__user__in=self.request.user,workspace=self.kwargs.get('pk')).order_by('-created_at')[:20]

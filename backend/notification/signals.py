@@ -27,12 +27,12 @@ def send_notification(members,instance):
 
 @receiver(post_save,sender=Task,dispatch_uid='task_notification')
 def send_task_nofitication(sender,instance,created,**kwargs):
-    members=instance.task_member.all()
+    members=instance.task_member.exclude(member=instance.created_by)
     send_notification(members,instance)
     
 @receiver(post_save,sender=Comment,dispatch_uid='comment_notificaiton')
 def send_comment_notification(send,instance,created,**kwargs):
-    members=instance.task.task_member.all()
+    members=instance.task.task_member.exclude(member=instance.user)
     send_notification(members,instance)
 
 

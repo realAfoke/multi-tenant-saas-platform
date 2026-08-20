@@ -55,8 +55,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-        'config.settings.middleware.RequestLogMiddleware',
-        'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -163,7 +162,7 @@ CACHE={
 
 CHANNEL_LAYERS={
         'default':{
-            'BACKEND':'chanels_redis.core.RedisChannelLayer',
+            'BACKEND':'channels_redis.core.RedisChannelLayer',
             'CONFIG':{
                 'hosts':[(os.getenv('CHANNEL_REDIS'))]
                 }

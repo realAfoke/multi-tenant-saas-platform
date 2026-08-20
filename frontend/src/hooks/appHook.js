@@ -1,6 +1,23 @@
 import { useEffect } from "react";
 
+export function useRealTimeUpdate(setSocket) {
+	useEffect(() => {
+		const ws = new WebSocket(`wss://localhost/ws/user/`)
+		ws.onopen = () => {
+			console.log('Connection successfull ')
+			setSocket(ws)
+		}
 
+		ws.onmessage = (e) => {
+			console.log(JSON.parse(e.data))
+		}
+		ws.onerror = (e) => {
+			console.error('Connection Error:', e)
+		}
+		ws.onclose = () => console.log('connection closed!!!')
+		return () => ws.close()
+	}, [])
+}
 export function useAppHook(workspaces, wkName, setWorkspace, selectedWorkspace, project, projectName, setProject, taskId, setTask) {
 
 	useEffect(() => {
@@ -27,5 +44,4 @@ export function useAppHook(workspaces, wkName, setWorkspace, selectedWorkspace, 
 			setTask({ id: task?.id, title: task?.title, show: false })
 		}
 	}, [project, taskId])
-
 }

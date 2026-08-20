@@ -9,5 +9,7 @@ export const useAppState = () => {
 	const setTask = useAppStore(s => s.setSelectedTask)
 	const setInvite = useAppStore(s => s.setInvite)
 	const inviteDetail = useAppStore(s => s.invites)
-	return { setInvite, inviteDetail, selectedWorkspace, selectedProject, selectedTask, setWorkspace, setProject, setTask }
+	const socket = useAppStore(s => s.socket)
+	const setSocket = useAppStore(s => s.setSocket)
+	return { setInvite, inviteDetail, selectedWorkspace, selectedProject, selectedTask, setWorkspace, setProject, setTask, socket, setSocket }
 }

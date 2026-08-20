@@ -7,6 +7,7 @@ import { useAppState } from "@/hooks/apptools"
 import { useEffect, useState } from "react"
 import SideBar from "@/components/SideBar"
 import TopBar from "./TopBar"
+import { useRealTimeUpdate } from "@/hooks/appHook.js"
 
 
 export default function ProtectedRoute() {
@@ -15,7 +16,7 @@ export default function ProtectedRoute() {
 	const [toggleWorkspace, setToggleWorkspace] = useState(false)
 
 
-	const { setWorkspace, setProject, setTask, selectedWorkspace, selectedProject } = useAppState()
+	const { setWorkspace, setSocket, setProject, setTask, selectedWorkspace, selectedProject } = useAppState()
 	const { data: userWorkspaces } = useQuery(workspaceQueryOption())
 
 	const { data: project } = useQuery(projectQueryOption(selectedWorkspace?.id, selectedProject?.id))
@@ -23,6 +24,7 @@ export default function ProtectedRoute() {
 
 	const { data: user } = useQuery(fetchUserQueryOption())
 	useAppHook(workspaces, wkName, setWorkspace, selectedWorkspace, project, projectName, setProject, taskId, setTask, user)
+	useRealTimeUpdate(setSocket)
 
 	useQuery(fetchRoleQueryOption(selectedWorkspace?.id))
 

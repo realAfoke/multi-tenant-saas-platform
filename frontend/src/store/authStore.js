@@ -39,10 +39,12 @@ export const useAppStore = create(combine({
 		token: null,
 		id: null,
 		email: ''
-	}
+	},
+	socket: ''
 }
 	, (set, get) => (
 		{
+			setSocket: (socket) => set((state) => ({ socket: socket })),
 			setSelectedWorkspace: (workspace) => {
 				// console.log('store:', workspace)
 				set((state) =>
@@ -85,6 +87,7 @@ export const useAppStore = create(combine({
 			getWorkspace: () => get().selectedWorkspace,
 			getProject: () => get().selectedProject,
 			getTask: () => get().selectedTask,
-			getInvite: () => get().state.invite
+			getInvite: () => get().state.invite,
+			getSocket: () => get().state.socket
 		}
 	)))

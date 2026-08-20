@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 import { fetchRoleQueryOption, fetchUserQueryOption, workspaceMemberQueryOption, workspaceQueryOption } from "@/queryOptions/queryOptions"
 import { Outlet, useNavigate } from "react-router-dom"
 import Grid from "@/components/itemDisplayOption/Option"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import User from "@/components/User"
 import { useLocation } from "react-router-dom"
 import { useAppState } from "@/hooks/apptools"
@@ -21,7 +21,7 @@ import { Input } from "@/components/ui/input"
 
 
 export default function Workspace() {
-	const { selectedWorkspace } = useAppState()
+	const { selectedWorkspace, socket } = useAppState()
 	const navigate = useNavigate()
 	const [filter, setFilter] = useState('all')
 	const location = useLocation()
@@ -46,7 +46,6 @@ export default function Workspace() {
 		{ id: "requests", label: "Requests" },
 		{ id: "details", label: "Project Details" },
 	];
-
 	const [activeTab, setActiveTab] = useState("members");
 	return (
 		<div className="space-y-10">

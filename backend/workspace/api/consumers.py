@@ -13,6 +13,11 @@ class ServerRealTimeUpdate(AsyncWebsocketConsumer):
         await self.channel_layer.group_add(self.group_name,self.channel_name)
         await self.accept()
 
+    async def receive(self, text_data: str | None = None, bytes_data: bytes | None = None) -> None:
+        dam=json.loads(text_data)
+        await self.channel_layer.group_send(self.group_name,{'type':'send.notification','notification':dam})
+
     async def send_notification(self,event):
-        notification=event['notificaiton']
+        notification=event['notification']
+        print(notification)
         await self.send(text_data=json.dumps(notification))

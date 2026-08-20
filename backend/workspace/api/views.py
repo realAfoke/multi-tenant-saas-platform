@@ -88,7 +88,6 @@ class WorkSpaceDetail(generics.RetrieveUpdateDestroyAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save(members=self.request.data.get('members'))
 
-
 class Project(generics.ListCreateAPIView):
     queryset=models.Project.objects.all()
     serializer_class=ProjectSerializer

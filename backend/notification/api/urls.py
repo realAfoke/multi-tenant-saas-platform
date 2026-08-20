@@ -1,4 +1,7 @@
 from django.urls import path
+from . import views
 
 
-urlpatterns=[]
+urlpatterns=[
+        path('workspace/<int:pk>/',views.NotificationView.as_view(),name='notification_view')
+        ]

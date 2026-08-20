@@ -15,37 +15,38 @@ import {
 import { useParams, useNavigate } from "react-router-dom"
 import { useState } from "react"
 
-export default function NotificationPopover() {
+export default function NotificationPopover(props) {
+	const { noOfunread, notifications } = props
 	const { wkName } = useParams()
 	const navigate = useNavigate()
 	const [open, setOpen] = useState(false)
 
-	const notifications = [
-		{
-			id: 1,
-			type: "assignment",
-			title: "Daniel assigned you a task",
-			description: "Authentication API",
-			time: "5 minutes ago",
-			unread: true,
-		},
-		{
-			id: 2,
-			type: "comment",
-			title: "Sarah mentioned you in a comment",
-			description: "Can you review this?",
-			time: "24 minutes ago",
-			unread: true,
-		},
-		{
-			id: 3,
-			type: "due",
-			title: "Task due tomorrow",
-			description: "Landing Page",
-			time: "1 hour ago",
-			unread: false,
-		},
-	]
+	// const notifications = [
+	// 	{
+	// 		id: 1,
+	// 		type: "assignment",
+	// 		title: "Daniel assigned you a task",
+	// 		description: "Authentication API",
+	// 		time: "5 minutes ago",
+	// 		unread: true,
+	// 	},
+	// 	{
+	// 		id: 2,
+	// 		type: "comment",
+	// 		title: "Sarah mentioned you in a comment",
+	// 		description: "Can you review this?",
+	// 		time: "24 minutes ago",
+	// 		unread: true,
+	// 	},
+	// 	{
+	// 		id: 3,
+	// 		type: "due",
+	// 		title: "Task due tomorrow",
+	// 		description: "Landing Page",
+	// 		time: "1 hour ago",
+	// 		unread: false,
+	// 	},
+	// ]
 
 	return (
 		<Popover open={open} onOpenChange={setOpen} className="border-2 borer-green-500">
@@ -56,7 +57,7 @@ export default function NotificationPopover() {
 
 					<Bell className="w-5 h-5" />
 
-					<span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-blue-500" />
+					<span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-blue-500">{noOfunread}</span>
 
 				</button>
 
@@ -91,7 +92,7 @@ export default function NotificationPopover() {
 
 				<div className="max-h-[420px] overflow-y-auto">
 
-					{notifications.map((notification) => (
+					{notifications?.map((notification) => (
 
 						<div
 							key={notification.id}

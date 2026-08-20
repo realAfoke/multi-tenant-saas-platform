@@ -28,7 +28,7 @@ def send_task_nofitication(sender,instance,created,**kwargs):
             )
     for notification in notification_instances:
         notification_data=NotificationSerializer(notification).data
-        async_to_sync(channel.group_send)(f'member_{notification.user.id}',{'type':'send_notification','notification':notification_data})
+        async_to_sync(channel.group_send)(f'member_{notification.user.user.id}',{'type':'send_notification','notification':notification_data})
 
 
 

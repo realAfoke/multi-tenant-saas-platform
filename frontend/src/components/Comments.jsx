@@ -1,12 +1,6 @@
-import { ItemDescription, Item, ItemTitle, ItemContent } from "./ui/item";
-import time from "@/assets/time.svg"
-import { TimerIcon } from "lucide-react";
-
-
 export default function Comments(props) {
 	const { comment = {} } = props ?? {}
 	const user = comment?.user?.user ?? {}
-	console.log(comment)
 	const date = new Date(comment?.createdAt)
 	const time = `${date.getHours()}:${date.getMinutes()} PM`
 	return (

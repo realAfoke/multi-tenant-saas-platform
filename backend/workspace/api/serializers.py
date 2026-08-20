@@ -32,11 +32,11 @@ class CommentSerializer(serializers.ModelSerializer):
         model=models.Comment
         fields='__all__'
 
+    @transaction.atomic
     def create(self, validated_data):
         user=self.context['request'].user
         member=user.user_membership.filter(workspace=validated_data.get('workspace')).first()
         validated_data['user']=member
-        logger.info(f'validated:{validated_data}')
         return super().create(validated_data)
 
     # def get_user(self,obj):

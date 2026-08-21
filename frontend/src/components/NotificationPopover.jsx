@@ -12,44 +12,35 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover"
-import { useParams, useNavigate } from "react-router-dom"
-import { useState } from "react"
+import { useParams, useNavigate, Link } from "react-router-dom"
+import { useEffect, useState } from "react"
+import { notificationQueryOption } from "@/queryOptions/queryOptions"
+import { useAppState } from "@/hooks/apptools"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 
-export default function NotificationPopover(props) {
-	const { noOfunread, notifications } = props
+export default function NotificationPopover() {
+	const { selectedWorkspace, selectedProject, socket } = useAppState()
+	const queryClient = useQueryClient()
+
+	useEffect(() => {
+		if (!socket) return
+		const ws = socket
+		ws.onmessage = (e) => {
+			const newData = JSON.parse(e.data)
+			if (newData?.type !== 'notification') return
+			const { data = {} } = newData
+			queryClient.setQueryData(['notification', 'workspace', selectedWorkspace?.id], (old) => [data, ...(old ?? [])])
+		}
+	}, [socket])
+	const { data: notifications } = useQuery(notificationQueryOption(selectedWorkspace?.id))
+	const noOfUnread = notifications?.filter((notification) => !notification?.read)?.length
+	console.log(notifications)
 	const { wkName } = useParams()
 	const navigate = useNavigate()
 	const [open, setOpen] = useState(false)
 
-	// const notifications = [
-	// 	{
-	// 		id: 1,
-	// 		type: "assignment",
-	// 		title: "Daniel assigned you a task",
-	// 		description: "Authentication API",
-	// 		time: "5 minutes ago",
-	// 		unread: true,
-	// 	},
-	// 	{
-	// 		id: 2,
-	// 		type: "comment",
-	// 		title: "Sarah mentioned you in a comment",
-	// 		description: "Can you review this?",
-	// 		time: "24 minutes ago",
-	// 		unread: true,
-	// 	},
-	// 	{
-	// 		id: 3,
-	// 		type: "due",
-	// 		title: "Task due tomorrow",
-	// 		description: "Landing Page",
-	// 		time: "1 hour ago",
-	// 		unread: false,
-	// 	},
-	// ]
-
 	return (
-		<Popover open={open} onOpenChange={setOpen} className="border-2 borer-green-500">
+		<Popover open={open} onOpenChange={setOpen} className="">
 
 			<PopoverTrigger asChild>
 
@@ -57,8 +48,11 @@ export default function NotificationPopover(props) {
 
 					<Bell className="w-5 h-5" />
 
-					<span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-blue-500">{noOfunread}</span>
+					{!!noOfUnread && <div className="absolute -top-1 -right-1 rounded-full bg-blue-500 p-1">
+						<p className="  text-white text-xs ">{noOfUnread}</p>
 
+					</div>
+					}
 				</button>
 
 			</PopoverTrigger>
@@ -66,7 +60,7 @@ export default function NotificationPopover(props) {
 
 			<PopoverContent
 				align="end"
-				className="w-screen md:w-[380px] p-0 bg-zinc-950 border border-zinc-800 text-white"
+				className="w-screen md:w-[380px] p-0 bg-zinc-950 text-white border border-zinc-900 rounded-xs"
 			>
 
 				<div className="flex items-center justify-between px-5 py-4 border-b border-zinc-800">
@@ -94,10 +88,11 @@ export default function NotificationPopover(props) {
 
 					{notifications?.map((notification) => (
 
-						<div
+						<Link to={`/dashboard/${selectedWorkspace?.name}/${notification?.project}/${notification?.task}`}
+						onClick={()=>setOpen(false) }
 							key={notification.id}
 							className={`
-								flex gap-3 px-5 py-4
+								flex gap-2 p-2
 								border-b border-zinc-900
 								cursor-pointer
 								hover:bg-zinc-900
@@ -109,18 +104,18 @@ export default function NotificationPopover(props) {
 							`}
 						>
 
-							<div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center flex-shrink-0">
+							<div className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center flex-shrink-0">
 
 								{notification.type === "assignment" && (
-									<UserPlus className="w-4 h-4 text-blue-400" />
+									<UserPlus className="w-5 h-5 text-blue-400" />
 								)}
 
 								{notification.type === "comment" && (
-									<MessageCircle className="w-4 h-4 text-green-400" />
+									<MessageCircle className="w-3 h-3 text-green-400" />
 								)}
 
 								{notification.type === "due" && (
-									<CalendarDays className="w-4 h-4 text-yellow-400" />
+									<CalendarDays className="w-2 h-2 text-yellow-400" />
 								)}
 
 							</div>
@@ -130,7 +125,7 @@ export default function NotificationPopover(props) {
 
 								<div className="flex items-start justify-between gap-2">
 
-									<p className="text-sm text-zinc-200">
+									<p className="text-xs font-bold text-zinc-200">
 										{notification.title}
 									</p>
 
@@ -140,8 +135,8 @@ export default function NotificationPopover(props) {
 
 								</div>
 
-								<p className="text-sm text-zinc-500 mt-1 truncate">
-									{notification.description}
+								<p className="text-sm text-zinc-500 truncate">
+									{notification?.description || notification?.message}
 								</p>
 
 								<p className="text-xs text-zinc-600 mt-2">
@@ -150,22 +145,18 @@ export default function NotificationPopover(props) {
 
 							</div>
 
-						</div>
+						</Link>
 
 					))}
 
 				</div>
+				<button className="w-full py-2  text-sm text-zinc-400 hover:text-white hover:bg-zinc-900 transition" onClick={() => {
+					setOpen(false)
+					navigate(`${wkName}/notifications`)
+				}}>
+					View all notifications
+				</button>
 
-
-				<div className="p-3">
-					<button className="w-full py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-zinc-900 transition" onClick={() => {
-						setOpen(false)
-						navigate(`${wkName}/notifications`)
-					}}>
-						View all notifications
-					</button>
-
-				</div>
 
 			</PopoverContent>
 

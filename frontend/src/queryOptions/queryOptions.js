@@ -4,7 +4,7 @@ import { instance } from "@/api/axios";
 
 export function notificationQueryOption(wk) {
 	return queryOptions({
-		queryKey: ['notificaiton', 'workspace', wk],
+		queryKey: ['notification', 'workspace', wk],
 		queryFn: async ({ queryKey }) => {
 			try {
 				const [, , wk] = queryKey

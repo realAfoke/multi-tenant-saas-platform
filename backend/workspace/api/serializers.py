@@ -136,9 +136,9 @@ class ProjectSerializer(serializers.ModelSerializer):
         #         'description',
         #         'updated_at'
         #         ]
-        # read_only_fields=['created_by','updated_at','members','workspace_name']
+        read_only_fields=['created_by']
 
-
+    @transaction.atomic
     def create(self, validated_data):
         if '_existing' in validated_data:
             return validated_data['_existing']
@@ -155,7 +155,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         admins=workspace.membership.filter(Q(role='owner')|Q(user=creater),workspace=workspace)
         admin_mapping={member.id:member for member in admins}
         project_member_manager.bulk_create([
-            models.ProjectMember(project=project,members=member,role='admin') for member in list(admin_mapping.values())
+            models.ProjectMember(project=project,member=member,role='admin') for member in list(admin_mapping.values())
             ])
         #add members
         member_mapping={member.id:member for member in member_to_add}

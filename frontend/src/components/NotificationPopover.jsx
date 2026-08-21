@@ -17,9 +17,11 @@ import { useEffect, useState } from "react"
 import { notificationQueryOption } from "@/queryOptions/queryOptions"
 import { useAppState } from "@/hooks/apptools"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { dateFormatter } from "@/utils/appUtil"
+
 
 export default function NotificationPopover() {
-	const { selectedWorkspace, selectedProject, socket } = useAppState()
+	const { selectedWorkspace, socket } = useAppState()
 	const queryClient = useQueryClient()
 
 	useEffect(() => {
@@ -34,7 +36,6 @@ export default function NotificationPopover() {
 	}, [socket])
 	const { data: notifications } = useQuery(notificationQueryOption(selectedWorkspace?.id))
 	const noOfUnread = notifications?.filter((notification) => !notification?.read)?.length
-	console.log(notifications)
 	const { wkName } = useParams()
 	const navigate = useNavigate()
 	const [open, setOpen] = useState(false)
@@ -86,68 +87,70 @@ export default function NotificationPopover() {
 
 				<div className="max-h-[420px] overflow-y-auto">
 
-					{notifications?.map((notification) => (
-
-						<Link to={`/dashboard/${selectedWorkspace?.name}/${notification?.project}/${notification?.task}`}
-						onClick={()=>setOpen(false) }
-							key={notification.id}
-							className={`
+					{notifications?.map((notification) => {
+						const time = dateFormatter(notification.createdAt)
+						return (
+							<Link to={`/dashboard/${selectedWorkspace?.name}/${notification?.project}/${notification?.task}`}
+								onClick={() => setOpen(false)}
+								key={notification.id}
+								className={`
 								flex gap-2 p-2
 								border-b border-zinc-900
 								cursor-pointer
 								hover:bg-zinc-900
 								transition
 								${notification.unread
-									? "bg-blue-500/[0.03]"
-									: ""
-								}
+										? "bg-blue-500/[0.03]"
+										: ""
+									}
 							`}
-						>
+							>
 
-							<div className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center flex-shrink-0">
+								<div className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center flex-shrink-0">
 
-								{notification.type === "assignment" && (
-									<UserPlus className="w-5 h-5 text-blue-400" />
-								)}
+									{notification.type === "assignment" && (
+										<UserPlus className="w-5 h-5 text-blue-400" />
+									)}
 
-								{notification.type === "comment" && (
-									<MessageCircle className="w-3 h-3 text-green-400" />
-								)}
+									{notification.type === "comment" && (
+										<MessageCircle className="w-3 h-3 text-green-400" />
+									)}
 
-								{notification.type === "due" && (
-									<CalendarDays className="w-2 h-2 text-yellow-400" />
-								)}
-
-							</div>
-
-
-							<div className="flex-1 min-w-0">
-
-								<div className="flex items-start justify-between gap-2">
-
-									<p className="text-xs font-bold text-zinc-200">
-										{notification.title}
-									</p>
-
-									{notification.unread && (
-										<span className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 flex-shrink-0" />
+									{notification.type === "due" && (
+										<CalendarDays className="w-2 h-2 text-yellow-400" />
 									)}
 
 								</div>
 
-								<p className="text-sm text-zinc-500 truncate">
-									{notification?.description || notification?.message}
-								</p>
 
-								<p className="text-xs text-zinc-600 mt-2">
-									{notification.time}
-								</p>
+								<div className="flex-1 min-w-0">
 
-							</div>
+									<div className="flex items-start justify-between gap-2">
 
-						</Link>
+										<p className="text-xs font-bold text-zinc-200">
+											{notification.title}
+										</p>
 
-					))}
+										{notification.unread && (
+											<span className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 flex-shrink-0" />
+										)}
+
+									</div>
+
+									<p className="text-sm text-zinc-500 truncate">
+										{notification?.description || notification?.message}
+									</p>
+
+									<p className="text-xs text-zinc-600">
+										{time}
+									</p>
+
+								</div>
+
+							</Link>
+
+						)
+					})}
 
 				</div>
 				<button className="w-full py-2  text-sm text-zinc-400 hover:text-white hover:bg-zinc-900 transition" onClick={() => {

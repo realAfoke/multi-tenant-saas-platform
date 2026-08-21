@@ -1,4 +1,5 @@
 from django.dispatch import receiver
+from django.http import request
 import manage
 from workspace.models import Task,Comment,Membership
 from notification.models import Notification
@@ -7,6 +8,10 @@ from channels.layers import get_channel_layer
 from notification.api.serializers import NotificationSerializer
 from asgiref.sync import async_to_sync
 
+
+class Request:
+    def __init__(self,user):
+        self.user=user
 
 def send_notification(members,instance,title,type):
     channel=get_channel_layer()
@@ -20,7 +25,8 @@ def send_notification(members,instance,title,type):
 
             )
     notification.user.add(*members)
-    serializer=NotificationSerializer(notification)
+    request=Request(instance.user.user)
+    serializer=NotificationSerializer(notification,context={'request':request})
     for member in members:
         notification={'type':'notification','data':serializer.data}
         async_to_sync(channel.group_send)(f'member_{member.user.id}',{'type':'send_notification','notification':notification})

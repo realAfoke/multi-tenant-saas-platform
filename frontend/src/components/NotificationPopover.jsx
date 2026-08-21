@@ -16,8 +16,9 @@ import { useParams, useNavigate, Link } from "react-router-dom"
 import { useEffect, useState } from "react"
 import { notificationQueryOption } from "@/queryOptions/queryOptions"
 import { useAppState } from "@/hooks/apptools"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { dateFormatter } from "@/utils/appUtil"
+import { instance } from "@/api/axios"
 
 
 export default function NotificationPopover() {
@@ -39,6 +40,17 @@ export default function NotificationPopover() {
 	const { wkName } = useParams()
 	const navigate = useNavigate()
 	const [open, setOpen] = useState(false)
+
+	const markNotification = useMutation({
+		mutationFn: async (id) => {
+			const response = await instance.patch(`notification/${id}/detail/`, { read: 'opened' })
+			return response.data
+		},
+		onSuccess: (newData) => {
+			queryClient.setQueryData(['notification', 'workspace', selectedWorkspace?.id], old => old?.map(obj => obj.id === newData?.id ? newData : obj)
+			)
+		}
+	})
 
 	return (
 		<Popover open={open} onOpenChange={setOpen} className="">
@@ -91,19 +103,28 @@ export default function NotificationPopover() {
 						const time = dateFormatter(notification.createdAt)
 						return (
 							<Link to={`/dashboard/${selectedWorkspace?.name}/${notification?.project}/${notification?.task}`}
-								onClick={() => setOpen(false)}
+								onClick={() => {
+									markNotification.mutate(notification?.id)
+									setOpen(false)
+								}
+								}
 								key={notification.id}
 								className={`
-								flex gap-2 p-2
-								border-b border-zinc-900
-								cursor-pointer
-								hover:bg-zinc-900
-								transition
-								${notification.unread
-										? "bg-blue-500/[0.03]"
-										: ""
+							flex
+							items-start
+							gap-2
+							p-3
+							border-b
+							transition
+							cursor-pointer
+							${notification.read
+										? "bg-black-900/50 border-zinc-800"
+										: "bg-zinc-900 border-zinc-400"
+
 									}
-							`}
+							hover:border-zinc-600
+						`}
+
 							>
 
 								<div className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center flex-shrink-0">
@@ -166,3 +187,17 @@ export default function NotificationPopover() {
 		</Popover>
 	)
 }
+
+
+// 	className={`
+// 	flex gap-2 p-2
+// 	border-b border-zinc-900
+// 	cursor-pointer
+// 	hover:bg-zinc-900
+// 	transition
+// 	${notification.unread
+// 			? "bg-blue-500/[0.03]"
+// 			: ""
+// 		}
+// `}
+

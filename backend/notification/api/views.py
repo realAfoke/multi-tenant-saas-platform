@@ -6,13 +6,22 @@ from workspace.models import WorkSpace
 
 
 
+manager=getattr(Notification,'objects')
 class NotificationView(generics.ListAPIView):
-    queryset=Notification.objects.all()
+    queryset=manager.all()
     serializer_class=NotificationSerializer
     permission_classes=[permissions.IsAuthenticated]
 
     def get_queryset(self):
-        manager=getattr(Notification,'objects')
-        noti=manager.filter(user__user=self.request.user,workspace=self.kwargs.get('pk')).order_by('-created_at')
-        print('NOTI:',noti)
-        return noti
+        return manager.filter(user__user=self.request.user,workspace=self.kwargs.get('pk')).order_by('-created_at')
+
+
+class NotificationUpdateView(generics.UpdateAPIView):
+    queryset=manager.all()
+    serializer_class=NotificationSerializer
+    permission_classes=[permissions.IsAuthenticated]
+
+
+    def perform_update(self, serializer):
+        serializer.save(read=self.request.data.get('read'))
+

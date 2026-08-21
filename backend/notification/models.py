@@ -15,7 +15,7 @@ class Notification(models.Model):
     task=models.ForeignKey(Task,related_name='task_notification',on_delete=models.SET_NULL,null=True,blank=True)
     related_user=models.ForeignKey(Membership,related_name='related_notification',on_delete=models.SET_NULL,null=True,blank=True)
     message=models.TextField()
-    read=models.BooleanField(default=False)
+    read=models.ManyToManyField(Membership,related_name='read_member')
     created_at=models.DateTimeField(auto_now_add=True)
 
 

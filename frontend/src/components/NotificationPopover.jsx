@@ -97,7 +97,7 @@ export default function NotificationPopover() {
 				</div>
 
 
-				<div className="max-h-[420px] overflow-y-auto">
+				<div className="max-h-[420px] overflow-y-auto scrollbar scrollbar-thin scrollbar-thumb-zinc-600 scrollbar-track-zinc-900">
 
 					{notifications?.map((notification) => {
 						const time = dateFormatter(notification.createdAt)
@@ -174,12 +174,14 @@ export default function NotificationPopover() {
 					})}
 
 				</div>
-				<button className="w-full py-2  text-sm text-zinc-400 hover:text-white hover:bg-zinc-900 transition" onClick={() => {
-					setOpen(false)
-					navigate(`${wkName}/notifications`)
-				}}>
-					View all notifications
-				</button>
+				{notifications?.length > 9 &&
+					<button className="w-full py-2  text-sm text-zinc-400 hover:text-white hover:bg-zinc-900 transition" onClick={() => {
+						setOpen(false)
+						navigate(`${wkName}/notifications`)
+					}}>
+						View all notifications
+					</button>
+				}
 
 
 			</PopoverContent>

@@ -18,7 +18,7 @@ import { notificationQueryOption } from "@/queryOptions/queryOptions"
 import { useAppState } from "@/hooks/apptools"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { dateFormatter } from "@/utils/appUtil"
-import { instance } from "@/api/axios"
+import { markNotificationMutationOption } from "@/mutationOptions/mutationOption"
 
 
 export default function NotificationPopover() {
@@ -41,16 +41,7 @@ export default function NotificationPopover() {
 	const navigate = useNavigate()
 	const [open, setOpen] = useState(false)
 
-	const markNotification = useMutation({
-		mutationFn: async (id) => {
-			const response = await instance.patch(`notification/${id}/detail/`, { read: 'opened' })
-			return response.data
-		},
-		onSuccess: (newData) => {
-			queryClient.setQueryData(['notification', 'workspace', selectedWorkspace?.id], old => old?.map(obj => obj.id === newData?.id ? newData : obj)
-			)
-		}
-	})
+	const markNotification = useMutation(markNotificationMutationOption(selectedWorkspace?.id, queryClient))
 
 	return (
 		<Popover open={open} onOpenChange={setOpen} className="">
@@ -90,7 +81,11 @@ export default function NotificationPopover() {
 
 					</div>
 
-					<button className="text-xs text-blue-400 hover:text-blue-300">
+					<button className="text-xs text-blue-400 hover:text-blue-300" onClick={() => {
+						if (noOfUnread < 1) return
+						// zero '0' means all unread notification
+						markNotification.mutate(0)
+					}}>
 						Mark all read
 					</button>
 
@@ -104,8 +99,9 @@ export default function NotificationPopover() {
 						return (
 							<Link to={`/dashboard/${selectedWorkspace?.name}/${notification?.project}/${notification?.task}`}
 								onClick={() => {
-									markNotification.mutate(notification?.id)
 									setOpen(false)
+									if (notification.read) return
+									markNotification.mutate(notification?.id)
 								}
 								}
 								key={notification.id}
@@ -174,14 +170,14 @@ export default function NotificationPopover() {
 					})}
 
 				</div>
-				{notifications?.length > 9 &&
-					<button className="w-full py-2  text-sm text-zinc-400 hover:text-white hover:bg-zinc-900 transition" onClick={() => {
-						setOpen(false)
-						navigate(`${wkName}/notifications`)
-					}}>
-						View all notifications
-					</button>
-				}
+
+				<button className="w-full py-2  text-sm text-zinc-400 hover:text-white hover:bg-zinc-900 transition" onClick={() => {
+					setOpen(false)
+					navigate(`${wkName}/notifications`)
+				}}>
+					View all notifications
+				</button>
+
 
 
 			</PopoverContent>
@@ -189,7 +185,14 @@ export default function NotificationPopover() {
 		</Popover>
 	)
 }
-
+// {notifications?.length > 9 &&
+// 				<button className="w-full py-2  text-sm text-zinc-400 hover:text-white hover:bg-zinc-900 transition" onClick={() => {
+// 					setOpen(false)
+// 					navigate(`${wkName}/notifications`)
+// 				}}>
+// 					View all notifications
+// 				</button>
+// 			}
 
 // 	className={`
 // 	flex gap-2 p-2

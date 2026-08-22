@@ -6,5 +6,6 @@ from . import views
 
 urlpatterns=[
         path('workspace/<int:pk>/',views.NotificationView.as_view(),name='notification_view'),
-        path('<int:pk>/detail/',views.NotificationUpdateView.as_view())
+        path('<int:pk>/detail/',views.NotificationUpdateView.as_view()),
+        path('mark-all/',views.MarkAllRead.as_view())
         ]

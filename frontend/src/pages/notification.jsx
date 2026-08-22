@@ -11,13 +11,18 @@ import {
 } from "lucide-react"
 import { notificationQueryOption } from "@/queryOptions/queryOptions"
 import { useAppState } from "@/hooks/apptools"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { dateFormatter } from "@/utils/appUtil"
+import { markNotificationMutationOption } from "@/mutationOptions/mutationOption"
+
+import { Link } from "react-router-dom"
 
 export default function Notifications() {
 	const { selectedWorkspace } = useAppState()
 	const { data: notifications } = useQuery(notificationQueryOption(selectedWorkspace?.id))
+
+	const markNotification = useMutation(markNotificationMutationOption(selectedWorkspace?.id))
 
 	// const notifications = [
 	// 	{
@@ -128,8 +133,16 @@ export default function Notifications() {
 				{notifications?.map(notification => {
 					const time = dateFormatter(notification.createdAt)
 					return (
-						<div
+						<Link to={`/dashboard/${selectedWorkspace?.name}/${notification?.project}/${notification?.task}`}
+
 							key={notification.id}
+							onClick={() => {
+								setOpen(false)
+								if (notification.read) return
+								markNotification.mutate(notification?.id)
+							}
+							}
+
 							className={`
 							flex
 							items-start
@@ -178,7 +191,7 @@ export default function Notifications() {
 
 							</div>
 
-						</div>
+						</Link>
 
 					)
 				})}

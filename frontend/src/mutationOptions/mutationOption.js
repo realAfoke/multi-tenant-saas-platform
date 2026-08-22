@@ -2,6 +2,33 @@ import { mutationOptions } from "@tanstack/react-query";
 import { instance } from "@/api/axios"
 
 
+
+export function markNotificationMutationOption(wkId, queryClient) {
+	return mutationOptions({
+		mutationFn: async (id) => {
+			//id other than zero '0' repr notificatio id zero '0' repre all unread notification
+			if (!id) {
+				const response = await instance.patch('notification/mark-all/', {})
+				return response.data
+			}
+			const response = await instance.patch(`notification/${id}/detail/`, { read: 'opened' })
+			return response.data
+		},
+		onSuccess: (newData) => {
+			if (Array.isArray(newData)) {
+				queryClient.setQueryData(['notification', 'workspace', wkId], (old) => {
+					const newNotiMap = new Map(newData?.map(obj => [obj.id, obj]))
+					const update = old.map(obj => newNotiMap.get(obj.id) ?? obj)
+					return update
+				})
+
+			}
+			queryClient.setQueryData(['notification', 'workspace', wkId], old => old?.map(obj => obj.id === newData?.id ? newData : obj)
+			)
+		}
+	})
+}
+
 export function createProjectMutationOption(queryClient) {
 	return mutationOptions({
 		mutationFn: async ({ wk, data }) => {
@@ -129,3 +156,6 @@ export function addMemberMutationOption() {
 		}
 	})
 }
+
+
+

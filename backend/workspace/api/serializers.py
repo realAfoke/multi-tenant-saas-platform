@@ -254,7 +254,6 @@ class WorkSpaceSerializer(serializers.ModelSerializer):
         else:
             memb=self.instance.membership.filter(user=current_user,workspace=self.instance).first()
             if memb.role not in ('owner','admin'):
-                print('MEMB:',memb.role)
                 raise PermissionDenied('you dont have permission to perform this operation')
             if len(self.instance.membership.all()) > 500:
                 raise ValidationError('workspace membership limmit reached')

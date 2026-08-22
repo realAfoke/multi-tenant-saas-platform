@@ -11,6 +11,8 @@ from django.core.mail import send_mail,send_mass_mail
 import logging
 import workspace
 from django.db import transaction
+from chat.models import Conversation
+from uuid import uuid4
 
 
 logger=logging.getLogger(__name__)
@@ -163,6 +165,11 @@ class ProjectSerializer(serializers.ModelSerializer):
         project_member_manager.bulk_create([
             models.ProjectMember(project=project,members=member) for member in list(member_mapping.values())
             ])
+        #create project discussion room
+        conversation_id=str(uuid4())
+        conversation=Conversation(chat_type='projec',name=validated_data.get('name'),workspace=workspace,project=project,conversation_id=conversation_id)
+        conversation.save()
+
         return project
 
 

@@ -46,6 +46,7 @@ INSTALLED_APPS = [
         'workspace',
         'billing',
         'notification',
+        'chat',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

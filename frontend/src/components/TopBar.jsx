@@ -5,7 +5,7 @@ import NotificationPopover from "./NotificationPopover"
 
 export default function TopBar({ setToggle, toggle }) {
 	return (
-		<header className="h-16 border-b border-zinc-800 bg-black flex items-center justify-between px-6">
+		<header className="h-16 border-b z-999 border-zinc-800 bg-black flex items-center justify-between px-6">
 			<div className="flex gap-2">
 				{!toggle &&
 					<img

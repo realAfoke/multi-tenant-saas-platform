@@ -1,175 +1,130 @@
 import { Search, Send } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useEffect, useState } from "react"
+import { useAppState } from "@/hooks/apptools"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { instance } from "@/api/axios"
+import { snakeToCamelCase } from "@/utils/appUtil"
+import { convertObjKeys } from "@/utils/appUtil"
+import { useOutletContext } from "react-router-dom"
+
 
 export default function Discussion() {
+	const [day, setDay] = useState('')
+	const [message, setMessage] = useState('')
+	const { socket, selectedProject, selectedWorkspace } = useAppState()
+	const { hideProjectDetail } = useOutletContext()
+	const queryClient = useQueryClient()
+	const { data: disscussionMessages } = useQuery({
+		queryKey: ['discussion', selectedWorkspace?.id, selectedProject?.id],
+		queryFn: async () => {
+			try {
+				const response = await instance.get(`chat/discussion/${selectedProject?.id}/`)
+				return response.data
+			} catch (error) {
+				console.error(error)
+				throw Error(error)
+			}
+		},
+		enabled: !!selectedProject?.id
+	})
+
+	useEffect(() => {
+		if (!socket) return
+		socket.onmessage = (e) => {
+			let data = JSON.parse(e.data)
+			const converted = convertObjKeys(data)
+			if (data?.project === selectedProject?.id && data?.workspace === selectedWorkspace?.id) {
+				queryClient.setQueryData(['discussion', selectedWorkspace?.id, selectedProject?.id], old => [...(old ?? []), converted])
+			}
+		}
+	}, [socket, queryClient])
+
 	return (
-		<div className="h-full flex flex-col text-white">
+		<div className={`h-screen flex flex-col text-white mb-[5rem]`}>
 
-			<div className="mb-8">
-
-				<h1 className="text-3xl font-bold">
-					Discussion
-				</h1>
-
-				<p className="text-zinc-400 mt-2">
-					Keep project conversations in one place.
-				</p>
-
-			</div>
 
 			<div className="flex-1 flex flex-col min-h-0 max-w-5xl">
 
-				<div className="flex items-center gap-3 h-11 rounded-xl bg-zinc-900 border border-zinc-800 px-4 mb-6">
+				<div className={`flex items-center justify-center gap-3 h-11 my-6`}>
+					<div className="p-2 py-3 rounded-xl flex-1 gap-2 bg-zinc-900 flex items-center">
+						<Search className="w-4 h-4 text-zinc-500" />
 
-					<Search className="w-4 h-4 text-zinc-500" />
-
-					<input
-						placeholder="Search conversation..."
-						className="flex-1 bg-transparent outline-none text-white placeholder:text-zinc-500"
-					/>
-
-				</div>
-
-				<div className="flex-1 overflow-y-auto space-y-6 pr-2">
-
-					<div>
-
-						<p className="text-xs uppercase tracking-wider text-zinc-600 mb-4">
-							Today
-						</p>
-
-						<div className="space-y-6">
-
-							<div className="flex gap-3">
-
-								<div className="w-9 h-9 rounded-full bg-blue-500 flex items-center justify-center text-sm font-semibold shrink-0">
-									S
-								</div>
-
-								<div>
-
-									<div className="flex items-center gap-2">
-										<p className="text-sm font-medium">
-											Sarah
-										</p>
-
-										<span className="text-xs text-zinc-600">
-											10:24 AM
-										</span>
-									</div>
-
-									<p className="text-zinc-400 mt-2 leading-relaxed">
-										Has everyone reviewed the new landing page?
-									</p>
-
-								</div>
-
-							</div>
-
-							<div className="flex gap-3">
-
-								<div className="w-9 h-9 rounded-full bg-green-500 flex items-center justify-center text-sm font-semibold shrink-0">
-									D
-								</div>
-
-								<div>
-
-									<div className="flex items-center gap-2">
-										<p className="text-sm font-medium">
-											Daniel
-										</p>
-
-										<span className="text-xs text-zinc-600">
-											10:31 AM
-										</span>
-									</div>
-
-									<p className="text-zinc-400 mt-2 leading-relaxed">
-										Yes. I made a few changes to the hero section and
-										pushed the latest version.
-									</p>
-
-								</div>
-
-							</div>
-
-							<div className="flex gap-3">
-
-								<div className="w-9 h-9 rounded-full bg-yellow-500 flex items-center justify-center text-sm font-semibold shrink-0">
-									M
-								</div>
-
-								<div>
-
-									<div className="flex items-center gap-2">
-										<p className="text-sm font-medium">
-											Michael
-										</p>
-
-										<span className="text-xs text-zinc-600">
-											11:02 AM
-										</span>
-									</div>
-
-									<p className="text-zinc-400 mt-2 leading-relaxed">
-										I uploaded the latest design files as well.
-									</p>
-
-								</div>
-
-							</div>
-
-						</div>
-
-					</div>
-
-					<div className="pt-4">
-
-						<p className="text-xs uppercase tracking-wider text-zinc-600 mb-4">
-							Yesterday
-						</p>
-
-						<div className="flex gap-3">
-
-							<div className="w-9 h-9 rounded-full bg-red-500 flex items-center justify-center text-sm font-semibold shrink-0">
-								E
-							</div>
-
-							<div>
-
-								<div className="flex items-center gap-2">
-									<p className="text-sm font-medium">
-										Emma
-									</p>
-
-									<span className="text-xs text-zinc-600">
-										4:18 PM
-									</span>
-								</div>
-
-								<p className="text-zinc-400 mt-2 leading-relaxed">
-									The new pricing section is ready for review.
-								</p>
-
-							</div>
-
-						</div>
-
+						<input
+							placeholder="Search conversation..."
+							className="flex-1 bg-transparent outline-none text-white placeholder:text-zinc-500"
+						/>
 					</div>
 
 				</div>
 
-				<div className="pt-5">
+				<div className="flex-1  space-y-6 pr-2 pb-[7rem]">
+					{disscussionMessages?.map((message) => {
+						const sender = message?.user?.member?.user ?? {}
+						const initials = `${sender?.firstName[0]?.toUpperCase()}`
+						const timeStamp = new Date(message?.timestamp)
+						const time = timeStamp?.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric' })
+						return (
+							<div key={message?.id} className="flex gap-2">
 
-					<div className="flex items-end gap-3 rounded-xl bg-zinc-900 border border-zinc-800 p-3">
+								<div className="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-sm font-semibold shrink-0">
+									{initials}
+								</div>
+
+								<div>
+
+									<div className="flex items-center gap-2">
+										<p className="text-sm font-medium">
+											{sender?.first}
+										</p>
+
+										<span className="text-xs text-zinc-600">
+											{time}
+										</span>
+									</div>
+
+									<p className="text-zinc-400 leading-relaxed text-sm">
+										{message?.content}
+									</p>
+
+								</div>
+
+							</div>
+
+						)
+					})}
+				</div>
+
+				<div className="pt-5 fixed bottom-3 flex justify-center w-full left-0 lg:-left-[10rem]">
+
+					<div className="flex flex-1 max-w-[calc(100%-5%)] md:max-w-[calc(100%-30%)] lg:max-w-[calc(100%-40%)] items-end gap-3 rounded-xl bg-zinc-900 border border-zinc-800 p-3">
 
 						<textarea
 							rows={2}
+							value={message}
+							onChange={(e) => setMessage(e.target.value)}
+							onKeyDown={(e) => {
+								if (e.key === 'Enter') {
+									e.preventDefault()
+									if (socket && socket.readyState === WebSocket.OPEN) {
+										socket.send(JSON.stringify({ project: selectedProject?.id, content: message }))
+										setMessage('')
+									}
+
+								}
+							}}
 							placeholder="Write a message..."
-							className="flex-1 resize-none bg-transparent outline-none text-white placeholder:text-zinc-500 px-2 py-2"
+							className="flex-1 resize-none bg-transparent outline-none text-white placeholder:text-zinc-500 px-2"
 						/>
 
-						<Button className="w-11 h-11 rounded-xl bg-blue-500 hover:bg-blue-600 shrink-0">
+						<Button className="w-11 h-11 rounded-xl bg-blue-500 hover:bg-blue-600 shrink-0"
+							onClick={() => {
+								if (socket && socket.readyState === WebSocket.OPEN) {
+									socket.send(JSON.stringify({ project: selectedProject?.id, content: message }))
+									setMessage('')
+								}
+
+							}}>
 							<Send className="w-4 h-4" />
 						</Button>
 
@@ -182,3 +137,159 @@ export default function Discussion() {
 		</div>
 	)
 }
+
+// <h1 className="text-3xl font-bold">
+// 	Discussion
+// </h1>
+//<div className="mb-8">
+//
+// 	<p className="text-zinc-400 mt-2">
+// 		Keep project conversations in one place.
+// 	</p>
+//
+// </div>
+//
+
+// <div>
+//
+
+//
+// 	<div className="space-y-6">
+//
+// 		<div className="flex gap-3">
+//
+// 			<div className="w-9 h-9 rounded-full bg-blue-500 flex items-center justify-center text-sm font-semibold shrink-0">
+// 				S
+// 			</div>
+//
+// 			<div>
+//
+// 				<div className="flex items-center gap-2">
+// 					<p className="text-sm font-medium">
+// 						Sarah
+// 					</p>
+//
+// 					<span className="text-xs text-zinc-600">
+// 						10:24 AM
+// 					</span>
+// 				</div>
+//
+// 				<p className="text-zinc-400 mt-2 leading-relaxed">
+// 					Has everyone reviewed the new landing page?
+// 				</p>
+//
+// 			</div>
+//
+// 		</div>
+//
+// 		<div className="flex gap-3">
+//
+// 			<div className="w-9 h-9 rounded-full bg-green-500 flex items-center justify-center text-sm font-semibold shrink-0">
+// 				D
+// 			</div>
+//
+// 			<div>
+//
+// 				<div className="flex items-center gap-2">
+// 					<p className="text-sm font-medium">
+// 						Daniel
+// 					</p>
+//
+// 					<span className="text-xs text-zinc-600">
+// 						10:31 AM
+// 					</span>
+// 				</div>
+//
+// 				<p className="text-zinc-400 mt-2 leading-relaxed">
+// 					Yes. I made a few changes to the hero section and
+// 					pushed the latest version.
+// 				</p>
+//
+// 			</div>
+//
+// 		</div>
+//
+// 		<div className="flex gap-3">
+//
+// 			<div className="w-9 h-9 rounded-full bg-yellow-500 flex items-center justify-center text-sm font-semibold shrink-0">
+// 				M
+// 			</div>
+//
+// 			<div>
+//
+// 				<div className="flex items-center gap-2">
+// 					<p className="text-sm font-medium">
+// 						Michael
+// 					</p>
+//
+// 					<span className="text-xs text-zinc-600">
+// 						11:02 AM
+// 					</span>
+// 				</div>
+//
+// 				<p className="text-zinc-400 mt-2 leading-relaxed">
+// 					I uploaded the latest design files as well.
+// 				</p>
+//
+// 			</div>
+//
+// 		</div>
+//
+// 	</div>
+//
+// </div>
+//
+// <div className="pt-4">
+//
+// 	<p className="text-xs uppercase tracking-wider text-zinc-600 mb-4">
+// 		Yesterday
+// 	</p>
+//
+// 	<div className="flex gap-3">
+//
+// 		<div className="w-9 h-9 rounded-full bg-red-500 flex items-center justify-center text-sm font-semibold shrink-0">
+// 			E
+// 		</div>
+//
+// 		<div>
+//
+// 			<div className="flex items-center gap-2">
+// 				<p className="text-sm font-medium">
+// 					Emma
+// 				</p>
+//
+// 				<span className="text-xs text-zinc-600">
+// 					4:18 PM
+// 				</span>
+// 			</div>
+//
+// 			<p className="text-zinc-400 mt-2 leading-relaxed">
+// 				The new pricing section is ready for review.
+// 			</p>
+//
+// 		</div>
+//
+// 	</div>
+//
+// </div>
+//
+//
+//
+//new old
+// //		{disscussionMessages?.map((message) => {
+// 					const date = message.createdAt
+// 					setDay(date)
+// 					return (
+//
+// 						<div className="space-y-6">
+//
+// 							{date !== day && <p className="text-xs uppercase tracking-wider text-zinc-600 mb-4">
+// 								{date}
+// 							</p>
+// 							}
+// 							// 						</div>
+//
+// 					)
+// 				})}
+//
+

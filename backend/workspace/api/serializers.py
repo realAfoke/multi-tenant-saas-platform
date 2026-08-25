@@ -167,7 +167,8 @@ class ProjectSerializer(serializers.ModelSerializer):
             ])
         #create project discussion room
         conversation_id=str(uuid4())
-        conversation=Conversation(chat_type='projec',name=validated_data.get('name'),workspace=workspace,project=project,conversation_id=conversation_id)
+        conversation=Conversation(chat_type='project',name=validated_data.get('name'),workspace=workspace,project=project,conversation_id=conversation_id)
+        print('conversation:',conversation)
         conversation.save()
 
         return project

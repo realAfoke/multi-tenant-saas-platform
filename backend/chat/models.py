@@ -53,7 +53,7 @@ class Message(models.Model):
 
 class MessageReciept(models.Model):
     user=models.ForeignKey(User,related_name='user_reciept',on_delete=models.CASCADE)
-    message=models.ForeignKey(Message,'message_reciept',on_delete=models.CASCADE)
+    message=models.ForeignKey(Message,related_name='message_reciept',on_delete=models.CASCADE)
     conversation=models.ForeignKey(Conversation,related_name='conversation_reciept',on_delete=models.CASCADE)
     status=models.CharField(max_length=200,choices=[('delivered','Delivered'),('read','Read'),('inactive','Inactive')])
     timestamp=models.DateTimeField(auto_now_add=True)
@@ -66,8 +66,8 @@ class MessageReciept(models.Model):
         return self.status
 
 class Attachment(models.Model):
-    message=models.ForeignKey(Message,'attachement',on_delete=models.CASCADE)
-    attachemnt=models.FileField(upload_to='/files',null=True,blank=True)
+    message=models.ForeignKey(Message,related_name='attachement',on_delete=models.CASCADE)
+    attachemnt=models.FileField(upload_to='files',null=True,blank=True)
     type=models.CharField(max_length=100,null=True,blank=True)
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
@@ -89,10 +89,12 @@ class MessageReaction(models.Model):
 
     class Meta:
         db_table='message_reaction'
-        constraints=models.UniqueConstraint(
+        constraints=[
+                models.UniqueConstraint(
                 fields=['user','message'],
                 name='unique_msg_reaction'
                 )
+                ]
 
     def __str__(self):
         return self.reaction

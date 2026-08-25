@@ -14,7 +14,7 @@ export default function ProtectedRoute() {
 	const { wkName, projectName, taskId } = useParams()
 	const [toggle, setToggle] = useState(false)
 	const [toggleWorkspace, setToggleWorkspace] = useState(false)
-
+	const [hideProjectDetail, setHideProjectDetail] = useState(false)
 
 	const { setWorkspace, setSocket, setProject, setTask, selectedWorkspace, selectedProject } = useAppState()
 	const { data: userWorkspaces } = useQuery(workspaceQueryOption())
@@ -24,8 +24,9 @@ export default function ProtectedRoute() {
 
 	const { data: user } = useQuery(fetchUserQueryOption())
 	useAppHook(workspaces, wkName, setWorkspace, selectedWorkspace, project, projectName, setProject, taskId, setTask, user)
-	useRealTimeUpdate(setSocket)
+	useRealTimeUpdate(setSocket, workspaces)
 
+	// console.log('userWorkspaces:',userWorkspaces,'workspaces:',workspaces)
 	useQuery(fetchRoleQueryOption(selectedWorkspace?.id))
 
 	if (!user) {
@@ -34,7 +35,7 @@ export default function ProtectedRoute() {
 	}
 
 	return (
-		<div className="flex h-screen bg-black overflow-hidden">
+		<div className={`flex h-screen bg-black overflow-hidden relative`}>
 
 			{toggle && (
 				<div className="">
@@ -51,7 +52,7 @@ export default function ProtectedRoute() {
 
 				<main className="flex-1 overflow-auto bg-zinc-950 scrollbar scrollbar-thin scrollbar-thumb-zinc-600 scrollbar-track-zinc-900">
 					<div className="max-w-7xl mx-auto px-6 py-8">
-						<Outlet context={{ setToggle }} />
+						<Outlet context={{ setToggle, hideProjectDetail, setHideProjectDetail }} />
 					</div>
 				</main>
 			</div>

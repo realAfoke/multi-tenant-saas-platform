@@ -3,8 +3,8 @@ from asgiref.sync import async_to_sync
 from channels.middleware import BaseMiddleware
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
-from django.utils.html import ValidationError
 from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework.exceptions import ValidationError
 from urllib.parse import parse_qs
 from channels.db import database_sync_to_async
 

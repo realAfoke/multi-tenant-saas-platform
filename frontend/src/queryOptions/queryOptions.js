@@ -50,7 +50,26 @@ async function getUser() {
 export function workspaceQueryOption() {
 	return queryOptions({
 		queryKey: ['workspace'],
-		queryFn: workspaceFn,
+		queryFn: async () => {
+			try {
+				const dashboard = await instance.get('workspaces/')
+				const workspaces = dashboard?.data?.map((workspace) => {
+					return ({
+						...workspace,
+						projects: Object.fromEntries(workspace?.projects?.map((obj) => [obj?.id, obj])),
+						projectOrdering: [...new Set(workspace?.projects?.map(prj => prj?.id))]
+					})
+				})
+				return {
+					workspaces: Object.fromEntries(workspaces?.map((obj) => [obj?.id, obj])),
+					ordering: workspaces?.map((obj) => obj?.id)
+				}
+
+			} catch (err) {
+				console.error(err)
+				throw new Error(err)
+			}
+		}
 		// select: (data) => {
 		// 	const workspaceMap = Object.fromEntries(data.map((obj) => [obj.id, obj]))
 		// 	return {
@@ -61,26 +80,6 @@ export function workspaceQueryOption() {
 	})
 }
 
-async function workspaceFn() {
-	try {
-		const dashboard = await instance.get('workspaces/')
-		const workspaces = dashboard?.data?.map((workspace) => {
-			return ({
-				...workspace,
-				projects: Object.fromEntries(workspace?.projects?.map((obj) => [obj?.id, obj])),
-				projectOrdering: [...new Set(workspace?.projects?.map(prj => prj?.id))]
-			})
-		})
-		return {
-			workspaces: Object.fromEntries(workspaces?.map((obj) => [obj?.id, obj])),
-			ordering: workspaces?.map((obj) => obj?.id)
-		}
-
-	} catch (err) {
-		console.error(err)
-		throw new Error(err)
-	}
-}
 
 export function projectQueryOption(wkId, projectId) {
 	return queryOptions({

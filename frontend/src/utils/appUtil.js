@@ -32,3 +32,13 @@ export function dateFormatter(lastDate) {
 	return `${days} day${days !== 1 ? "s" : ""} ago`;
 }
 
+
+export function snakeToCamelCase(prop) {
+	if (!prop) return
+	return prop.replace(/_([a-z])/g, (_, letter) => (letter.toUpperCase()))
+}
+
+export function convertObjKeys(obj) {
+	if (!obj && typeof obj !== 'object') return
+	return Object.fromEntries(Object.entries(obj).map(([key, value]) => [snakeToCamelCase(key), value && typeof value === 'object' ? convertObjKeys(value) : value]))
+}

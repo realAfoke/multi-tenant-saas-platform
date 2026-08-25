@@ -1,8 +1,10 @@
 import { useEffect } from "react";
 
-export function useRealTimeUpdate(setSocket) {
+export function useRealTimeUpdate(setSocket, workspaces) {
 	useEffect(() => {
-		const ws = new WebSocket(`wss://localhost/ws/user/`)
+		if (!workspaces) return
+		const workspaceIds = [...new Set(Object.keys(workspaces ?? {}))].join(",")
+		const ws = new WebSocket(`wss://localhost/ws/user/?workspaces=${workspaceIds}`)
 		ws.onopen = () => {
 			console.log('Connection successfull ')
 			setSocket(ws)
@@ -16,7 +18,7 @@ export function useRealTimeUpdate(setSocket) {
 		}
 		ws.onclose = () => console.log('connection closed!!!')
 		return () => ws.close()
-	}, [])
+	}, [workspaces])
 }
 export function useAppHook(workspaces, wkName, setWorkspace, selectedWorkspace, project, projectName, setProject, taskId, setTask) {
 

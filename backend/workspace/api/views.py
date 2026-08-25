@@ -5,7 +5,7 @@ import manage
 import workspace
 from workspace.permission import IsWorkspaceMemeber,IsWorkspaceAdminOrSuperAdmin
 # from .serializers import CommentSerializer, FileSerializer, InviteSerializer, TaskSerializer, WorkSpaceSerializer,ProjectSerializer
-from .serializers import CommentSerializer, MembershipSerializer, TaskSerializer,WorkSpaceSerializer,ProjectSerializer,InviteSerializer
+from .serializers import ActivityLogSerializer, CommentSerializer, MembershipSerializer, TaskSerializer,WorkSpaceSerializer,ProjectSerializer,InviteSerializer
 from rest_framework.response import Response
 from rest_framework import permissions
 from workspace import models
@@ -170,6 +170,8 @@ class AcceptInviteView(APIView):
 class WorkspaceActivity(generics.ListAPIView):
     manager=getattr(models.ActivityLog,'objects')
     queryset=manager.all()
+    serializer_class=ActivityLogSerializer
+    permission_classes=[permissions.IsAuthenticated]
 
     def get_queryset(self):
         return self.manager.filter(workspace=self.kwargs.get('pk'))

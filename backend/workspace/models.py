@@ -233,4 +233,4 @@ class ActivityLog(models.Model):
         return self.action
 
     class Meta:
-        db_table='activityLog'
+        db_table='activity_log'

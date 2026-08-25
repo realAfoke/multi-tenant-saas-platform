@@ -1,6 +1,7 @@
 from enum import member
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
+import manage
 import workspace
 from workspace.permission import IsWorkspaceMemeber,IsWorkspaceAdminOrSuperAdmin
 # from .serializers import CommentSerializer, FileSerializer, InviteSerializer, TaskSerializer, WorkSpaceSerializer,ProjectSerializer
@@ -165,6 +166,13 @@ class AcceptInviteView(APIView):
         invite=get_object_or_404(models.Invite,id=pk)
         InviteService.accept_invite(invite,user,token,request)
         return Response({'detail':'Invite accepted'})
+
+class WorkspaceActivity(generics.ListAPIView):
+    manager=getattr(models.ActivityLog,'objects')
+    queryset=manager.all()
+
+    def get_queryset(self):
+        return self.manager.filter(workspace=self.kwargs.get('pk'))
 
 
 

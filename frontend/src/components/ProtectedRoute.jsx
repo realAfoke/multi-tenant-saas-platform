@@ -52,7 +52,7 @@ export default function ProtectedRoute() {
 				<TopBar setToggle={setToggle} toggle={toggle} />
 
 				<main className="flex-1 overflow-auto bg-zinc-950 scrollbar scrollbar-thin scrollbar-thumb-zinc-600 scrollbar-track-zinc-900">
-					<div className="max-w-7xl mx-auto px-6 py-8">
+					<div className="max-w-7xl mx-auto px-4 py-8">
 						<Outlet context={{ setToggle, hideProjectDetail, setHideProjectDetail }} />
 					</div>
 				</main>

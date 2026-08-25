@@ -174,7 +174,7 @@ class WorkspaceActivity(generics.ListAPIView):
     permission_classes=[permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return self.manager.filter(workspace=self.kwargs.get('pk'))
+        return self.manager.filter(workspace=self.kwargs.get('pk')).order_by("-timestamp")
 
 
 

@@ -40,10 +40,10 @@ def send_project_activity(sender,instance,created,**kwargs):
     if created:
         member=instance.created_by.user
         serializer=ActivityLogSerializer(data={
-            'workspace':instance.workspace,
-            'project':instance,
+            'workspace':instance.workspace.id,
+            'project':instance.id,
             'action':'created',
-            'member':instance.created_by,
+            'member':instance.created_by.id,
             'message':f'A new project was created by {member.first_name} {member.last_name}'
 
             })

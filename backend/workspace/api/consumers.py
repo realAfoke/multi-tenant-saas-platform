@@ -31,16 +31,20 @@ class ServerRealTimeUpdate(AsyncWebsocketConsumer):
     async def receive(self, text_data: str | None = None, bytes_data: bytes | None = None) -> None:
         received_data=json.loads(text_data)
         chat=await sync_to_async(process_chat)(received_data,self.user)
-        await self.channel_layer.group_send(f'workspace_{chat["workspace"]}',{'type':'send.d','discussion':chat})
+        await self.channel_layer.group_send(f'workspace_{chat["workspace"]}',{'type':'send.discussion','discussion':chat})
 
 
-    async def send_d(self,event):
+    async def send_discussion(self,event):
         discuss=event['discussion']
         await self.send(text_data=json.dumps(discuss))
 
     async def send_notification(self,event):
         notification=event['notification']
         await self.send(text_data=json.dumps(notification))
+
+    async def send_activity(self,event):
+        activity=event['activity']
+        await self.send(text_data=json.dumps(activity))
 
 
 

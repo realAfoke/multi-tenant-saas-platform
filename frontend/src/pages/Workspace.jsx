@@ -36,7 +36,6 @@ export default function Workspace() {
 	const { data: user } = useQuery(fetchUserQueryOption())
 	const { data: role } = useQuery(fetchRoleQueryOption(selectedWorkspace?.id))
 	const { data: activities } = useQuery(workspaceActivityQueryOption(selectedWorkspace?.id))
-	console.log('activites:', activities)
 
 
 	ordering = ordering?.length > 4 && !showMoreProject ? ordering?.slice(0, 6) : ordering
@@ -49,6 +48,14 @@ export default function Workspace() {
 		{ id: "details", label: "Project Details" },
 	];
 	const [activeTab, setActiveTab] = useState("members");
+
+	useEffect(() => {
+		if (!socket) return
+		const ws = socket
+		ws.onmessage = (e) => {
+			const data = JSON.parse(e.data)
+		}
+	}, [socket])
 	return (
 		<div className="space-y-10">
 			<div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">

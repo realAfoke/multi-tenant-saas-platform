@@ -220,7 +220,7 @@ class Invite(models.Model):
 
 
 class ActivityLog(models.Model):
-    user=models.ForeignKey(Membership,related_name='activity_user',on_delete=models.SET_NULL,null=True,blank=True)
+    member=models.ForeignKey(Membership,related_name='activity_user',on_delete=models.SET_NULL,null=True,blank=True)
     workspace=models.ForeignKey(WorkSpace,related_name='workspace_activity',on_delete=models.CASCADE)
     project=models.ForeignKey(Project,related_name='activity_project',on_delete=models.CASCADE,null=True)
     task=models.ForeignKey(Task,related_name='task_activity',on_delete=models.CASCADE,null=True)

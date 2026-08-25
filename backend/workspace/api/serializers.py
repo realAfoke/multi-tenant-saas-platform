@@ -350,3 +350,14 @@ class InviteSerializer(serializers.ModelSerializer):
         return instance
 
 
+class ActivityLogSerializer(serializers.ModelSerializer):
+    project_info=serializers.SerializerMethodField()
+    class Meta:
+        model=models.ActivityLog
+        fields='__all__'
+
+
+    def get_project_info(self,obj):
+        return {'name':obj.project.name} if obj.project else None
+
+

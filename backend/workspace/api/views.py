@@ -129,13 +129,6 @@ class Comment(generics.ListCreateAPIView):
     serializer_class=CommentSerializer
     permission_classes=[permissions.IsAuthenticated]
 
-    # def perform_create(self, serializer):
-    #     user=self.request.user
-    #     memer=user.user_membership.filter(workspace=self.request.data.get('workspace')).first()
-    #     logger.info(f'member:{member}')
-    #     serializer.save(user=member)
-    #
-
     def get_queryset(self):
         return models.Comment.objects.filter(task_id=self.kwargs.get('pk')).order_by('-updated_at')
 
@@ -176,13 +169,3 @@ class AcceptInviteView(APIView):
 
 
 
-#
-# class CreateTask(generics.ListCreateAPIView):
-#     queryset=models.Task.objects.all()
-#     serializer_class=TaskSerializer
-#     permission_classes=[permissions.IsAuthenticated]
-#
-# class TaskDetail(generics.RetrieveUpdateDestroyAPIView):
-#     queryset=models.Task.objects.all()
-#     serializer_class=TaskSerializer
-#     permission_classes=[permissions.IsAuthenticated]

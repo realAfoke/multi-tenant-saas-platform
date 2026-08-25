@@ -2,6 +2,24 @@ import { queryOptions } from "@tanstack/react-query";
 import { instance } from "@/api/axios";
 
 
+
+export function workspaceActivityQueryOption(id) {
+	return queryOptions({
+		queryKey: ['activity', id],
+		queryFn: async ({ queryKey }) => {
+			try {
+				const [, key] = queryKey
+				const response = await instance.get(`workspaces/${key}/activity/`)
+				return response.data
+			} catch (error) {
+				console.error(error)
+				throw Error(error)
+			}
+
+		},
+		enabled: !!id
+	})
+}
 export function notificationQueryOption(wk) {
 	return queryOptions({
 		queryKey: ['notification', 'workspace', wk],

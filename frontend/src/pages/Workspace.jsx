@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useQuery } from "@tanstack/react-query"
-import { fetchRoleQueryOption, fetchUserQueryOption, workspaceMemberQueryOption, workspaceQueryOption } from "@/queryOptions/queryOptions"
+import { fetchRoleQueryOption, fetchUserQueryOption, workspaceActivityQueryOption, workspaceMemberQueryOption, workspaceQueryOption } from "@/queryOptions/queryOptions"
 import { Outlet, useNavigate } from "react-router-dom"
 import Grid from "@/components/itemDisplayOption/Option"
 import { useEffect, useState } from "react"
@@ -35,6 +35,8 @@ export default function Workspace() {
 	let ordering = projectOrdering?.filter((projectId) => filter === 'all' || projects?.[projectId]?.status === filter)
 	const { data: user } = useQuery(fetchUserQueryOption())
 	const { data: role } = useQuery(fetchRoleQueryOption(selectedWorkspace?.id))
+	const { data: activities } = useQuery(workspaceActivityQueryOption(selectedWorkspace?.id))
+	console.log('activites:', activities)
 
 
 	ordering = ordering?.length > 4 && !showMoreProject ? ordering?.slice(0, 6) : ordering

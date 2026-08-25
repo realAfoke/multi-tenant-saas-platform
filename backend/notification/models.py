@@ -1,6 +1,7 @@
+from operator import mod
 from django.core.checks import messages
 from django.db import models
-from workspace.models import Membership,WorkSpace,Task
+from workspace.models import Membership, Project,WorkSpace,Task
 
 # Create your models here.
 #
@@ -24,5 +25,4 @@ class Notification(models.Model):
 
     def __str__(self):
         return self.title
-
 

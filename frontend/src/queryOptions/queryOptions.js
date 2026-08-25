@@ -3,13 +3,13 @@ import { instance } from "@/api/axios";
 
 
 
-export function workspaceActivityQueryOption(id) {
+export function activityQueryOption(route, id) {
 	return queryOptions({
-		queryKey: ['activity', id],
+		queryKey: ['activity', route, id],
 		queryFn: async ({ queryKey }) => {
 			try {
-				const [, key] = queryKey
-				const response = await instance.get(`workspaces/${key}/activity/`)
+				const [, route, key] = queryKey
+				const response = await instance.get(`workspaces/${key}/${route}/`)
 				return response.data
 			} catch (error) {
 				console.error(error)

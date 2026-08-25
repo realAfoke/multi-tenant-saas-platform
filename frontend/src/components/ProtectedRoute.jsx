@@ -1,7 +1,7 @@
 import { Outlet } from "react-router-dom"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useAppHook } from "@/hooks/appHook.js"
-import { fetchUserQueryOption, workspaceQueryOption, projectQueryOption, fetchRoleQueryOption, workspaceActivityQueryOption } from "@/queryOptions/queryOptions"
+import { fetchUserQueryOption, workspaceQueryOption, projectQueryOption, fetchRoleQueryOption, activityQueryOption } from "@/queryOptions/queryOptions"
 import { useParams, Navigate } from "react-router-dom"
 import { useAppState } from "@/hooks/apptools"
 import { useEffect, useState } from "react"
@@ -23,12 +23,12 @@ export default function ProtectedRoute() {
 	const { workspaces } = userWorkspaces ?? {}
 
 	const { data: user } = useQuery(fetchUserQueryOption())
+	useQuery(activityQueryOption('activity', selectedWorkspace?.id))
 	useAppHook(workspaces, wkName, setWorkspace, selectedWorkspace, project, projectName, setProject, taskId, setTask, user)
 	useRealTimeUpdate(setSocket, workspaces)
 
 	// console.log('userWorkspaces:',userWorkspaces,'workspaces:',workspaces)
 	useQuery(fetchRoleQueryOption(selectedWorkspace?.id))
-	useQuery(workspaceActivityQueryOption(selectedWorkspace?.id))
 
 	if (!user) {
 		<Navigate to='/login' replace />

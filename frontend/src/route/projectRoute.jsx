@@ -1,8 +1,7 @@
 import { useAppState } from "@/hooks/apptools";
-import { fetchRoleQueryOption, fetchUserQueryOption, projectQueryOption, workspaceQueryOption } from "@/queryOptions/queryOptions";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { activityQueryOption, fetchRoleQueryOption, fetchUserQueryOption, projectQueryOption, workspaceQueryOption } from "@/queryOptions/queryOptions";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Outlet, useOutletContext, useParams } from "react-router-dom";
-import { useEffect } from "react";
 import { PanelRightCloseIcon } from "lucide-react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { Button } from "@/components/ui/button";
@@ -11,6 +10,7 @@ import User from "@/components/User"
 import CreateTask from "@/components/CreateTask";
 import { Input } from "@/components/ui/input";
 import { instance } from "@/api/axios";
+import { useProject } from "@/hooks/projectHook";
 
 export default function ProjectRoute() {
 	const [sent, setSent] = useState(false)
@@ -20,11 +20,12 @@ export default function ProjectRoute() {
 	const location = useLocation()
 	const [email, setEmail] = useState('')
 	const { hideProjectDetail, setHideProjectDetail } = useOutletContext()
+	const queryClient = useQueryClient()
 
 	const pathNames = location.pathname.split('/').filter((ptName) => ptName != '')
 	const { data: user } = useQuery(fetchUserQueryOption())
 	const { projectName } = useParams()
-	const { selectedWorkspace, setProject, selectedProject } = useAppState()
+	const { selectedWorkspace, setProject, selectedProject, socket } = useAppState()
 	const { data: role } = useQuery(fetchRoleQueryOption(selectedWorkspace?.id))
 	const { data: allWorkspaces } = useQuery(workspaceQueryOption())
 	const { workspaces = {} } = allWorkspaces ?? {}
@@ -33,8 +34,19 @@ export default function ProjectRoute() {
 	const [activeTab, setActiveTab] = useState("members");
 	const { projectMembers } = project ?? []
 	let memberDisplay = projectMembers?.length > 5 && !showMoreMembers ? projectMembers?.slice(0, 5) : projectMembers
+	const { data: projectActivities } = useQuery(activityQueryOption('project-activity', project?.id))
 
-
+	useProject(
+		socket,
+		queryClient,
+		workspaces,
+		selectedWorkspace,
+		projectName,
+		setProject,
+		pathNames,
+		setSelected,
+		sent,
+		setSent)
 	const mainTabs = ['board', 'files', 'discussion', 'timeline']
 
 	const tabs = [
@@ -43,32 +55,8 @@ export default function ProjectRoute() {
 		{ id: "details", label: "Project Details" },
 	];
 
-	useEffect(() => {
-		if (pathNames.length == 3) {
-			setSelected('overview')
-		} else {
-			setSelected(pathNames[pathNames.length - 1])
-		}
-	}, [pathNames])
 
-	useEffect(() => {
 
-		if (!selectedWorkspace || !projectName) return
-		const workspace = workspaces?.[selectedWorkspace?.id]
-		const { projects } = workspace ?? {}
-		const project = Object.values(projects ?? {})?.find((obj) => obj?.name == projectName)
-		if (project) {
-			setProject({ id: project?.id, name: project?.name, show: true })
-		}
-
-	}, [workspaces, selectedWorkspace, projectName])
-
-	useEffect(() => {
-		const timer = setTimeout(() => {
-			setSent(false)
-		}, [5000])
-		return () => clearTimeout(timer)
-	}, [sent])
 
 	const sendInvite = useMutation({
 		mutationFn: async () => {

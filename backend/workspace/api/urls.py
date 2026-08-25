@@ -20,4 +20,5 @@ urlpatterns=[
         path('<int:pk>/accept-invite/',views.AcceptInviteView.as_view(),name='accept_invite'),
         path('<int:pk>/pending-request/',views.GetInviteView.as_view(),name='pending_requesst'),
         path('<int:pk>/activity/',views.WorkspaceActivity.as_view()),
+        path('<int:pk>/project-activity/',views.ProjectActivity.as_view()),
         ]

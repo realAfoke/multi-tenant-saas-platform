@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { fetchRoleQueryOption, fetchUserQueryOption, workspaceActivityQueryOption, workspaceMemberQueryOption, workspaceQueryOption } from "@/queryOptions/queryOptions"
+import { fetchRoleQueryOption, fetchUserQueryOption, activityQueryOption, workspaceMemberQueryOption, workspaceQueryOption } from "@/queryOptions/queryOptions"
 import { Outlet, useNavigate } from "react-router-dom"
 import Grid from "@/components/itemDisplayOption/Option"
 import { useEffect, useRef, useState } from "react"
@@ -38,7 +38,7 @@ export default function Workspace() {
 	let ordering = projectOrdering?.filter((projectId) => filter === 'all' || projects?.[projectId]?.status === filter)
 	const { data: user } = useQuery(fetchUserQueryOption())
 	const { data: role } = useQuery(fetchRoleQueryOption(selectedWorkspace?.id))
-	const { data: activities } = useQuery(workspaceActivityQueryOption(selectedWorkspace?.id))
+	const { data: activities } = useQuery(activityQueryOption('activity', selectedWorkspace?.id))
 
 	ordering = ordering?.length > 4 && !showMoreProject ? ordering?.slice(0, 6) : ordering
 	const { data: members } = useQuery(workspaceMemberQueryOption(workspace?.id))
@@ -57,7 +57,7 @@ export default function Workspace() {
 		ws.onmessage = (e) => {
 			const data = JSON.parse(e.data)
 			const cameCaseObj = convertObjKeys(data)
-			queryClient.setQueryData(['activity', data?.workspace], old => [cameCaseObj, ...(old ?? [])])
+			queryClient.setQueryData(['activity', 'activity', data?.workspace], old => [cameCaseObj, ...(old ?? [])])
 		}
 	}, [socket])
 	useEffect(() => {

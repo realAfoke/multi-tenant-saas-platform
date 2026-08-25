@@ -176,6 +176,7 @@ class WorkspaceActivity(generics.ListAPIView):
     def get_queryset(self):
         return self.manager.filter(workspace=self.kwargs.get('pk')).order_by("-timestamp")
 
+class ProjectActivity(WorkspaceActivity):
 
-
-
+    def get_queryset(self):
+        return self.manager.filter(project=self.kwargs.get('pk')).order_by('-timestamp')

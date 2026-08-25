@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button"
 import { dateFormatter } from "@/utils/appUtil"
 import { useNavigate, useOutletContext, useParams } from "react-router-dom"
 import { useAppState } from "@/hooks/apptools"
+import { activityQueryOption, fetchRoleQueryOption } from "@/queryOptions/queryOptions";
+import {useQuery } from "@tanstack/react-query";
 
 export default function ProjectOverview() {
 	const { wkName, projectName } = useParams()
@@ -12,6 +14,7 @@ export default function ProjectOverview() {
 	const lastUpdatedTask = (project?.tasks) ?? []
 	const lastUpdated = dateFormatter(lastUpdatedTask[0]?.updatedAt)
 
+	const { data: projectActivities } = useQuery(activityQueryOption('project-activity', project?.id))
 
 	return (
 		<div className="space-y-8">
@@ -63,43 +66,31 @@ export default function ProjectOverview() {
 								Recent Activity
 							</h2>
 
-							<div className="space-y-6 mt-6">
+							<div className="mt-6 space-y-5">
+								{projectActivities?.map((activity) => {
+									const time = dateFormatter(activity?.timestamp)
+									return (
+										<div key={activity?.id} className="flex justify-between">
+											<div>
 
-								<div>
+												<p className="text-white">
+													{activity?.message}
+												</p>
 
-									<p className="text-white">
-										Sarah completed Homepage Design
-									</p>
+												<p className="text-zinc-500 text-sm mt-1">
+													{activity?.projectInfo?.name}
+												</p>
 
-									<p className="text-sm text-zinc-500 mt-1">
-										2 hours ago
-									</p>
+											</div>
 
-								</div>
+											<p className="text-zinc-500 text-sm">
+												{time}
+											</p>
 
-								<div>
+										</div>
 
-									<p className="text-white">
-										Michael uploaded UI Mockups
-									</p>
-
-									<p className="text-sm text-zinc-500 mt-1">
-										Yesterday
-									</p>
-
-								</div>
-
-								<div>
-
-									<p className="text-white">
-										Emma moved Hero Section to Review
-									</p>
-
-									<p className="text-sm text-zinc-500 mt-1">
-										3 days ago
-									</p>
-
-								</div>
+									)
+								})}
 
 							</div>
 

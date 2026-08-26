@@ -10,6 +10,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { workspaceQueryOption, taskQueryOption } from "@/queryOptions/queryOptions"
 import { useAppState } from "@/hooks/apptools"
 import { Button } from "./ui/button"
+import Project from "./sidebar/Project"
 
 export default function SideBar(props) {
 	const ref = useRef(null)
@@ -50,7 +51,7 @@ export default function SideBar(props) {
 		return () => { document.removeEventListener('click', handleClick) }
 	}, [])
 	return (
-		<div ref={ref} className={`py-3 flex h-full flex-col absolute text-white bg-[#000] shadow-lg border-r border-[#f6f3f438] px-2 min-w-60 md:relative md:min-w-[20rem] z-99 `}>
+		<div ref={ref} className={`py-3 flex h-full flex-col absolute text-white bg-zinc-900 shadow-lg border-r border-[#f6f3f438] px-2 min-w-50 md:relative md:min-w-[20rem] z-99 `}>
 			<div className="border-b border-zinc-800 pb-6">
 
 				<div className="flex justify-between items-start">
@@ -88,15 +89,7 @@ export default function SideBar(props) {
 						</ItemTitle>
 					</ItemContent>
 				</Item>
-				<div className="mt-6">
-					<Button
-						variant="outline"
-						className="w-full rounded-xl border-zinc-700 hover:bg-zinc-900"
-					>
-						+ New
-					</Button>
-				</div>
-				<div>
+				{!selectedWorkspace?.id && <div>
 					<Item className="gap-2 py-2 hover:bg-[#ffffff1a] rounded-md px-2 ">
 						<ItemMedia variant="image" className="w-5 h-5">
 							<img src={cog} />
@@ -122,42 +115,8 @@ export default function SideBar(props) {
 						</ItemGroup>
 					}
 				</div>
-				{selectedWorkspace?.id && <div>
-					<Item className="gap-2 py-2 hover:bg-[#ffffff1a] rounded-md px-2">
-						<ItemMedia variant="image" className="w-5 h-5">
-							<img src={cog} />
-						</ItemMedia>
-						<ItemContent>
-							<ItemTitle className="capitalize text-sm w-full" onClick={() => {
-								setWorkspace((prev) => ({ ...prev, show: !prev.show }))
-							}}>
-								Project
-							</ItemTitle>
-						</ItemContent>
-					</Item>
-					{selectedWorkspace?.show && <ItemGroup className="gap-0">
-						{projectOrdering?.map((projectId) => {
-							const project = projects?.[projectId]
-							return (
-								<Fragment key={project?.id}>
-									<NestedList key={project?.id} list={project} isProject={true} setter={setProject} />
-									{
-										selectedProject?.id === project?.id &&
-										<ItemGroup className="gap-0 my-0 py-0 px-7">
-											{taskOrdering?.map((taskId) => {
-
-												const task = tasks?.[taskId]
-												return (
-													<NestedList key={task?.id} list={task} setter={setTask} />
-												)
-											})}
-										</ItemGroup>
-									}
-								</Fragment>
-							)
-						})}
-					</ItemGroup>}
-				</div>
+				}
+				{selectedWorkspace?.id && <Project selectedWorkspace={selectedWorkspace} selectedProject={selectedProject} projectOrdering={projectOrdering} setWorkspace={setWorkspace} projects={projects} setProject={setProject} tasks={tasks} taskOrdering={taskOrdering} setTask={setTask} />
 				}
 
 			</div >
@@ -190,4 +149,12 @@ export default function SideBar(props) {
 		</div>
 	)
 }
+// <div className="mt-6">
+// 					<Button
+// 						variant="outline"
+// 						className="w-full rounded-xl border-zinc-700 hover:bg-zinc-900"
+// 					>
+// 						+ New
+// 					</Button>
+// 				</div>
 

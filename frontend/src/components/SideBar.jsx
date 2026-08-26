@@ -14,18 +14,23 @@ import Project from "./sidebar/Project"
 
 export default function SideBar(props) {
 	const ref = useRef(null)
+
 	const { setToggle, handleToggleWorkspace, toggleWorkspace } = props
-	const { setWorkspace, setProject, setTask, selectedWorkspace, selectedProject } = useAppState()
+	const { setWorkspace, selectedWorkspace } = useAppState()
 	const [showOptions, setShowOptions] = useState(false)
 	const queryClient = useQueryClient()
 
 	const { data: userWorkspaces } = useQuery(workspaceQueryOption())
 	const { workspaces, ordering } = userWorkspaces ?? {}
-	const { projects, projectOrdering } = workspaces?.[selectedWorkspace?.id] ?? {}
+	const { channels, channelOrdering } = workspaces?.[selectedWorkspace?.id] ?? {}
 
 	const user = queryClient.getQueryData(['user'])
-	const { data: projectTasks } = useQuery(taskQueryOption(selectedWorkspace?.id, selectedProject?.id))
-	const { tasks, taskOrdering } = projectTasks ?? {}
+	const openDM = (person) => {
+		setSelectedDM(person)
+		setView("dm")
+		setMessage("")
+	}
+
 
 
 	useEffect(() => {
@@ -33,12 +38,6 @@ export default function SideBar(props) {
 		handleToggleWorkspace(false)
 	}, [selectedWorkspace?.show])
 
-	useEffect(() => {
-		if (!selectedProject) {
-			setProject({ id: null, show: false, name: '' })
-
-		}
-	}, [selectedWorkspace?.id, selectedProject?.id])
 
 	useEffect(() => {
 		const handleClick = (e) => {
@@ -51,8 +50,8 @@ export default function SideBar(props) {
 		return () => { document.removeEventListener('click', handleClick) }
 	}, [])
 	return (
-		<div ref={ref} className={`py-3 flex h-full flex-col absolute text-white bg-zinc-900 shadow-lg border-r border-[#f6f3f438] px-2 min-w-50 md:relative md:min-w-[20rem] z-99 `}>
-			<div className="border-b border-zinc-800 pb-6">
+		<div ref={ref} className={`py-3 flex h-full flex-col absolute text-white bg-zinc-900 shadow-lg border-r border-[#f6f3f438] px-2 w-[calc(100%-30%)] md:relative md:min-w-[20rem] z-99 `}>
+			<div className="border-b border-zinc-800 pb-4">
 
 				<div className="flex justify-between items-start">
 
@@ -78,17 +77,17 @@ export default function SideBar(props) {
 
 			</div>
 			<div className="mb-[4rem] overflow-auto h-screen  scrollbar scrollbar-thin scrollbar-thumb-zinc-600 scrollbar-track-zinc-900">
-				<Item className="gap-2 py-2 hover:bg-[#ffffff1a] rounded-md px-2">
+				<div className="hidden md:flex items-center gap-2 bg-black px-4 h-10">
+					<img
+						src={searchIcon}
+						className="w-4 h-4 opacity-60"
+					/>
+					<input
+						placeholder="Search..."
+						className="bg-transparent outline-none text-white placeholder:text-zinc-500 border-none"
+					/>
+				</div>
 
-					<ItemMedia variant="image" className="w-5 h-5">
-						<img src={searchIcon} className="" />
-					</ItemMedia>
-					<ItemContent>
-						<ItemTitle className="capitalize text-sm w-full">
-							Search
-						</ItemTitle>
-					</ItemContent>
-				</Item>
 				{!selectedWorkspace?.id && <div>
 					<Item className="gap-2 py-2 hover:bg-[#ffffff1a] rounded-md px-2 ">
 						<ItemMedia variant="image" className="w-5 h-5">
@@ -116,7 +115,7 @@ export default function SideBar(props) {
 					}
 				</div>
 				}
-				{selectedWorkspace?.id && <Project selectedWorkspace={selectedWorkspace} selectedProject={selectedProject} projectOrdering={projectOrdering} setWorkspace={setWorkspace} projects={projects} setProject={setProject} tasks={tasks} taskOrdering={taskOrdering} setTask={setTask} />
+				{selectedWorkspace?.id && <Project channelOrdering={channelOrdering} channels={channels} />
 				}
 
 			</div >
@@ -157,4 +156,16 @@ export default function SideBar(props) {
 // 						+ New
 // 					</Button>
 // 				</div>
+// <Item className="gap-2 py-2 hover:bg-[#ffffff1a] rounded-md px-2">
+//
+// 	<ItemMedia variant="image" className="w-5 h-5">
+// 		<img src={searchIcon} className="" />
+// 	</ItemMedia>
+//
+// 	<ItemContent>
+// 		<ItemTitle className="capitalize text-sm w-full">
+// 			Search
+// 		</ItemTitle>
+// 	</ItemContent>
+// </Item>
 

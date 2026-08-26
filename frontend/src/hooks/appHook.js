@@ -20,7 +20,7 @@ export function useRealTimeUpdate(setSocket, workspaces) {
 		return () => ws.close()
 	}, [workspaces])
 }
-export function useAppHook(workspaces, wkName, setWorkspace, selectedWorkspace, project, projectName, setProject, taskId, setTask) {
+export function useAppHook(workspaces, wkName, setWorkspace, selectedWorkspace, channel, channelName, setChannel, taskId, setTask) {
 
 	useEffect(() => {
 		if (workspaces && !wkName) {
@@ -35,18 +35,18 @@ export function useAppHook(workspaces, wkName, setWorkspace, selectedWorkspace, 
 
 	useEffect(() => {
 		const workspace = workspaces?.[selectedWorkspace?.id]
-		const { projects = {} } = workspace ?? {}
-		const project = Object.values(projects)?.find(obj => obj?.name === projectName)
-		if (!project || !projectName) return
-		setProject({ id: project?.id, name: project?.name, show: true })
-	}, [project, projectName, selectedWorkspace, workspaces])
+		const { channels = {} } = workspace ?? {}
+		const channel = Object.values(channels)?.find(obj => obj?.name === channelName)
+		if (!channel || !channelName) return
+		setChannel({ id: channel?.id, name: channel?.name, show: true })
+	}, [channel, channelName, selectedWorkspace, workspaces])
 
 	useEffect(() => {
-		if (!project || !taskId) return
-		const tasks = (project?.tasks) ?? []
+		if (!channel || !taskId) return
+		const tasks = (channel?.tasks) ?? []
 		const task = tasks?.find((tsk) => tsk?.title == taskId)
 		if (task) {
 			setTask({ id: task?.id, title: task?.title, show: false })
 		}
-	}, [project, taskId])
+	}, [channel, taskId])
 }

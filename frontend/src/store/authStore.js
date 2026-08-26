@@ -20,12 +20,15 @@ const useAuthStore = create(combine({ user: '', }, (set, get) => (
 export default useAuthStore
 
 export const useAppStore = create(combine({
+	view: '',
+	selectedDm: null,
+	message: '',
 	selectedWorkspace: {
 		id: null,
 		name: '',
 		show: false
 	},
-	selectedProject: {
+	selectedChannel: {
 		id: null,
 		name: '',
 		show: false
@@ -56,14 +59,14 @@ export const useAppStore = create(combine({
 				}
 				))
 			},
-			setSelectedProject: (project) => set((state) =>
+			setSelectedChannel: (channel) =>{ set((state) =>
 			({
-				selectedProject: {
-					...state.selectedProject,
-					...(project ?? {})
+				selectedChannel: {
+					...state.selectedChannel,
+					...(channel ?? {})
 				}
 			}
-			)),
+			))},
 			setSelectedTask: (task) => {
 				set((state) =>
 				({
@@ -84,10 +87,9 @@ export const useAppStore = create(combine({
 					}
 				))
 			},
-			getWorkspace: () => get().selectedWorkspace,
-			getProject: () => get().selectedProject,
-			getTask: () => get().selectedTask,
-			getInvite: () => get().state.invite,
-			getSocket: () => get().state.socket
+			setView: (view) => set((state) => ({ view: view })),
+			setSelectedDm: (dm) => set((state) => ({ selectedDm: dm })),
+			setMessage: (message) => set((state) => ({ message: message }))
+
 		}
 	)))

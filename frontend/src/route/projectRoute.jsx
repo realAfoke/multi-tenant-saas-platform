@@ -1,5 +1,5 @@
 import { useAppState } from "@/hooks/apptools";
-import { activityQueryOption, fetchRoleQueryOption, fetchUserQueryOption, projectQueryOption, workspaceQueryOption } from "@/queryOptions/queryOptions";
+import { activityQueryOption, fetchRoleQueryOption, fetchUserQueryOption, channelQueryOption, workspaceQueryOption } from "@/queryOptions/queryOptions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Outlet, useOutletContext, useParams } from "react-router-dom";
 import { PanelRightCloseIcon } from "lucide-react"
@@ -10,39 +10,39 @@ import User from "@/components/User"
 import CreateTask from "@/components/CreateTask";
 import { Input } from "@/components/ui/input";
 import { instance } from "@/api/axios";
-import { useProject } from "@/hooks/projectHook";
+import { useChannel } from "@/hooks/channelHook";
 
-export default function ProjectRoute() {
+export default function channelRoute() {
 	const [sent, setSent] = useState(false)
 	const [toggleCreateTask, setToggleCreateTask] = useState(false)
 	const [selected, setSelected] = useState('overview')
 	const navigate = useNavigate()
 	const location = useLocation()
 	const [email, setEmail] = useState('')
-	const { hideProjectDetail, setHideProjectDetail } = useOutletContext()
+	const { hidechannelDetail, setHideProjectDetail } = useOutletContext()
 	const queryClient = useQueryClient()
 
 	const pathNames = location.pathname.split('/').filter((ptName) => ptName != '')
 	const { data: user } = useQuery(fetchUserQueryOption())
-	const { projectName } = useParams()
-	const { selectedWorkspace, setProject, selectedProject, socket } = useAppState()
+	const { channelName } = useParams()
+	const { selectedWorkspace, setChannel, selectedChannel, socket } = useAppState()
 	const { data: role } = useQuery(fetchRoleQueryOption(selectedWorkspace?.id))
 	const { data: allWorkspaces } = useQuery(workspaceQueryOption())
 	const { workspaces = {} } = allWorkspaces ?? {}
-	const { data: project } = useQuery(projectQueryOption(selectedWorkspace?.id, selectedProject?.id))
+	const { data: channel } = useQuery(projectQueryOption(selectedWorkspace?.id, selectedChannel?.id))
 	const [showMoreMembers, setShowMoreMembers] = useState(false)
 	const [activeTab, setActiveTab] = useState("members");
-	const { projectMembers } = project ?? []
-	let memberDisplay = projectMembers?.length > 5 && !showMoreMembers ? projectMembers?.slice(0, 5) : projectMembers
-	const { data: projectActivities } = useQuery(activityQueryOption('project-activity', project?.id))
+	const { channelMembers } = project ?? []
+	let memberDisplay = channelMembers?.length > 5 && !showMoreMembers ? projectMembers?.slice(0, 5) : projectMembers
+	const { data: channelActivities } = useQuery(activityQueryOption('project-activity', project?.id))
 
-	useProject(
+	useChannel(
 		socket,
 		queryClient,
 		workspaces,
 		selectedWorkspace,
-		projectName,
-		setProject,
+		channelName,
+		setChannel,
 		pathNames,
 		setSelected,
 		sent,
@@ -52,7 +52,7 @@ export default function ProjectRoute() {
 	const tabs = [
 		{ id: "members", label: "Members" },
 		{ id: "requests", label: "Requests" },
-		{ id: "details", label: "Project Details" },
+		{ id: "details", label: "channel Details" },
 	];
 
 
@@ -60,7 +60,7 @@ export default function ProjectRoute() {
 
 	const sendInvite = useMutation({
 		mutationFn: async () => {
-			const inviteSent = await instance.post(`workspaces/${project?.workspace}/invite/`, { email: email, project: project?.id })
+			const inviteSent = await instance.post(`workspaces/${channel?.workspace}/invite/`, { email: email, project: project?.id })
 			return inviteSent?.data
 		},
 		onSuccess: () => {
@@ -70,18 +70,18 @@ export default function ProjectRoute() {
 	return (
 		<div className="space-y-8 relative">
 
-			<div className={`fixed w-full flex left-0  justify-center  md:-left-2 ${hideProjectDetail ? '-top-28 md:-top-15' : 'top-15'}`}>
+			<div className={`fixed w-full flex left-0  justify-center  md:-left-2 ${hidechannelDetail ? '-top-28 md:-top-15' : 'top-15'}`}>
 				<div className=" bg-zinc-950 flex-1 p-3 max-w-[calc(100%-10%)] md:max-w-[calc(100%-5%)] mx-auto">
 					<div className={`flex justify-between items-center mb-2`}>
 						<div>
-							<p onClick={() => navigate(`../${project?.workspaceName}`)} className="text-blue-400 text-sm font-medium">
-								{project?.workspaceName}
+							<p onClick={() => navigate(`../${channel?.workspaceName}`)} className="text-blue-400 text-sm font-medium">
+								{channel?.workspaceName}
 							</p>
 
 							<div className="flex flex-wrap items-center gap-4 mt-2">
 
 								<h1 className="text-4xl font-bold text-white">
-									{project?.name}
+									{channel?.name}
 								</h1>
 
 								<span className="px-3 py-1 rounded-full bg-green-500/20 text-green-300 text-sm">
@@ -91,7 +91,7 @@ export default function ProjectRoute() {
 							</div>
 
 							<p className="text-zinc-400 max-w-3xl mt-4 leading-relaxed">
-								{project?.description}
+								{channel?.description}
 							</p>
 						</div>
 						{['admin', 'owner'].includes(role?.role) &&
@@ -127,7 +127,7 @@ export default function ProjectRoute() {
 								variant="ghost"
 								size="icon"
 								className="text-zinc-500 hover:text-white"
-								onClick={() => setHideProjectDetail(prev => !prev)}
+								onClick={() => setHidechannelDetail(prev => !prev)}
 							>
 								<PanelRightCloseIcon className="w-5 h-5 hover:bg-transparent" />
 							</Button>
@@ -150,8 +150,8 @@ export default function ProjectRoute() {
 
 			<div className={`grid my-2  ${showMoreMembers ? 'grid-cols-1 md:grid-cols-[1.6fr_0.7fr]' : 'grid-cols-1'} gap-3 `}>
 
-				<div className={`flex-1 ${hideProjectDetail ? '' : 'mt-[12rem] md:mt-[8rem]'}`}>
-					<Outlet context={{ project, showMoreMembers, memberDisplay, setShowMoreMembers, projectMembers, hideProjectDetail }} />
+				<div className={`flex-1 ${hidechannelDetail ? '' : 'mt-[12rem] md:mt-[8rem]'}`}>
+					<Outlet context={{ channel, showMoreMembers, memberDisplay, setShowMoreMembers, projectMembers, hideProjectDetail }} />
 				</div>
 
 				{showMoreMembers &&
@@ -198,7 +198,7 @@ export default function ProjectRoute() {
 							)}
 
 							{activeTab === "requests" && <PendingRequests />}
-							{activeTab === "details" && <ProjectDetails />}
+							{activeTab === "details" && <channelDetails />}
 						</div>
 					</div>
 
@@ -207,7 +207,7 @@ export default function ProjectRoute() {
 			</div>
 
 			{toggleCreateTask && <div className={`overflow-auto h-screen absolute top-0 w-full left-0 backdrop-blur-sm bg-[rgba(0,0,0,0.4)] p-5`}>
-				<CreateTask project={project} handleCreateTask={setToggleCreateTask} />
+				<CreateTask channel={project} handleCreateTask={setToggleCreateTask} />
 			</div>
 			}
 		</div >

@@ -1,12 +1,12 @@
 import { useEffect } from "react"
 
-export function useProject(
+export function useChannel(
 	socket,
 	queryClient,
 	workspaces,
 	selectedWorkspace,
-	projectName,
-	setProject,
+	channelName,
+	setChannel,
 	pathNames,
 	setSelected,
 	sent,
@@ -18,21 +18,21 @@ export function useProject(
 		ws.onmessage = (e) => {
 			const data = JSON.parse(e.data)
 			const cameCaseObj = convertObjKeys(data)
-			queryClient.setQueryData(['activity','project-activity', data?.project], old => [cameCaseObj, ...(old ?? [])])
+			queryClient.setQueryData(['activity', 'channel-activity', data?.project], old => [cameCaseObj, ...(old ?? [])])
 		}
 	}, [socket])
 
 	useEffect(() => {
 
-		if (!selectedWorkspace || !projectName) return
+		if (!selectedWorkspace || !channelName) return
 		const workspace = workspaces?.[selectedWorkspace?.id]
-		const { projects } = workspace ?? {}
-		const project = Object.values(projects ?? {})?.find((obj) => obj?.name == projectName)
-		if (project) {
-			setProject({ id: project?.id, name: project?.name, show: true })
+		const { channels } = workspace ?? {}
+		const channel = Object.values(projects ?? {})?.find((obj) => obj?.name == projectName)
+		if (channel) {
+			setChannel({ id: channel?.id, name: project?.name, show: true })
 		}
 
-	}, [workspaces, selectedWorkspace, projectName])
+	}, [workspaces, selectedWorkspace, channelName])
 
 	useEffect(() => {
 		if (pathNames.length == 3) {

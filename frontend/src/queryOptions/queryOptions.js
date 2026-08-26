@@ -74,8 +74,8 @@ export function workspaceQueryOption() {
 				const workspaces = dashboard?.data?.map((workspace) => {
 					return ({
 						...workspace,
-						projects: Object.fromEntries(workspace?.projects?.map((obj) => [obj?.id, obj])),
-						projectOrdering: [...new Set(workspace?.projects?.map(prj => prj?.id))]
+						channels: Object.fromEntries(workspace?.projects?.map((obj) => [obj?.id, obj])),
+						channelOrdering: [...new Set(workspace?.projects?.map(prj => prj?.id))]
 					})
 				})
 				return {
@@ -99,15 +99,15 @@ export function workspaceQueryOption() {
 }
 
 
-export function projectQueryOption(wkId, projectId) {
+export function channelQueryOption(wkId, channelId) {
 	return queryOptions({
-		queryKey: [wkId, 'project', projectId],
+		queryKey: [wkId, 'channel', channelId],
 		queryFn: async ({ queryKey }) => {
-			const [wkId, , projectId] = queryKey
-			const project = await instance.get(`workspaces/${wkId}/project/${projectId}/`)
-			return project?.data
+			const [wkId, , channelId] = queryKey
+			const channel = await instance.get(`workspaces/${wkId}/project/${channelId}/`)
+			return channel?.data
 		},
-		enabled: !!projectId,
+		enabled: !!channelId,
 	})
 }
 

@@ -7,7 +7,7 @@ export default function Home() {
 	const { data: user } = useQuery(fetchUserQueryOption())
 	const { setToggle } = useOutletContext()
 	return (
-		<div className="mb-10">
+		<div className="my-10">
 			<h1 className="text-4xl font-bold text-white">
 				Welcome, {user?.firstName}
 			</h1>

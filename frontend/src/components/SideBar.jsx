@@ -61,8 +61,8 @@ export default function SideBar(props) {
 							{selectedWorkspace?.id ? `workspace` : 'OrbitSpace'}
 						</h1>
 
-						<p className="text-xs text-gray-500 mt-1">
-							Manage all your work
+						<p className={`${selectedWorkspace?.id ? 'text-2xl font-bold text-white' : 'text-xs text-gray-500 mt-1'}`}>
+							{selectedWorkspace?.id ? `${selectedWorkspace?.name}` : 'Manage all your work'}
 						</p>
 
 					</div>

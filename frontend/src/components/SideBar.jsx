@@ -57,8 +57,8 @@ export default function SideBar(props) {
 
 					<div>
 
-						<h1 className="text-2xl font-bold text-white">
-							OrbitSpace
+						<h1 className={`${selectedWorkspace?.id ? 'text-xs text-gray-500 mt-1' : 'text-2xl font-bold text-white'}`}>
+							{selectedWorkspace?.id ? `workspace` : 'OrbitSpace'}
 						</h1>
 
 						<p className="text-xs text-gray-500 mt-1">
@@ -122,7 +122,7 @@ export default function SideBar(props) {
 						</ItemGroup>
 					}
 				</div>
-				<div>
+				{selectedWorkspace?.id && <div>
 					<Item className="gap-2 py-2 hover:bg-[#ffffff1a] rounded-md px-2">
 						<ItemMedia variant="image" className="w-5 h-5">
 							<img src={cog} />
@@ -158,7 +158,7 @@ export default function SideBar(props) {
 						})}
 					</ItemGroup>}
 				</div>
-
+				}
 
 			</div >
 			<Link

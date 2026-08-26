@@ -23,6 +23,9 @@ export function useRealTimeUpdate(setSocket, workspaces) {
 export function useAppHook(workspaces, wkName, setWorkspace, selectedWorkspace, project, projectName, setProject, taskId, setTask) {
 
 	useEffect(() => {
+		if (workspaces && !wkName) {
+			setWorkspace({ id: null, name: '', show: false })
+		}
 		if (!workspaces || !wkName) return
 		const workspace = Object.values(workspaces ?? {}).find(wk => wk?.name == wkName)
 		if (workspace) {

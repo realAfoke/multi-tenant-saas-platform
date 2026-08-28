@@ -1,16 +1,32 @@
 import { ItemGroup, Item, ItemContent, ItemTitle } from "@/components/ui/item"
 import { useAppState } from "@/hooks/apptools"
 import { Hash } from "lucide-react"
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { useQueryClient } from "@tanstack/react-query"
+
 
 export default function Project(props) {
-	const { setView, setMessage, selectedWorkspace, selectedChannel, setChannel, setSelectedDm, view } = useAppState()
+	const navigate = useNavigate()
+	const [showTask, setShowTask] = useState(false)
+	const { setView, setMessage, selectedWorkspace, selectedChannel, setChannel, setSelectedDm, view, setTask, selectedTask } = useAppState()
 	const { channels, channelOrdering } = props
 	const openChannel = (channel) => {
 		setChannel({ id: channel.id, name: channel.name, status: true })
 		setView("channel")
 		setSelectedDm(null)
 		setMessage("")
+		setShowTask((prev) => !prev)
 	}
+
+	const openTask = (task) => {
+		setTask({ id: task?.id, title: task?.title, show: true })
+	}
+	const queryClient = useQueryClient()
+
+	const channel = queryClient.getQueryData([selectedWorkspace?.id, 'channel', selectedChannel?.id])
+
+	const channelTask = channel?.tasks ?? []
 	return (
 		<div>
 			<Item className="gap-2 py-2 hover:bg-[#ffffff1a] rounded-md px-2">
@@ -24,11 +40,14 @@ export default function Project(props) {
 				{channelOrdering?.map((channelId) => {
 					const channel = channels?.[channelId]
 					return (
-
-						<button
-							key={channel.id}
-							onClick={() => openChannel(channel)}
-							className={`
+						<div key={channel?.id} className="">
+							<button
+								onClick={() => {
+									openChannel(channel)
+									navigate(`${selectedWorkspace?.name}/${channel?.name}`)
+								}
+								}
+								className={`
 										w-full
 										flex
 										items-center
@@ -39,26 +58,39 @@ export default function Project(props) {
 										text-sm
 										transition
 										${view === "channel" &&
-									selectedChannel.id === channel.id
-									? "bg-zinc-800 text-white"
-									: "text-zinc-500 hover:text-white hover:bg-zinc-800/50"
-								}
+										selectedChannel.id === channel.id
+										? "bg-zinc-800 text-white"
+										: "text-zinc-500 hover:text-white hover:bg-zinc-800/50"
+									}
 									`}
-						>
+							>
 
-							<Hash className="w-4 h-4" />
+								<Hash className="w-4 h-4" />
 
-							<span className="flex-1 text-left">
-								{channel.name}
-							</span>
-
-							{channel?.unread > 0 && (
-								<span className="text-xs bg-blue-500 text-white min-w-5 h-5 px-1 rounded-full flex items-center justify-center">
-
+								<span className="flex-1 text-left">
+									{channel.name}
 								</span>
-							)}
 
-						</button>
+								{channel?.unread > 0 && (
+									<span className="text-xs bg-blue-500 text-white min-w-5 h-5 px-1 rounded-full flex items-center justify-center">
+
+									</span>
+								)}
+
+							</button>
+							{(channelTask.length > 0 && selectedChannel?.id === channel.id && showTask) && <div className="flex flex-col gap-2 mt-2 *:text-left px-5">
+								{channelTask?.map((task) => {
+									return (
+										<button key={task?.id} className="text-sm text-zinc-500" onClick={() => {
+											openTask(task)
+											navigate(`${selectedWorkspace?.name}/${selectedChannel?.name}/${task?.id}`)
+										}}>
+											{task.title}
+										</button>
+									)
+								})}
+							</div>}
+						</div>
 
 
 

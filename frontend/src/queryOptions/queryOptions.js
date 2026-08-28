@@ -134,13 +134,13 @@ async function taskFn(wk, prjId) {
 }
 
 
-export function selectedTaskQueryOption(wk, prj, tk) {
+export function selectedTaskQueryOption(wk, chl, tk) {
 	return queryOptions({
-		queryKey: ['task', wk, prj, tk],
+		queryKey: ['task', wk, chl, tk],
 		queryFn: async ({ queryKey }) => {
 			try {
-				const [, wk, prj, tk] = queryKey
-				const response = await instance.get(`workspaces/${wk}/${prj}/task/${tk}/`)
+				const [, wk, chl, tk] = queryKey
+				const response = await instance.get(`workspaces/${wk}/${chl}/task/${tk}/`)
 				return response.data
 			} catch (error) {
 				console.error(error)
@@ -154,18 +154,17 @@ export function selectedTaskQueryOption(wk, prj, tk) {
 export function commentQueryOption(taskId) {
 	return queryOptions({
 		queryKey: [taskId, 'comments'],
-		queryFn: () => getTaskComments(taskId),
+		queryFn: async ({ queryKey }) => {
+			try {
+				const [taskId,] = queryKey
+				const comments = await instance.get(`workspaces/${taskId}/comments/`)
+				return comments.data
+			} catch (err) {
+				console.error(err)
+			}
+		},
 		enabled: !!taskId
 	})
-}
-
-const getTaskComments = async (taskId) => {
-	try {
-		const comments = await instance.get(`workspaces/${taskId}/comments/`)
-		return comments.data
-	} catch (err) {
-		console.error(err)
-	}
 }
 
 export function dasboardDataQueryOption(id) {

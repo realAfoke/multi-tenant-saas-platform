@@ -27,9 +27,9 @@ export function useChannel(
 		if (!selectedWorkspace || !channelName) return
 		const workspace = workspaces?.[selectedWorkspace?.id]
 		const { channels } = workspace ?? {}
-		const channel = Object.values(projects ?? {})?.find((obj) => obj?.name == projectName)
+		const channel = Object.values(channels ?? {})?.find((obj) => obj?.name == channelName)
 		if (channel) {
-			setChannel({ id: channel?.id, name: project?.name, show: true })
+			setChannel({ id: channel?.id, name: channel?.name, show: true })
 		}
 
 	}, [workspaces, selectedWorkspace, channelName])

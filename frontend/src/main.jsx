@@ -2,7 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Login, { loader as loginLoader } from './pages/login.jsx'
-import ProtectedRoute from './components/ProtectedRoute.jsx'
+import ProtectedRoute from './route/protectedRoute.jsx'
 import './index.css'
 import Workspace from './pages/Workspace.jsx'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -29,6 +29,7 @@ import SignEmail from './components/SignEmail.jsx'
 import VerifyEmail from './components/VerifyEmail.jsx'
 import AccountDetails from './components/AccountDetails.jsx'
 import AcceptInvite from './pages/acceptInvite.jsx'
+import Chat from './components/Chat.jsx'
 
 
 
@@ -58,7 +59,7 @@ const routes = createBrowserRouter([
         ]
       },
       {
-        path: ':wkName/:projectName', element: <ProjectRoute />, children: [
+        path: ':wkName/:channelName', element: <Chat />, children: [
           { index: true, element: <ProjectOverview /> },
           { path: 'board', element: <Board /> },
           { path: 'files', element: <Files /> },
@@ -66,7 +67,7 @@ const routes = createBrowserRouter([
         ]
       },
       {
-        path: ':wkName/:projectName/:taskId', element: <Task />,
+        path: ':wkName/:channelName/:taskId', element: <Task />,
       },
       {
         path: ':wkName/:prjName/add-new-task', element: <Create />

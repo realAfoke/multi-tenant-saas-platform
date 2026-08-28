@@ -50,18 +50,18 @@ export default function SideBar(props) {
 		return () => { document.removeEventListener('click', handleClick) }
 	}, [])
 	return (
-		<div ref={ref} className={`py-3 flex h-full flex-col absolute text-white bg-zinc-900 shadow-lg border-r border-[#f6f3f438] px-2 w-[calc(100%-30%)] md:relative md:min-w-[20rem] z-99 `}>
+		<div ref={ref} className={`py-3 flex h-full flex-col absolute text-white bg-zinc-900 shadow-lg border-r border-[#f6f3f438] px-2 w-[calc(100%-30%)] md:relative md:min-w-[18rem] z-99 `}>
 			<div className="border-b border-zinc-800 pb-4">
 
-				<div className="flex justify-between items-start">
+				<div className="flex justify-between items-start border-b border-zinc-800 pb-1">
 
 					<div>
 
 						<h1 className={`${selectedWorkspace?.id ? 'text-xs text-gray-500 mt-1' : 'text-2xl font-bold text-white'}`}>
-							{selectedWorkspace?.id ? `workspace` : 'OrbitSpace'}
+							{selectedWorkspace?.id ? `Workspace` : 'OrbitSpace'}
 						</h1>
 
-						<p className={`${selectedWorkspace?.id ? 'text-2xl font-bold text-white' : 'text-xs text-gray-500 mt-1'}`}>
+						<p className={`${selectedWorkspace?.id ? 'font-semibold capitalize truncate mt-1' : 'text-xs text-gray-500 mt-1'}`}>
 							{selectedWorkspace?.id ? `${selectedWorkspace?.name}` : 'Manage all your work'}
 						</p>
 

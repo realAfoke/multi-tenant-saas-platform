@@ -19,7 +19,7 @@ export default function channelRoute() {
 	const navigate = useNavigate()
 	const location = useLocation()
 	const [email, setEmail] = useState('')
-	const { hidechannelDetail, setHideProjectDetail } = useOutletContext()
+	const { hidechannelDetail, setHidechannelDetail } = useOutletContext()
 	const queryClient = useQueryClient()
 
 	const pathNames = location.pathname.split('/').filter((ptName) => ptName != '')
@@ -29,12 +29,12 @@ export default function channelRoute() {
 	const { data: role } = useQuery(fetchRoleQueryOption(selectedWorkspace?.id))
 	const { data: allWorkspaces } = useQuery(workspaceQueryOption())
 	const { workspaces = {} } = allWorkspaces ?? {}
-	const { data: channel } = useQuery(projectQueryOption(selectedWorkspace?.id, selectedChannel?.id))
+	const { data: channel } = useQuery(channelQueryOption(selectedWorkspace?.id, selectedChannel?.id))
 	const [showMoreMembers, setShowMoreMembers] = useState(false)
 	const [activeTab, setActiveTab] = useState("members");
-	const { channelMembers } = project ?? []
-	let memberDisplay = channelMembers?.length > 5 && !showMoreMembers ? projectMembers?.slice(0, 5) : projectMembers
-	const { data: channelActivities } = useQuery(activityQueryOption('project-activity', project?.id))
+	const { channelMembers } = channel ?? []
+	let memberDisplay = channelMembers?.length > 5 && !showMoreMembers ? channelMembers?.slice(0, 5) : channelMembers
+	const { data: channelActivities } = useQuery(activityQueryOption('channel-activity', channel?.id))
 
 	useChannel(
 		socket,
@@ -60,7 +60,7 @@ export default function channelRoute() {
 
 	const sendInvite = useMutation({
 		mutationFn: async () => {
-			const inviteSent = await instance.post(`workspaces/${channel?.workspace}/invite/`, { email: email, project: project?.id })
+			const inviteSent = await instance.post(`workspaces/${channel?.workspace}/invite/`, { email: email, channel: channel?.id })
 			return inviteSent?.data
 		},
 		onSuccess: () => {
@@ -151,7 +151,7 @@ export default function channelRoute() {
 			<div className={`grid my-2  ${showMoreMembers ? 'grid-cols-1 md:grid-cols-[1.6fr_0.7fr]' : 'grid-cols-1'} gap-3 `}>
 
 				<div className={`flex-1 ${hidechannelDetail ? '' : 'mt-[12rem] md:mt-[8rem]'}`}>
-					<Outlet context={{ channel, showMoreMembers, memberDisplay, setShowMoreMembers, projectMembers, hideProjectDetail }} />
+					<Outlet context={{ channel, showMoreMembers, memberDisplay, setShowMoreMembers, channelMembers, hidechannelDetail }} />
 				</div>
 
 				{showMoreMembers &&
@@ -207,7 +207,7 @@ export default function channelRoute() {
 			</div>
 
 			{toggleCreateTask && <div className={`overflow-auto h-screen absolute top-0 w-full left-0 backdrop-blur-sm bg-[rgba(0,0,0,0.4)] p-5`}>
-				<CreateTask channel={project} handleCreateTask={setToggleCreateTask} />
+				<CreateTask channel={channel} handleCreateTask={setToggleCreateTask} />
 			</div>
 			}
 		</div >

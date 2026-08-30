@@ -30,12 +30,14 @@ import VerifyEmail from './components/VerifyEmail.jsx'
 import AccountDetails from './components/AccountDetails.jsx'
 import AcceptInvite from './pages/acceptInvite.jsx'
 import Chat from './components/Chat.jsx'
+// import TeamChat from './experiment/TempChat.jsx'
 
 
 
 const queryClient = new QueryClient()
 
 const routes = createBrowserRouter([
+  // {path:'team-chat',element:<TeamChat/>},
   { path: 'accept-invite', element: <AcceptInvite /> },
   {
     path: 'signup', element: <SignUp />, loader: signUpLoader, children: [

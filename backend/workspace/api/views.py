@@ -1,10 +1,11 @@
 from enum import member
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
+import manage
 import workspace
-from workspace.permission import IsWorkspaceMemeber,IsWorkspaceAdminOrSuperAdmin
+from workspace.permission import IsProjectMember, IsWorkspaceMember
 # from .serializers import CommentSerializer, FileSerializer, InviteSerializer, TaskSerializer, WorkSpaceSerializer,ProjectSerializer
-from .serializers import CommentSerializer, MembershipSerializer, TaskSerializer,WorkSpaceSerializer,ProjectSerializer,InviteSerializer
+from .serializers import ActivityLogSerializer, CommentSerializer, MembershipSerializer, TaskSerializer,WorkSpaceSerializer,ProjectSerializer,InviteSerializer
 from rest_framework.response import Response
 from rest_framework import permissions
 from workspace import models
@@ -17,24 +18,19 @@ from workspace.services.invite import InviteService
 import logging
 
 
-
-
-
-
 logger=logging.getLogger(__name__)
 
-
-class DashBoard(generics.ListAPIView):
-    queryset=models.Task.objects.all()
-    serializer_class=TaskSerializer
-    permission_classes=[IsWorkspaceMemeber]
-
-    def get_queryset(self):
-        project=models.Project.objects.filter(workspace=self.kwargs.get('wk')).order_by('-updated_at')[0]
-        logger.info(f'project:{project}')
-        return models.Task.objects.filter(project=project).order_by('-updated_at')[:5]
-        # return models.Task.objects.all()
-
+# class DashBoard(generics.ListAPIView):
+#     queryset=models.Task.objects.all()
+#     serializer_class=TaskSerializer
+#     permission_classes=[IsWorkspaceMember]
+#
+#     def get_queryset(self):
+#         project=models.Project.objects.filter(workspace=self.kwargs.get('wk')).order_by('-updated_at')[0]
+#         logger.info(f'project:{project}')
+#         return models.Task.objects.filter(project=project).order_by('-updated_at')[:5]
+#         # return models.Task.objects.all()
+#
 
 class RoleView(generics.RetrieveAPIView):
     queryset=models.Membership.objects.all()
@@ -47,20 +43,20 @@ class RoleView(generics.RetrieveAPIView):
 
 
 
-class Base(generics.ListCreateAPIView):
-    permission_classes=[IsWorkspaceMemeber]
-    serializer_class=None
-    queryset=None
-
-    instance_model=None
-    def perform_create(self, serializer):
-        serializer.is_valid(raise_exception=True)
-        serializer.save(created_by=self.request.user)
-
-    def get_queryset(self):
-        user=self.request.user
-        return self.instance_model.objects.filter(members=user).order_by('-updated_at')
-
+# class Base(generics.ListCreateAPIView):
+#     permission_classes=[IsWorkspaceMember]
+#     serializer_class=None
+#     queryset=None
+#
+#     instance_model=None
+#     def perform_create(self, serializer):
+#         serializer.is_valid(raise_exception=True)
+#         serializer.save(created_by=self.request.user)
+#
+#     def get_queryset(self):
+#         user=self.request.user
+#         return self.instance_model.objects.filter(members=user).order_by('-updated_at')
+#
 
 class WorkSpace(generics.ListCreateAPIView):
     queryset=models.WorkSpace.objects.all()
@@ -73,7 +69,7 @@ class WorkSpace(generics.ListCreateAPIView):
     
 class WorkSpaceMembers(generics.ListAPIView):
     queryset=models.WorkSpace.objects.all()
-    permission_classes=[IsWorkspaceMemeber]
+    permission_classes=[IsWorkspaceMember]
     serializer_class=MembershipSerializer
 
     def get_queryset(self):
@@ -82,17 +78,16 @@ class WorkSpaceMembers(generics.ListAPIView):
 class WorkSpaceDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset=models.WorkSpace.objects.all()
     serializer_class=WorkSpaceSerializer
-    permission_classes=[IsWorkspaceMemeber]
+    permission_classes=[IsWorkspaceMember]
 
     def perform_update(self, serializer):
         serializer.is_valid(raise_exception=True)
         serializer.save(members=self.request.data.get('members'))
 
-
-class Project(generics.ListCreateAPIView):
+class GetCreateProjectView(generics.ListCreateAPIView):
     queryset=models.Project.objects.all()
     serializer_class=ProjectSerializer
-    permission_classes=[IsWorkspaceAdminOrSuperAdmin]
+    permission_classes=[IsWorkspaceMember]
 
     def get_queryset(self):
         return models.Project.objects.filter(workspace=self.kwargs.get('wk'),members=self.request.user)
@@ -101,16 +96,16 @@ class Project(generics.ListCreateAPIView):
     #     serializer.save(project_members=self.request.data.get('project_members'))
 
 
-class ProjectDetail(generics.RetrieveUpdateDestroyAPIView):
+class ProjectDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset=models.Project.objects.all()
     serializer_class=ProjectSerializer
-    permission_classes=[IsWorkspaceMemeber]
+    permission_classes=[IsProjectMember]
 
 
-class Task(generics.ListCreateAPIView):
+class GetCreateTaskView(generics.ListCreateAPIView):
     queryset=models.Task.objects.all()
     serializer_class=TaskSerializer
-    permission_classes=[permissions.IsAuthenticated,IsWorkspaceAdminOrSuperAdmin]
+    permission_classes=[permissions.IsAuthenticated,IsProjectMember]
 
     def get_queryset(self):
         return models.Task.objects.filter(workspace=self.kwargs.get('wk'),project=self.kwargs.get('pk'))
@@ -119,23 +114,19 @@ class Task(generics.ListCreateAPIView):
 class TaskDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset=models.Task
     serializer_class=TaskSerializer
-    permission_classes=[IsWorkspaceMemeber]
+    permission_classes=[IsProjectMember]
 
     def get_object(self):
-        manager=getattr(models.Task,'objects')
-        return manager.filter(id=self.kwargs.get('tk')).first()
+        return get_object_or_404(
+                models.Task,
+                id=self.kwargs.get('tk'),
+                project_id=self.kwargs.get('pk'),
+                )
 
 class Comment(generics.ListCreateAPIView):
     queryset=models.Comment.objects.all()
     serializer_class=CommentSerializer
     permission_classes=[permissions.IsAuthenticated]
-
-    # def perform_create(self, serializer):
-    #     user=self.request.user
-    #     memer=user.user_membership.filter(workspace=self.request.data.get('workspace')).first()
-    #     logger.info(f'member:{member}')
-    #     serializer.save(user=member)
-    #
 
     def get_queryset(self):
         return models.Comment.objects.filter(task_id=self.kwargs.get('pk')).order_by('-updated_at')
@@ -152,7 +143,7 @@ class Comment(generics.ListCreateAPIView):
 #
 #
 class SendInviteView(APIView):
-    permission_classes=[IsWorkspaceAdminOrSuperAdmin]
+    permission_classes=[IsWorkspaceMember]
     def post(self,request,*args,**kwargs):
         email=request.data.get('email')
         project_id=request.data.get('project')
@@ -174,16 +165,12 @@ class AcceptInviteView(APIView):
         InviteService.accept_invite(invite,user,token,request)
         return Response({'detail':'Invite accepted'})
 
+class WorkspaceActivity(generics.ListAPIView):
+    manager=getattr(models.ActivityLog,'objects')
+    queryset=manager.all()
+    serializer_class=ActivityLogSerializer
+    permission_classes=[permissions.IsAuthenticated]
 
+    def get_queryset(self):
+        return self.manager.filter(workspace=self.kwargs.get('pk')).order_by("-timestamp")
 
-
-#
-# class CreateTask(generics.ListCreateAPIView):
-#     queryset=models.Task.objects.all()
-#     serializer_class=TaskSerializer
-#     permission_classes=[permissions.IsAuthenticated]
-#
-# class TaskDetail(generics.RetrieveUpdateDestroyAPIView):
-#     queryset=models.Task.objects.all()
-#     serializer_class=TaskSerializer
-#     permission_classes=[permissions.IsAuthenticated]

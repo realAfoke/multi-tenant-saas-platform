@@ -8,6 +8,7 @@ import {
 	Circle,
 	Paperclip,
 	Send,
+	Smile,
 } from "lucide-react"
 import { ItemGroup } from "@/components/ui/item"
 import { Input } from "@/components/ui/input"
@@ -16,108 +17,170 @@ import { commentQueryOption, selectedTaskQueryOption } from "@/queryOptions/quer
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import Comments from "@/components/Comments"
 import { addCommentMutationOption } from "@/mutationOptions/mutationOption"
+import { instance } from "@/api/axios"
 
 export default function Task() {
-	const { selectedWorkspace, selectedProject, selectedTask } = useAppState()
-	const { data: task } = useQuery(selectedTaskQueryOption(selectedWorkspace?.id, selectedProject?.id, selectedTask?.id))
+	const { selectedWorkspace, selectedChannel, selectedTask } = useAppState()
+	const { data: task } = useQuery(selectedTaskQueryOption(selectedWorkspace?.id, selectedChannel?.id, selectedTask?.id))
 	const checkList = task?.checkList ?? []
+	const [markDone, setMarkDone] = useState([])
 	const assigner = task?.createdBy?.user ?? {}
 
 	const initials = `${assigner?.firstName?.[0] ?? ""}${assigner?.lastName?.[0] ?? ""}`.toUpperCase()
-	const [showDetails, setShowDetails] = useState(true)
+	const [showDetails, setShowDetails] = useState(false)
 	const [content, setContent] = useState('')
 	const { data: comments } = useQuery(commentQueryOption(selectedTask?.id))
 	const queryClient = useQueryClient()
 
 	const addComment = useMutation(addCommentMutationOption(queryClient))
+	const updateTask = useMutation({
+		mutationFn: async () => {
+			const response = await instance.patch(`workspaces/project/${selectedChannel?.id}/task/${selectedTask?.id}/`, { checkList: markDone })
+			return response.data
+		},
+		onSuccess: (update) => {
+			queryClient.setQueryData(['task', selectedWorkspace?.id, selectedChannel?.id, selectedTask?.id], old => ({ ...old, ...update }))
+			setMarkDone([])
+		}
+	})
 
 	return (
-		<div className="h-screen overflow-y-auto bg-zinc-950 text-white flex -mt-25">
+		<div className="flex h-screen overflow-hidden gap-2">
+			<div className={`${showDetails ? 'hidden md:flex' : 'flex'} h-screen overflow-hidden bg-zinc-950  flex-1 text-white flex-col pt-2 md:pt-18`}>
+				<div className="px-3 md:px-6 flex-1 overflow-auto space-y-7 pt-3 md:pt-[2rem] pb-[2rem] scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-zinc-900 ">
 
+					<div className="overflow-auto mx-auto max-w-4xl">
 
-			<div className="flex-1 min-w-0 flex flex-col mt-30">
+						<div className="px-4 md:px-8 lg:px-12 border-b border-zinc-800">
 
+							<div className="flex items-center justify-between gap-4">
 
-				<div className="px-4 md:px-8 lg:px-12 pt-7 pb-6 border-b border-zinc-800">
+								<div className="min-w-0">
 
-					<div className="flex items-center justify-between gap-4">
+									<div className="flex items-center gap-2 text-sm text-zinc-500 mb-4">
+										<span>Board</span>
+										<span>/</span>
+										<span className="text-zinc-300">Task</span>
+									</div>
 
-						<div className="min-w-0">
+									<h1 className="text-2xl md:text-3xl font-bold truncate">
+										{task?.title}
+									</h1>
 
-							<div className="flex items-center gap-2 text-sm text-zinc-500 mb-4">
-								<span>Board</span>
-								<span>/</span>
-								<span className="text-zinc-300">Task</span>
+									<p className="text-zinc-400 mt-3 max-w-3xl leading-relaxed">
+										{task?.description}
+									</p>
+
+								</div>
+
+								<Button
+									variant="ghost"
+									className="shrink-0 text-zinc-400 hover:text-white"
+									onClick={() => setShowDetails(prev => !prev)}
+								>
+									{showDetails ? (
+										<PanelRightClose className="w-5 h-5" />
+									) : (
+										<PanelRightOpen className="w-5 h-5" />
+									)}
+								</Button>
+
 							</div>
-
-							<h1 className="text-2xl md:text-3xl font-bold truncate">
-								{task?.title}
-							</h1>
-
-							<p className="text-zinc-400 mt-3 max-w-3xl leading-relaxed">
-								{task?.description}
-							</p>
 
 						</div>
 
-						<Button
-							variant="ghost"
-							className="shrink-0 text-zinc-400 hover:text-white"
-							onClick={() => setShowDetails(prev => !prev)}
-						>
-							{showDetails ? (
-								<PanelRightClose className="w-5 h-5" />
-							) : (
-								<PanelRightOpen className="w-5 h-5" />
-							)}
-						</Button>
 
+						<div className="px-4 md:px-8 lg:px-12 pt-5">
+
+							<div className="max-w-5xl h-full flex flex-col">
+
+								<div className="flex-1 overflow-auto scrollbar scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-zinc-950">
+
+									<ItemGroup className="space-y-1">
+
+										{comments?.map(comment => (
+											<Comments
+												key={comment?.id}
+												comment={comment}
+											/>
+										))}
+
+									</ItemGroup>
+
+								</div>
+
+
+							</div>
+
+						</div>
 					</div>
 
 				</div>
+				<div className="md:px-6 md:pb-5 pt-5">
+
+					<div className="max-w-4xl mx-auto">
+
+						<div className="rounded-xl border border-zinc-800 bg-zinc-900 p-2">
+
+							<div className="flex items-end gap-2">
+
+								<Button
+									variant="ghost"
+									size="icon"
+									className="text-zinc-500 hover:text-white flex-shrink-0"
+								>
+									<Paperclip className="w-5 h-5" />
+								</Button>
 
 
-				<div className="flex-1 overflow-hidden px-4 md:px-8 lg:px-12 py-6">
-
-					<div className="max-w-5xl h-full flex flex-col">
-
-						<div className="mb-5">
-
-							<h2 className="text-xl font-semibold">
-								Discussion
-							</h2>
-
-							<p className="text-sm text-zinc-500 mt-1">
-								{comments?.length ?? 0} comments
-							</p>
-
-						</div>
-
-						<div className="flex-1 overflow-auto scrollbar scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-zinc-950">
-
-							<ItemGroup className="space-y-1 pb-6">
-
-								{comments?.map(comment => (
-									<Comments
-										key={comment?.id}
-										comment={comment}
-									/>
-								))}
-
-							</ItemGroup>
-
-						</div>
-
-						<div className="pt-5">
-
-							<div className="flex items-end gap-3">
-
-								<Input
+								<textarea
 									value={content}
 									onChange={e => setContent(e.target.value)}
-									className="bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-500 min-h-14 p-5 rounded-xl"
-									placeholder="Write a comment..."
+
+									onKeyDown={(e) => {
+
+										if (
+											e.key === "Enter" &&
+											!e.shiftKey
+										) {
+											e.preventDefault()
+											addComment.mutate({
+												id: task?.id,
+												data: {
+													content,
+													workspace: task?.workspace,
+													project: task?.project,
+													task: task?.id
+												}
+											})
+											setContent('')
+										}
+
+									}}
+									rows={1}
+									placeholder='comment'
+									className="
+										flex-1
+										bg-transparent
+										resize-none
+										outline-none
+										text-sm
+										text-white
+										placeholder:text-zinc-600
+										py-2
+										max-h-32
+									"
 								/>
+
+
+								<Button
+									variant="ghost"
+									size="icon"
+									className="text-zinc-500 hover:text-white flex-shrink-0"
+								>
+									<Smile className="w-5 h-5" />
+								</Button>
+
 
 								<Button
 									disabled={!content.trim()}
@@ -136,10 +199,14 @@ export default function Task() {
 
 										setContent('')
 									}}
-									className="h-14 w-14 shrink-0 rounded-xl bg-blue-500 hover:bg-blue-600"
+
+									size="icon"
+
+									className="flex-shrink-0 bg-blue-500 hover:bg-blue-600"
 								>
 									<Send className="w-4 h-4" />
 								</Button>
+
 
 							</div>
 
@@ -148,13 +215,11 @@ export default function Task() {
 					</div>
 
 				</div>
-
 			</div>
-
 
 			{showDetails && (
 
-				<aside className="hidden md:block w-80 shrink-0 border-l border-zinc-800 bg-zinc-900/50 overflow-y-auto scrollbar scrollbar-thin scrollbar-thumb-zinc-600 scrollbar-track-zinc-900">
+				<aside className="block w-full md:w-80 border-l border-zinc-800 bg-zinc-900/50 overflow-y-auto scrollbar scrollbar-thin scrollbar-thumb-zinc-600 scrollbar-track-zinc-900">
 
 					<div className="p-6">
 
@@ -233,11 +298,11 @@ export default function Task() {
 
 							<div>
 								<p className="text-xs uppercase tracking-wider text-zinc-500">
-									Project
+									channel
 								</p>
 
 								<p className="mt-2 text-sm text-white">
-									{selectedProject?.name}
+									{selectedChannel?.name}
 								</p>
 							</div>
 
@@ -255,10 +320,15 @@ export default function Task() {
 
 								</div>
 
-								<div className="space-y-3 mt-4">
+								<div className="space-y-3 mt-4 flex flex-col">
 									{checkList.map((list) => (
-										<div key={list?.id} className="flex items-center gap-2">
-											{list?.status ? <CheckCircle2 className="w-4 h-4 text-blue-400" /> :
+										<div key={list?.id} onClick={() => {
+											if (list?.status) return
+											setMarkDone((prev) => {
+												return prev.includes(list?.id) ? prev.filter(id => id != list?.id) : [...prev, list?.id]
+											})
+										}} className="flex items-center gap-2">
+											{list?.status || markDone.includes(list?.id) ? <CheckCircle2 className="w-4 h-4 text-blue-400" /> :
 												<Circle className="w-4 h-4 text-zinc-600" />}
 											<span className={`text-sm ${list?.status ? 'line-through text-zinc-400 ' : 'text-white'}`}>
 												{list?.title}
@@ -266,9 +336,8 @@ export default function Task() {
 										</div>
 
 									))}
-
-
-
+									{markDone.length > 0 && < button className="py-1 px-3 outline-none rounded-xs bg-green-400 self-end" onClick={() => updateTask.mutate()}>save</button>
+									}
 								</div>
 
 							</div>
@@ -317,13 +386,12 @@ export default function Task() {
 
 				</aside>
 
-			)}
-
-		</div>
+			)
+			}
+		</div >
 	)
+
 }
-
-
 
 // <div className="flex items-center gap-2">
 // 	<CheckCircle2 className="w-4 h-4 text-blue-400" />
@@ -345,4 +413,17 @@ export default function Task() {
 // 		Password Reset
 // 	</span>
 // </div>
+// //<div className="mb-5">
+//
+// 							<h2 className="text-xl font-semibold">
+// 								Discussion
+// 							</h2>
+//
+// 							<p className="text-sm text-zinc-500 mt-1">
+// 								{comments?.length ?? 0} comments
+// 							</p>
+//
+// 						</div>
+//
+//
 

@@ -1,7 +1,39 @@
 import { queryOptions } from "@tanstack/react-query";
 import { instance } from "@/api/axios";
 
+export function activityQueryOption(route, id) {
+	return queryOptions({
+		queryKey: ['activity', route, id],
+		queryFn: async ({ queryKey }) => {
+			try {
+				const [, route, key] = queryKey
+				const response = await instance.get(`workspaces/${key}/${route}/`)
+				return response.data
+			} catch (error) {
+				console.error(error)
+				throw Error(error)
+			}
+		},
+		enabled: !!id
+	})
+}
 
+export function notificationQueryOption(wk) {
+	return queryOptions({
+		queryKey: ['notification', 'workspace', wk],
+		queryFn: async ({ queryKey }) => {
+			try {
+				const [, , wk] = queryKey
+				const response = await instance.get(`notification/workspace/${wk}/`)
+				return response.data
+			} catch (error) {
+				console.error(error)
+				throw Error(error)
+			}
+		},
+		enabled: !!wk
+	})
+}
 
 export function fetchRoleQueryOption(id) {
 	return queryOptions({
@@ -34,7 +66,26 @@ async function getUser() {
 export function workspaceQueryOption() {
 	return queryOptions({
 		queryKey: ['workspace'],
-		queryFn: workspaceFn,
+		queryFn: async () => {
+			try {
+				const dashboard = await instance.get('workspaces/')
+				const workspaces = dashboard?.data?.map((workspace) => {
+					return ({
+						...workspace,
+						channels: Object.fromEntries(workspace?.projects?.map((obj) => [obj?.id, obj])),
+						channelOrdering: [...new Set(workspace?.projects?.map(prj => prj?.id))]
+					})
+				})
+				return {
+					workspaces: Object.fromEntries(workspaces?.map((obj) => [obj?.id, obj])),
+					ordering: workspaces?.map((obj) => obj?.id)
+				}
+
+			} catch (err) {
+				console.error(err)
+				throw new Error(err)
+			}
+		}
 		// select: (data) => {
 		// 	const workspaceMap = Object.fromEntries(data.map((obj) => [obj.id, obj]))
 		// 	return {
@@ -45,36 +96,16 @@ export function workspaceQueryOption() {
 	})
 }
 
-async function workspaceFn() {
-	try {
-		const dashboard = await instance.get('workspaces/')
-		const workspaces = dashboard?.data?.map((workspace) => {
-			return ({
-				...workspace,
-				projects: Object.fromEntries(workspace?.projects?.map((obj) => [obj?.id, obj])),
-				projectOrdering: [...new Set(workspace?.projects?.map(prj => prj?.id))]
-			})
-		})
-		return {
-			workspaces: Object.fromEntries(workspaces?.map((obj) => [obj?.id, obj])),
-			ordering: workspaces?.map((obj) => obj?.id)
-		}
 
-	} catch (err) {
-		console.error(err)
-		throw new Error(err)
-	}
-}
-
-export function projectQueryOption(wkId, projectId) {
+export function channelQueryOption(wkId, channelId) {
 	return queryOptions({
-		queryKey: [wkId, 'project', projectId],
+		queryKey: [wkId, 'channel', channelId],
 		queryFn: async ({ queryKey }) => {
-			const [wkId, , projectId] = queryKey
-			const project = await instance.get(`workspaces/${wkId}/project/${projectId}/`)
-			return project?.data
+			const [wkId, , channelId] = queryKey
+			const channel = await instance.get(`workspaces/${wkId}/project/${channelId}/`)
+			return channel?.data
 		},
-		enabled: !!projectId,
+		enabled: !!channelId,
 	})
 }
 
@@ -101,13 +132,13 @@ async function taskFn(wk, prjId) {
 }
 
 
-export function selectedTaskQueryOption(wk, prj, tk) {
+export function selectedTaskQueryOption(wk, chl, tk) {
 	return queryOptions({
-		queryKey: ['task', wk, prj, tk],
+		queryKey: ['task', wk, chl, tk],
 		queryFn: async ({ queryKey }) => {
 			try {
-				const [, wk, prj, tk] = queryKey
-				const response = await instance.get(`workspaces/${wk}/${prj}/task/${tk}/`)
+				const [, , chl, tk] = queryKey
+				const response = await instance.get(`workspaces/project/${chl}/task/${tk}/`)
 				return response.data
 			} catch (error) {
 				console.error(error)
@@ -121,18 +152,17 @@ export function selectedTaskQueryOption(wk, prj, tk) {
 export function commentQueryOption(taskId) {
 	return queryOptions({
 		queryKey: [taskId, 'comments'],
-		queryFn: () => getTaskComments(taskId),
+		queryFn: async ({ queryKey }) => {
+			try {
+				const [taskId,] = queryKey
+				const comments = await instance.get(`workspaces/${taskId}/comments/`)
+				return comments.data
+			} catch (err) {
+				console.error(err)
+			}
+		},
 		enabled: !!taskId
 	})
-}
-
-const getTaskComments = async (taskId) => {
-	try {
-		const comments = await instance.get(`workspaces/${taskId}/comments/`)
-		return comments.data
-	} catch (err) {
-		console.error(err)
-	}
 }
 
 export function dasboardDataQueryOption(id) {

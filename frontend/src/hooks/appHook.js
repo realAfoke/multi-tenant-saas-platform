@@ -1,9 +1,31 @@
 import { useEffect } from "react";
 
+export function useRealTimeUpdate(setSocket, workspaces) {
+	useEffect(() => {
+		if (!workspaces) return
+		const workspaceIds = [...new Set(Object.keys(workspaces ?? {}))].join(",")
+		const ws = new WebSocket(`wss://localhost/ws/user/?workspaces=${workspaceIds}`)
+		ws.onopen = () => {
+			console.log('Connection successfull ')
+			setSocket(ws)
+		}
 
-export function useAppHook(workspaces, wkName, setWorkspace, selectedWorkspace, project, projectName, setProject, taskId, setTask) {
+		ws.onmessage = (e) => {
+			console.log(JSON.parse(e.data))
+		}
+		ws.onerror = (e) => {
+			console.error('Connection Error:', e)
+		}
+		ws.onclose = () => console.log('connection closed!!!')
+		return () => ws.close()
+	}, [workspaces])
+}
+export function useAppHook(workspaces, wkName, setWorkspace, selectedWorkspace, channel, channelName, setChannel, taskName, setTask, setView) {
 
 	useEffect(() => {
+		if (workspaces && !wkName) {
+			setWorkspace({ id: null, name: '', show: false })
+		}
 		if (!workspaces || !wkName) return
 		const workspace = Object.values(workspaces ?? {}).find(wk => wk?.name == wkName)
 		if (workspace) {
@@ -13,19 +35,19 @@ export function useAppHook(workspaces, wkName, setWorkspace, selectedWorkspace, 
 
 	useEffect(() => {
 		const workspace = workspaces?.[selectedWorkspace?.id]
-		const { projects = {} } = workspace ?? {}
-		const project = Object.values(projects)?.find(obj => obj?.name === projectName)
-		if (!project || !projectName) return
-		setProject({ id: project?.id, name: project?.name, show: true })
-	}, [project, projectName, selectedWorkspace, workspaces])
+		const { channels = {} } = workspace ?? {}
+		const channel = Object.values(channels)?.find(obj => obj?.name === channelName)
+		if (!channel || !channelName) return
+		setChannel({ id: channel?.id, name: channel?.name, show: true })
+		setView('channel')
+	}, [channel, channelName, selectedWorkspace, workspaces])
 
 	useEffect(() => {
-		if (!project || !taskId) return
-		const tasks = (project?.tasks) ?? []
-		const task = tasks?.find((tsk) => tsk?.title == taskId)
+		if (!channel || !taskName) return
+		const tasks = (channel?.tasks) ?? []
+		const task = tasks?.find((tsk) => tsk?.title === taskName)
 		if (task) {
 			setTask({ id: task?.id, title: task?.title, show: false })
 		}
-	}, [project, taskId])
-
+	}, [channel, taskName])
 }

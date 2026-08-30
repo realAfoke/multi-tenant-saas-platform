@@ -13,6 +13,15 @@ const User = (props) => {
 	const initials = `${user?.firstName?.[0] ?? ""}${user?.lastName?.[0] ?? ""}`.toUpperCase()
 	const isOnline = true
 
+	const randColor = () => {
+		const red = `${Math.floor(Math.random() * 255) + 1}`
+		const green = `${Math.floor(Math.random() * 255) + 1}`
+		const blue = `${Math.floor(Math.random() * 255) + 1}`
+		const color = `rgb(${red},${green},${blue})`
+		return color
+	}
+	// console.log(randColor())
+
 	return (
 		<div className="flex items-center gap-3 p-3 rounded-xl hover:bg-zinc-800/60 transition-colors group" onClick={() => addUserToProject((prev) => {
 			return prev.includes(member?.id) ? prev.filter(id => id != member?.id) : [...prev, member?.id]

@@ -220,16 +220,17 @@ class Invite(models.Model):
 
 
 class ActivityLog(models.Model):
-    user=models.ForeignKey(Membership,related_name='activity_user',on_delete=models.SET_NULL,null=True,blank=True)
+    member=models.ForeignKey(Membership,related_name='activity_user',on_delete=models.SET_NULL,null=True,blank=True)
     workspace=models.ForeignKey(WorkSpace,related_name='workspace_activity',on_delete=models.CASCADE)
     project=models.ForeignKey(Project,related_name='activity_project',on_delete=models.CASCADE,null=True)
-    task=models.ForeignKey(Task,related_name='activity_task',on_delete=models.CASCADE,null=True)
+    task=models.ForeignKey(Task,related_name='task_activity',on_delete=models.CASCADE,null=True)
     action=models.CharField(max_length=200)
-    created_at=models.DateTimeField(auto_now_add=True)
+    message=models.TextField(null=True,blank=True)
+    timestamp=models.DateTimeField(auto_now_add=True)
 
 
     def __str__(self):
         return self.action
 
     class Meta:
-        db_table='activityLog'
+        db_table='activity_log'

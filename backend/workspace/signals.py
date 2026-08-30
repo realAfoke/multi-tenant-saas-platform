@@ -5,8 +5,13 @@ from workspace import models
 # from django.core.mail import send_mail
 from django.core.mail import send_mass_mail,send_mail
 from django.contrib.auth import get_user_model
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
  
 import logging
+
+import workspace
+from workspace.api.serializers import ActivityLogSerializer
 
 
 
@@ -27,51 +32,22 @@ def send_task_update(sender,instance,created,**kwargs):
                 )
                       for member in members]
             send_mass_mail(messages)
-        # send_mail(
-        #         f'Update on task {instance.task.title}',
-        #         f'''
-        #         {instance.user.first_name} {instance.user.last_name} drop an update on the task go check it out
-        #         ''',
-        #         'noreply@example.com',instance.task.members.all().values_list('email',flat=True)
-        #         )
-
-# @receiver(post_save,sender=models.TaskMember,dispatch_uid='task_member_signal')
-# def task_member(sender,instance,created,**kwargs):
-#     if created:
-#         send_mail(
-#                 f'You\'ve been added to a Task',
-#                 f'You were added as member to {instance.title.upper()}',
-#                 'noreply@example.com',
-#                 [instance.email],
-#
-#                 )
-#
-    # message=[
-    #         (
-    #             f'You\'ve been added to a Task',
-    #             f'You were added as member to {instance.title.upper()}',
-    #             'noreply@example.com',
-    #             [user.email]
-    #             )
-    #         for user in users if user.email
-    #         ]
-    # try:
-    #     if message:
-    #         send_mass_mail(message,fail_silently=False)
-    # except Exception as e:
-    #     logger.exception(e)
 
 
-# @receiver(m2m_changed,sender=models.Task.admins.through)
-# def members_add(sender,instance,action,pk_set,**kwargs):
-#     users=User.objects.filter(pk__in=pk_set)
-#     action=None
-#     if action == 'post_add':
-#         action='added'
-#     elif action == 'post_remove':
-#         action ='removed'
-#     message=[(f'You\'ve been {action} to Project',f'You were {action} as admin to {instance.name.upper()}','noreply@example.com',[user.email]) for user in users]
-#
-#
-#     send_mass_mail(message)
+@receiver(post_save,sender=models.Project,dispatch_uid='unique_project_activity')
+def send_project_activity(sender,instance,created,**kwargs):
+    channel=get_channel_layer()
+    if created:
+        member=instance.created_by.user
+        serializer=ActivityLogSerializer(data={
+            'workspace':instance.workspace.id,
+            'project':instance.id,
+            'action':'created',
+            'member':instance.created_by.id,
+            'message':f'A new project was created by {member.first_name} {member.last_name}'
 
+            })
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        async_to_sync(channel.group_send)(f'workspace_{instance.workspace.id}',{'type':'send.activity','activity':serializer.data})
+       

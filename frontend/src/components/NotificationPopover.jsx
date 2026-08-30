@@ -12,43 +12,39 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover"
-import { useParams, useNavigate } from "react-router-dom"
-import { useState } from "react"
+import { useParams, useNavigate, Link } from "react-router-dom"
+import { useEffect, useState } from "react"
+import { notificationQueryOption } from "@/queryOptions/queryOptions"
+import { useAppState } from "@/hooks/apptools"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { dateFormatter } from "@/utils/appUtil"
+import { markNotificationMutationOption } from "@/mutationOptions/mutationOption"
+
 
 export default function NotificationPopover() {
+	const { selectedWorkspace, socket } = useAppState()
+	const queryClient = useQueryClient()
+
+	useEffect(() => {
+		if (!socket) return
+		const ws = socket
+		ws.onmessage = (e) => {
+			const newData = JSON.parse(e.data)
+			if (newData?.type !== 'notification') return
+			const { data = {} } = newData
+			queryClient.setQueryData(['notification', 'workspace', selectedWorkspace?.id], (old) => [data, ...(old ?? [])])
+		}
+	}, [socket])
+	const { data: notifications } = useQuery(notificationQueryOption(selectedWorkspace?.id))
+	const noOfUnread = notifications?.filter((notification) => !notification?.read)?.length
 	const { wkName } = useParams()
 	const navigate = useNavigate()
 	const [open, setOpen] = useState(false)
 
-	const notifications = [
-		{
-			id: 1,
-			type: "assignment",
-			title: "Daniel assigned you a task",
-			description: "Authentication API",
-			time: "5 minutes ago",
-			unread: true,
-		},
-		{
-			id: 2,
-			type: "comment",
-			title: "Sarah mentioned you in a comment",
-			description: "Can you review this?",
-			time: "24 minutes ago",
-			unread: true,
-		},
-		{
-			id: 3,
-			type: "due",
-			title: "Task due tomorrow",
-			description: "Landing Page",
-			time: "1 hour ago",
-			unread: false,
-		},
-	]
+	const markNotification = useMutation(markNotificationMutationOption(selectedWorkspace?.id, queryClient))
 
 	return (
-		<Popover open={open} onOpenChange={setOpen} className="border-2 borer-green-500">
+		<Popover open={open} onOpenChange={setOpen} className="">
 
 			<PopoverTrigger asChild>
 
@@ -56,8 +52,11 @@ export default function NotificationPopover() {
 
 					<Bell className="w-5 h-5" />
 
-					<span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-blue-500" />
+					{!!noOfUnread && <div className="absolute -top-1 -right-1 rounded-full bg-blue-500 p-1">
+						<p className="  text-white text-xs ">{noOfUnread}</p>
 
+					</div>
+					}
 				</button>
 
 			</PopoverTrigger>
@@ -65,7 +64,7 @@ export default function NotificationPopover() {
 
 			<PopoverContent
 				align="end"
-				className="w-screen md:w-[380px] p-0 bg-zinc-950 border border-zinc-800 text-white"
+				className="w-screen md:w-[380px] p-0 bg-zinc-950 text-white border border-zinc-900 rounded-xs"
 			>
 
 				<div className="flex items-center justify-between px-5 py-4 border-b border-zinc-800">
@@ -82,92 +81,128 @@ export default function NotificationPopover() {
 
 					</div>
 
-					<button className="text-xs text-blue-400 hover:text-blue-300">
+					<button className="text-xs text-blue-400 hover:text-blue-300" onClick={() => {
+						if (noOfUnread < 1) return
+						// zero '0' means all unread notification
+						markNotification.mutate(0)
+					}}>
 						Mark all read
 					</button>
 
 				</div>
 
 
-				<div className="max-h-[420px] overflow-y-auto">
+				<div className="max-h-[420px] overflow-y-auto scrollbar scrollbar-thin scrollbar-thumb-zinc-600 scrollbar-track-zinc-900">
 
-					{notifications.map((notification) => (
-
-						<div
-							key={notification.id}
-							className={`
-								flex gap-3 px-5 py-4
-								border-b border-zinc-900
-								cursor-pointer
-								hover:bg-zinc-900
-								transition
-								${notification.unread
-									? "bg-blue-500/[0.03]"
-									: ""
+					{notifications?.map((notification) => {
+						const time = dateFormatter(notification.createdAt)
+						return (
+							<Link to={`/dashboard/${selectedWorkspace?.name}/${notification?.project}/${notification?.task}`}
+								onClick={() => {
+									setOpen(false)
+									if (notification.read) return
+									markNotification.mutate(notification?.id)
 								}
-							`}
-						>
+								}
+								key={notification.id}
+								className={`
+							flex
+							items-start
+							gap-2
+							p-3
+							border-b
+							transition
+							cursor-pointer
+							${notification.read
+										? "bg-black-900/50 border-zinc-800"
+										: "bg-zinc-900 border-zinc-400"
 
-							<div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center flex-shrink-0">
+									}
+							hover:border-zinc-600
+						`}
 
-								{notification.type === "assignment" && (
-									<UserPlus className="w-4 h-4 text-blue-400" />
-								)}
+							>
 
-								{notification.type === "comment" && (
-									<MessageCircle className="w-4 h-4 text-green-400" />
-								)}
+								<div className="w-5 h-5 rounded-full bg-zinc-800 flex items-center justify-center flex-shrink-0">
 
-								{notification.type === "due" && (
-									<CalendarDays className="w-4 h-4 text-yellow-400" />
-								)}
+									{notification.type === "assignment" && (
+										<UserPlus className="w-5 h-5 text-blue-400" />
+									)}
 
-							</div>
+									{notification.type === "comment" && (
+										<MessageCircle className="w-3 h-3 text-green-400" />
+									)}
 
-
-							<div className="flex-1 min-w-0">
-
-								<div className="flex items-start justify-between gap-2">
-
-									<p className="text-sm text-zinc-200">
-										{notification.title}
-									</p>
-
-									{notification.unread && (
-										<span className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 flex-shrink-0" />
+									{notification.type === "due" && (
+										<CalendarDays className="w-2 h-2 text-yellow-400" />
 									)}
 
 								</div>
 
-								<p className="text-sm text-zinc-500 mt-1 truncate">
-									{notification.description}
-								</p>
 
-								<p className="text-xs text-zinc-600 mt-2">
-									{notification.time}
-								</p>
+								<div className="flex-1 min-w-0">
 
-							</div>
+									<div className="flex items-start justify-between gap-2">
 
-						</div>
+										<p className="text-xs font-bold text-zinc-200">
+											{notification.title}
+										</p>
 
-					))}
+										{notification.unread && (
+											<span className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 flex-shrink-0" />
+										)}
+
+									</div>
+
+									<p className="text-sm text-zinc-500 truncate">
+										{notification?.description || notification?.message}
+									</p>
+
+									<p className="text-xs text-zinc-600">
+										{time}
+									</p>
+
+								</div>
+
+							</Link>
+
+						)
+					})}
 
 				</div>
 
+				<button className="w-full py-2  text-sm text-zinc-400 hover:text-white hover:bg-zinc-900 transition" onClick={() => {
+					setOpen(false)
+					navigate(`${wkName}/notifications`)
+				}}>
+					View all notifications
+				</button>
 
-				<div className="p-3">
-					<button className="w-full py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-zinc-900 transition" onClick={() => {
-						setOpen(false)
-						navigate(`${wkName}/notifications`)
-					}}>
-						View all notifications
-					</button>
 
-				</div>
 
 			</PopoverContent>
 
 		</Popover>
 	)
 }
+// {notifications?.length > 9 &&
+// 				<button className="w-full py-2  text-sm text-zinc-400 hover:text-white hover:bg-zinc-900 transition" onClick={() => {
+// 					setOpen(false)
+// 					navigate(`${wkName}/notifications`)
+// 				}}>
+// 					View all notifications
+// 				</button>
+// 			}
+
+// 	className={`
+// 	flex gap-2 p-2
+// 	border-b border-zinc-900
+// 	cursor-pointer
+// 	hover:bg-zinc-900
+// 	transition
+// 	${notification.unread
+// 			? "bg-blue-500/[0.03]"
+// 			: ""
+// 		}
+// `}
+

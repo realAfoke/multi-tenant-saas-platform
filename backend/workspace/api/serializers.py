@@ -11,6 +11,8 @@ from django.core.mail import send_mail,send_mass_mail
 import logging
 import workspace
 from django.db import transaction
+from chat.models import Conversation
+from uuid import uuid4
 
 
 logger=logging.getLogger(__name__)
@@ -32,11 +34,11 @@ class CommentSerializer(serializers.ModelSerializer):
         model=models.Comment
         fields='__all__'
 
+    @transaction.atomic
     def create(self, validated_data):
         user=self.context['request'].user
         member=user.user_membership.filter(workspace=validated_data.get('workspace')).first()
         validated_data['user']=member
-        logger.info(f'validated:{validated_data}')
         return super().create(validated_data)
 
     # def get_user(self,obj):
@@ -90,18 +92,39 @@ class TaskSerializer(serializers.ModelSerializer):
         return task
 
 
-        
-
     def validate(self, attrs):
         user=self.context['request'].user
+        if self.instance:
+             member=self.instance.project.project_member.filter(member__user=user).first()
+             if not member.role in ['admin','owner']:
+                 raise PermissionDenied('you dont have the permissions to perform this operation')
+             return attrs
         if not user.user_membership.filter(members_project__project=attrs.get('project'),members_project__role='admin').exists():
             raise PermissionDenied('you dont have the permissions to perform this operation')
         manager=getattr(models.Task,'objects')
         existing=manager.filter(title=attrs.get('title')).first()
         if existing:
             attrs['_existing']=existing
-
         return attrs
+
+    def update(self, instance, validated_data):
+        changes={}
+        for field,new_value in validated_data.items():
+            old_value=getattr(instance,field)
+            if old_value != new_value:
+                changes[field]=field
+
+        ids=validated_data.pop('check_list')
+        if ids:
+            check_list=instance.check_list
+            for id in ids:
+                for check_item in check_list:
+                    if check_item['id'] == id:
+                        check_item['status']=True
+            instance._changes=changes
+            instance._updated_by=self.context['request'].user
+            instance.save()
+        return super().update(instance,validated_data)
 
     def get_comments(self,obj):
         comments_count=obj.comment_task.count()
@@ -136,9 +159,9 @@ class ProjectSerializer(serializers.ModelSerializer):
         #         'description',
         #         'updated_at'
         #         ]
-        # read_only_fields=['created_by','updated_at','members','workspace_name']
+        read_only_fields=['created_by']
 
-
+    @transaction.atomic
     def create(self, validated_data):
         if '_existing' in validated_data:
             return validated_data['_existing']
@@ -155,7 +178,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         admins=workspace.membership.filter(Q(role='owner')|Q(user=creater),workspace=workspace)
         admin_mapping={member.id:member for member in admins}
         project_member_manager.bulk_create([
-            models.ProjectMember(project=project,members=member,role='admin') for member in list(admin_mapping.values())
+            models.ProjectMember(project=project,member=member,role='admin') for member in list(admin_mapping.values())
             ])
         #add members
         member_mapping={member.id:member for member in member_to_add}
@@ -163,6 +186,12 @@ class ProjectSerializer(serializers.ModelSerializer):
         project_member_manager.bulk_create([
             models.ProjectMember(project=project,members=member) for member in list(member_mapping.values())
             ])
+        #create project discussion room
+        conversation_id=str(uuid4())
+        conversation=Conversation(chat_type='project',name=validated_data.get('name'),workspace=workspace,project=project,conversation_id=conversation_id)
+        print('conversation:',conversation)
+        conversation.save()
+
         return project
 
 
@@ -254,7 +283,6 @@ class WorkSpaceSerializer(serializers.ModelSerializer):
         else:
             memb=self.instance.membership.filter(user=current_user,workspace=self.instance).first()
             if memb.role not in ('owner','admin'):
-                print('MEMB:',memb.role)
                 raise PermissionDenied('you dont have permission to perform this operation')
             if len(self.instance.membership.all()) > 500:
                 raise ValidationError('workspace membership limmit reached')
@@ -341,5 +369,16 @@ class InviteSerializer(serializers.ModelSerializer):
             project.save()
             instance.save()
         return instance
+
+
+class ActivityLogSerializer(serializers.ModelSerializer):
+    project_info=serializers.SerializerMethodField()
+    class Meta:
+        model=models.ActivityLog
+        fields='__all__'
+
+
+    def get_project_info(self,obj):
+        return {'name':obj.project.name} if obj.project else None
 
 

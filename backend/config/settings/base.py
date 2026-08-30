@@ -45,6 +45,8 @@ INSTALLED_APPS = [
         'users',
         'workspace',
         'billing',
+        'notification',
+        'chat',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -54,8 +56,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-        'config.settings.middleware.RequestLogMiddleware',
-        'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -160,14 +161,16 @@ CACHE={
             }
         }
 
-# CHANNEL_LAYERS={
-#         'default':{
-#             'BACKEND':'channels_redis.core.RedisChannelLayer',
-#             'CONFIG':{
-#                 'host':[(os.getenv('REDIS_URL'))]
-#                 }
-#             }
-#                 }
+CHANNEL_LAYERS={
+        'default':{
+            'BACKEND':'channels_redis.core.RedisChannelLayer',
+            'CONFIG':{
+                'hosts':[(os.getenv('CHANNEL_REDIS'))]
+                }
+            }
+        }
+
+
 LOGGING={
         "version":1,
         "disable_existing_loggers":False,

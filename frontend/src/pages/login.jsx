@@ -106,7 +106,7 @@ export default function Login() {
 					<div className="mt-10 space-y-6">
 						{mutate.error && !mutate.isPending &&
 							<p className="text-red-400 text-sm">
-								{Object.values(mutate.error?.response?.data).join()}
+								{Object.values(mutate.error?.response?.data ?? {}).join()}
 							</p>
 						}
 

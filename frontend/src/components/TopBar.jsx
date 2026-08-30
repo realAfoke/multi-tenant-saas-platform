@@ -1,52 +1,37 @@
 import profile from "@/assets/profileIcon.svg"
 import searchIcon from "@/assets/search1.svg"
-import menuIcon from "@/assets/menu3.svg"
 import NotificationPopover from "./NotificationPopover"
+import MenuIcon from "./MenuIcon"
+import { useAppState } from "@/hooks/apptools"
+import { Button } from "./ui/button"
+import { Hash, MoreHorizontal } from "lucide-react"
 
 export default function TopBar({ setToggle, toggle }) {
+	const { selectedChannel } = useAppState()
 	return (
-		<header className="h-16 border-b border-zinc-800 bg-black flex items-center justify-between px-6">
-			<div className="flex gap-2">
-				{!toggle &&
-					<img
-						src={menuIcon}
-						className=" w-8 h-8  cursor-pointer"
-						onClick={(e) => {
-							e.stopPropagation()
-							setToggle(true)
-						}}
-					/>}
-				<h1 className="text-white text-lg font-semibold">
-					Orbit
-				</h1>
-			</div>
-
-			<div className="flex items-center gap-4">
-
-				<div className="hidden md:flex items-center gap-2 bg-zinc-900 rounded-xl px-4 h-10 border border-zinc-800">
-
-					<img
-						src={searchIcon}
-						className="w-4 h-4 opacity-60"
-					/>
-
-					<input
-						placeholder="Search..."
-						className="bg-transparent outline-none text-white placeholder:text-zinc-500"
-					/>
-
+		<header className=" hidden h-16 absolute w-full top-0 border-b z-999 hidden md:flex lg:flex border-zinc-800 bg-zinc-950 items-center justify-between px-6">
+			<div className="flex items-center gap-3">
+				<MenuIcon setToggle={setToggle} toggle={toggle} />
+				<div className="w-9 h-9 rounded-lg bg-zinc-900 flex items-center justify-center">
+					<Hash className="w-5 h-5 text-zinc-400" />
 				</div>
-
+				<div className="text-white">
+					<h1 className="text-white font-semibold">{selectedChannel?.name}</h1>
+					<span className="text-xs text-zinc-500">Team conersation</span>
+				</div>
+			</div>
+			<div className="flex items-center gap-2 relative">
 				<button className="w-10 h-10 rounded-xl hover:bg-zinc-900 flex items-center justify-center">
 					<img src={searchIcon} className="w-5 h-5" />
 				</button>
-
 				<NotificationPopover />
-				<img
-					src={profile}
-					className="w-10 h-10 rounded-full"
-				/>
-
+				<Button
+					variant="ghost"
+					size="icon"
+					className="text-zinc-500 hover:text-white"
+				>
+					<MoreHorizontal className="w-5 h-5" />
+				</Button>
 			</div>
 		</header>
 	)

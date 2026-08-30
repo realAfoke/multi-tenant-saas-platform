@@ -40,7 +40,7 @@ export default function Chat() {
 	}, [socket, queryClient])
 
 	return (
-		<div className="border-4 border-green-500 flex-1 h-screen  md:px-6 flex flex-col pt-[4rem] px-auto">
+		<div className="flex-1 h-screen  md:px-6 flex flex-col pt-[4rem] px-auto">
 
 			<div className="px-3 md:px-6 flex-1 overflow-auto space-y-7 pt-[5rem] pb-[2rem] scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-zinc-900 ">
 

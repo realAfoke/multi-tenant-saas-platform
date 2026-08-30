@@ -20,7 +20,7 @@ export function useRealTimeUpdate(setSocket, workspaces) {
 		return () => ws.close()
 	}, [workspaces])
 }
-export function useAppHook(workspaces, wkName, setWorkspace, selectedWorkspace, channel, channelName, setChannel, taskId, setTask, setView) {
+export function useAppHook(workspaces, wkName, setWorkspace, selectedWorkspace, channel, channelName, setChannel, taskName, setTask, setView) {
 
 	useEffect(() => {
 		if (workspaces && !wkName) {
@@ -43,11 +43,11 @@ export function useAppHook(workspaces, wkName, setWorkspace, selectedWorkspace, 
 	}, [channel, channelName, selectedWorkspace, workspaces])
 
 	useEffect(() => {
-		if (!channel || !taskId) return
+		if (!channel || !taskName) return
 		const tasks = (channel?.tasks) ?? []
-		const task = tasks?.find((tsk) => tsk?.id == taskId)
+		const task = tasks?.find((tsk) => tsk?.title === taskName)
 		if (task) {
 			setTask({ id: task?.id, title: task?.title, show: false })
 		}
-	}, [channel, taskId])
+	}, [channel, taskName])
 }

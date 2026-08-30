@@ -17,7 +17,6 @@ class NotificationView(generics.ListAPIView):
     def get_queryset(self):
         return manager.filter(user__user=self.request.user,workspace=self.kwargs.get('pk')).order_by('-created_at')
 
-
 class NotificationUpdateView(generics.UpdateAPIView):
     queryset=manager.all()
     serializer_class=NotificationSerializer

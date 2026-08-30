@@ -9,7 +9,7 @@ import { Hash, MoreHorizontal } from "lucide-react"
 export default function TopBar({ setToggle, toggle }) {
 	const { selectedChannel } = useAppState()
 	return (
-		<header className="h-16 absolute w-full top-0 border-b z-999 hidden md:flex lg:flex border-zinc-800 bg-black items-center justify-between px-6">
+		<header className=" hidden h-16 absolute w-full top-0 border-b z-999 hidden md:flex lg:flex border-zinc-800 bg-zinc-950 items-center justify-between px-6">
 			<div className="flex items-center gap-3">
 				<MenuIcon setToggle={setToggle} toggle={toggle} />
 				<div className="w-9 h-9 rounded-lg bg-zinc-900 flex items-center justify-center">

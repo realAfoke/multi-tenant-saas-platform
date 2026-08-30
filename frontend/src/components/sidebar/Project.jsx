@@ -83,7 +83,7 @@ export default function Project(props) {
 									return (
 										<button key={task?.id} className="text-sm text-zinc-500" onClick={() => {
 											openTask(task)
-											navigate(`${selectedWorkspace?.name}/${selectedChannel?.name}/${task?.id}`)
+											navigate(`${selectedWorkspace?.name}/${selectedChannel?.name}/${task?.title}`)
 										}}>
 											{task.title}
 										</button>

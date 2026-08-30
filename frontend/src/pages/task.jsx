@@ -17,11 +17,13 @@ import { commentQueryOption, selectedTaskQueryOption } from "@/queryOptions/quer
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import Comments from "@/components/Comments"
 import { addCommentMutationOption } from "@/mutationOptions/mutationOption"
+import { instance } from "@/api/axios"
 
 export default function Task() {
 	const { selectedWorkspace, selectedChannel, selectedTask } = useAppState()
 	const { data: task } = useQuery(selectedTaskQueryOption(selectedWorkspace?.id, selectedChannel?.id, selectedTask?.id))
 	const checkList = task?.checkList ?? []
+	const [markDone, setMarkDone] = useState([])
 	const assigner = task?.createdBy?.user ?? {}
 
 	const initials = `${assigner?.firstName?.[0] ?? ""}${assigner?.lastName?.[0] ?? ""}`.toUpperCase()
@@ -31,6 +33,16 @@ export default function Task() {
 	const queryClient = useQueryClient()
 
 	const addComment = useMutation(addCommentMutationOption(queryClient))
+	const updateTask = useMutation({
+		mutationFn: async () => {
+			const response = await instance.patch(`workspaces/project/${selectedChannel?.id}/task/${selectedTask?.id}/`, { checkList: markDone })
+			return response.data
+		},
+		onSuccess: (update) => {
+			queryClient.setQueryData(['task', selectedWorkspace?.id, selectedChannel?.id, selectedTask?.id], old => ({ ...old, ...update }))
+			setMarkDone([])
+		}
+	})
 
 	return (
 		<div className="flex h-screen overflow-hidden gap-2">
@@ -308,10 +320,15 @@ export default function Task() {
 
 								</div>
 
-								<div className="space-y-3 mt-4">
+								<div className="space-y-3 mt-4 flex flex-col">
 									{checkList.map((list) => (
-										<div key={list?.id} className="flex items-center gap-2">
-											{list?.status ? <CheckCircle2 className="w-4 h-4 text-blue-400" /> :
+										<div key={list?.id} onClick={() => {
+											if (list?.status) return
+											setMarkDone((prev) => {
+												return prev.includes(list?.id) ? prev.filter(id => id != list?.id) : [...prev, list?.id]
+											})
+										}} className="flex items-center gap-2">
+											{list?.status || markDone.includes(list?.id) ? <CheckCircle2 className="w-4 h-4 text-blue-400" /> :
 												<Circle className="w-4 h-4 text-zinc-600" />}
 											<span className={`text-sm ${list?.status ? 'line-through text-zinc-400 ' : 'text-white'}`}>
 												{list?.title}
@@ -319,9 +336,8 @@ export default function Task() {
 										</div>
 
 									))}
-
-
-
+									{markDone.length > 0 && < button className="py-1 px-3 outline-none rounded-xs bg-green-400 self-end" onClick={() => updateTask.mutate()}>save</button>
+									}
 								</div>
 
 							</div>
@@ -370,8 +386,9 @@ export default function Task() {
 
 				</aside>
 
-			)}
-		</div>
+			)
+			}
+		</div >
 	)
 
 }

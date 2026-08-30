@@ -92,18 +92,39 @@ class TaskSerializer(serializers.ModelSerializer):
         return task
 
 
-        
-
     def validate(self, attrs):
         user=self.context['request'].user
+        if self.instance:
+             member=self.instance.project.project_member.filter(member__user=user).first()
+             if not member.role in ['admin','owner']:
+                 raise PermissionDenied('you dont have the permissions to perform this operation')
+             return attrs
         if not user.user_membership.filter(members_project__project=attrs.get('project'),members_project__role='admin').exists():
             raise PermissionDenied('you dont have the permissions to perform this operation')
         manager=getattr(models.Task,'objects')
         existing=manager.filter(title=attrs.get('title')).first()
         if existing:
             attrs['_existing']=existing
-
         return attrs
+
+    def update(self, instance, validated_data):
+        changes={}
+        for field,new_value in validated_data.items():
+            old_value=getattr(instance,field)
+            if old_value != new_value:
+                changes[field]=field
+
+        ids=validated_data.pop('check_list')
+        if ids:
+            check_list=instance.check_list
+            for id in ids:
+                for check_item in check_list:
+                    if check_item['id'] == id:
+                        check_item['status']=True
+            instance._changes=changes
+            instance._updated_by=self.context['request'].user
+            instance.save()
+        return super().update(instance,validated_data)
 
     def get_comments(self,obj):
         comments_count=obj.comment_task.count()

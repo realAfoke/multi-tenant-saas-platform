@@ -1,8 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 import { instance } from "@/api/axios";
 
-
-
 export function activityQueryOption(route, id) {
 	return queryOptions({
 		queryKey: ['activity', route, id],
@@ -15,11 +13,11 @@ export function activityQueryOption(route, id) {
 				console.error(error)
 				throw Error(error)
 			}
-
 		},
 		enabled: !!id
 	})
 }
+
 export function notificationQueryOption(wk) {
 	return queryOptions({
 		queryKey: ['notification', 'workspace', wk],
@@ -139,8 +137,8 @@ export function selectedTaskQueryOption(wk, chl, tk) {
 		queryKey: ['task', wk, chl, tk],
 		queryFn: async ({ queryKey }) => {
 			try {
-				const [, wk, chl, tk] = queryKey
-				const response = await instance.get(`workspaces/${wk}/${chl}/task/${tk}/`)
+				const [, , chl, tk] = queryKey
+				const response = await instance.get(`workspaces/project/${chl}/task/${tk}/`)
 				return response.data
 			} catch (error) {
 				console.error(error)

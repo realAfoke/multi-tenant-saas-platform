@@ -70,7 +70,7 @@ export default function Workspace() {
 		return () => window.removeEventListener('click', handleClick)
 	})
 	return (
-		<div className="space-y-10">
+		<div className="space-y-10 pt-[5rem]">
 			<div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
 				<div>
 					<p className="text-blue-400 text-sm font-medium">

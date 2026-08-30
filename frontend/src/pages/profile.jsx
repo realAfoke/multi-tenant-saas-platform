@@ -25,7 +25,7 @@ export default function Profile() {
 	const { data: user } = useQuery(fetchUserQueryOption())
 
 	return (
-		<div className="space-y-8 max-w-5xl text-white flex-1">
+		<div className="pt-[5rem] space-y-8 max-w-5xl text-white flex-1">
 
 			<div className="flex justify-between">
 				<div>

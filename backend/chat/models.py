@@ -98,3 +98,20 @@ class MessageReaction(models.Model):
 
     def __str__(self):
         return self.reaction
+
+class ConnectionRequest(models.Model):
+    iniciater=models.ForeignKey(User,related_name='request_iniciater',on_delete=models.CASCADE)
+    accepter=models.ForeignKey(User,related_name='request_accepter',on_delete=models.CASCADE)
+    status=models.CharField(max_length=200,default='pending')
+    timestamp=models.DateTimeField(auto_now_add=True)
+
+
+    class Meta:
+        db_table='connection_request'
+        constraints=[
+                models.UniqueConstraint(
+                fields=['iniciater','accepter'],name='unique_connection_request'
+                )]
+
+    def __str__(self):
+        return self.status

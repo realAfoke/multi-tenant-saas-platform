@@ -4,6 +4,7 @@ from django.db.models import Q
 from rest_framework.exceptions import ValidationError
 from rest_framework import status
 from chat.models import ConnectionRequest,Conversation
+from chat.service.connection_request import ConnectionRequestService
 
 
 class MessageService:
@@ -18,14 +19,13 @@ class MessageService:
                 if not conversation.project.project_members.filter(member_user=user).exists():
                     raise ValidationError('User is not a member of this chat.')
                 return conversation
+
         manager=getattr(ConnectionRequest,'objects')
         connection=manager.filter(Q(iniciater=user) | Q(accepter=user)).exists()
         if not connection:
-            #create connection request
-            manager.create(
-                    iniciater=user,
-                    accepter=receiver,
-                    status='pending'
-                    )
-        return None
+            ConnectionRequestService.send_request(iniciater=user,receiver=receiver)
+        else:
+            ConnectionRequestService.accept_request(accepter=user,connection_request=connection)
+
+
 

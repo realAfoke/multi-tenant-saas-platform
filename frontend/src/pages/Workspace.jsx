@@ -91,7 +91,7 @@ export default function Workspace() {
 			</div>
 			<div className={`flex-col gap-5 `}>
 				<div>
-					
+
 					<div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-6">
 
 						{ordering?.map((projectId) => (<Grid key={projectId} project={projects?.[projectId]} />))
@@ -252,50 +252,50 @@ export default function Workspace() {
 // 	</Collapsible>
 // </div>
 // <div className="flex flex-wrap items-center justify-between mb-5">
-					// 	<h2 className="text-2xl font-semibold text-white">
-					// 		Projects
-					// 	</h2>
-					// 	<div className="flex gap-2">
-					// 		<Button
-					// 			variant="secondary"
-					// 			className="rounded-xl bg-zinc-900 text-green-500 hover:bg-zinc-800"
-					//
-					// 			onClick={() => setFilter('all')}
-					// 		>
-					// 			All
-					// 		</Button>
-					//
-					// 		<Button
-					// 			variant="ghost"
-					// 			className="rounded-xl text-zinc-400 hover:text-blue-500"
-					// 			onClick={() => setFilter('active')}
-					// 		>
-					// 			Active
-					// 		</Button>
-					//
-					// 		<Button
-					// 			variant="ghost"
-					// 			className="rounded-xl text-zinc-400 hover:text-blue-500"
-					//
-					// 			onClick={() => setFilter('archived')}
-					// 		>
-					// 			Archived
-					// 		</Button>
-					// 		<Button
-					// 			variant="ghost"
-					// 			size="icon"
-					// 			className="text-zinc-500 hover:text-white"
-					// 			onClick={(e) => {
-					// 				e.stopPropagation()
-					// 				setShowMoreMembers(prev => !prev)
-					// 			}
-					// 			}
-					// 		>
-					// 			<PanelRightClose className="w-5 h-5" />
-					// 		</Button>
-					//
-					// 	</div>
-					//
-					//
-					// </div>
+// 	<h2 className="text-2xl font-semibold text-white">
+// 		Projects
+// 	</h2>
+// 	<div className="flex gap-2">
+// 		<Button
+// 			variant="secondary"
+// 			className="rounded-xl bg-zinc-900 text-green-500 hover:bg-zinc-800"
+//
+// 			onClick={() => setFilter('all')}
+// 		>
+// 			All
+// 		</Button>
+//
+// 		<Button
+// 			variant="ghost"
+// 			className="rounded-xl text-zinc-400 hover:text-blue-500"
+// 			onClick={() => setFilter('active')}
+// 		>
+// 			Active
+// 		</Button>
+//
+// 		<Button
+// 			variant="ghost"
+// 			className="rounded-xl text-zinc-400 hover:text-blue-500"
+//
+// 			onClick={() => setFilter('archived')}
+// 		>
+// 			Archived
+// 		</Button>
+// 		<Button
+// 			variant="ghost"
+// 			size="icon"
+// 			className="text-zinc-500 hover:text-white"
+// 			onClick={(e) => {
+// 				e.stopPropagation()
+// 				setShowMoreMembers(prev => !prev)
+// 			}
+// 			}
+// 		>
+// 			<PanelRightClose className="w-5 h-5" />
+// 		</Button>
+//
+// 	</div>
+//
+//
+// </div>
 

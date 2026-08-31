@@ -11,11 +11,12 @@ import { workspaceQueryOption, taskQueryOption } from "@/queryOptions/queryOptio
 import { useAppState } from "@/hooks/apptools"
 import { Button } from "./ui/button"
 import Project from "./sidebar/Project"
+import { UserPlus } from "lucide-react"
 
 export default function SideBar(props) {
 	const ref = useRef(null)
 
-	const { setToggle, handleToggleWorkspace, toggleWorkspace } = props
+	const { setToggle, handleToggleWorkspace, toggleWorkspace, setShowAddPeople } = props
 	const { setWorkspace, selectedWorkspace } = useAppState()
 	const [showOptions, setShowOptions] = useState(false)
 	const queryClient = useQueryClient()
@@ -87,6 +88,10 @@ export default function SideBar(props) {
 						className="bg-transparent outline-none text-white placeholder:text-zinc-500 border-none"
 					/>
 				</div>
+				<Button onClick={() => setShowAddPeople(true)} className="capitalize">
+					<UserPlus />
+					Add people
+				</Button>
 
 				{!selectedWorkspace?.id && <div>
 					<Item className="gap-2 py-2 hover:bg-[#ffffff1a] rounded-md px-2 ">
@@ -119,6 +124,7 @@ export default function SideBar(props) {
 				}
 
 			</div >
+
 			<Link
 				to="profile"
 				className="bg-inherit absolute bottom-0 left-0 w-full border-t border-zinc-800 p-4 hover:bg-zinc-900 transition "

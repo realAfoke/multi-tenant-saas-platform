@@ -2,5 +2,5 @@ from django.urls import URLPattern, path
 from . import views
 
 urlpatterns=[
-        path('discussion/<int:pk>/',views.GetDiscussionMessages.as_view()),
+        path('discussion/<int:pk>/',views.GetChannelMessages.as_view()),
         ]

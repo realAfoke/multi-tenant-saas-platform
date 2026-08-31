@@ -37,7 +37,7 @@ class Conversation(models.Model):
 class Message(models.Model):
     sender=models.ForeignKey(User,related_name='message',on_delete=models.CASCADE)
     content=models.TextField()
-    conversation=models.ForeignKey(Conversation,related_name='conversation_message',on_delete=models.CASCADE)
+    conversation=models.ForeignKey(Conversation,related_name='conversation_message',on_delete=models.CASCADE,null=True,blank=True)
     client_id=models.UUIDField(editable=False,null=True,blank=True)
     timestamp=models.DateTimeField(auto_now_add=True)
     is_edited=models.BooleanField(default=False)

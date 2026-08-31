@@ -1,9 +1,12 @@
+from asyncio import gather
 from rest_framework import generics
 from rest_framework.response import Response
-from chat.models import Conversation, Message
+from chat.models import ConnectionRequest, Conversation, Message
+from chat.service.chat import ChatService
 import manage
 from . serializers import MessageSerializer
 from rest_framework import permissions
+from rest_framework.parsers import MultiPartParser,FormParser
 
 
 
@@ -24,4 +27,11 @@ class GetDirectChataMessages(generics.ListAPIView):
     permission_classes=[permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return manager.filter(conversation=self.kwargs.get('pk')).order_by('-timestamp')
+        return self.manager.filter(conversation=self.kwargs.get('pk')).order_by('-timestamp')
+
+class MediaFileMessage(generics.CreateAPIView):
+    manager=getattr(Message,'objects')
+    queryset=manager.all()
+    permission_classes=[permissions.IsAuthenticated]
+    parser_classes=[MultiPartParser,FormParser]
+

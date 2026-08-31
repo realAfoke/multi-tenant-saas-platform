@@ -1,17 +1,15 @@
-from django.core.validators import validate_image_file_extension
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth import get_user_model
-from rest_framework.generics import RetrieveAPIView
-import manage
-from workspace import models
-from django.db.models import Q, QuerySet
+from chat.service.chat import ChatService
+from django.db.models import Q
 from django.core.mail import send_mail,send_mass_mail
 import logging
 import workspace
 from django.db import transaction
 from chat.models import Conversation
+from workspace import models
 from uuid import uuid4
 
 
@@ -139,26 +137,12 @@ class ProjectMemberSerializer(serializers.ModelSerializer):
 
 class ProjectSerializer(serializers.ModelSerializer):
     tasks=serializers.SerializerMethodField()
-    # project_tasks=serializers.SerializerMethodField()
     project_members=serializers.SerializerMethodField()
     member=serializers.PrimaryKeyRelatedField(queryset=models.Membership.objects.all(),many=True,write_only=True,required=False)
-    # project_admins=serializers.SerializerMethodField()
     workspace_name=serializers.SerializerMethodField()
     class Meta:
         model=models.Project
         fields='__all__'
-        # fields=[
-        #         'id',
-        #         'name',
-        #         'status',
-        #         'workspace',
-        #         'workspace_name',
-        #         'created_by',
-        #         'member',
-        #         'project_members',
-        #         'description',
-        #         'updated_at'
-        #         ]
         read_only_fields=['created_by']
 
     @transaction.atomic
@@ -187,10 +171,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             models.ProjectMember(project=project,members=member) for member in list(member_mapping.values())
             ])
         #create project discussion room
-        conversation_id=str(uuid4())
-        conversation=Conversation(chat_type='project',name=validated_data.get('name'),workspace=workspace,project=project,conversation_id=conversation_id)
-        print('conversation:',conversation)
-        conversation.save()
+        ChatService.create_conversation(chat_type='project',name=validated_data.get('name'),workspace=workspace,project=project)
 
         return project
 

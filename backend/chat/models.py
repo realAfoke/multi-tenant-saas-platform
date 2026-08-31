@@ -16,7 +16,7 @@ from workspace.models import Project,WorkSpace
 User=get_user_model()
 
 class Conversation(models.Model):
-    chat_type=models.CharField(max_length=200,choices=[('Project','project'),('Individual','individual')])
+    chat_type=models.CharField(max_length=200,choices=[('Project','project'),('Direct','direct')])
     name=models.CharField(max_length=300)
     conversation_id=models.UUIDField(editable=False,null=True,blank=True)
     workspace=models.ForeignKey(WorkSpace,related_name='workspace_conversation',on_delete=models.CASCADE,null=True,blank=True)

@@ -1,20 +1,24 @@
 from django.db import transaction
 from chat.models import ConnectionRequest
 from chat.service.chat import ChatService
+from django.db.models import Q
 
 
 class ConnectionRequestService:
     @staticmethod
-    @transaction.atomic
     def send_request(*,iniciater,receiver):
-        manager=getattr(ConnectionRequest,'objects')
-        #create connection request
-        manager.create(
-                    iniciater=iniciater,
-                    accepter=receiver,
-                    status='pending'
-                    )
-        return None
+        with transaction.atomic():
+            manager=getattr(ConnectionRequest,'objects')
+            #create connection request
+            _existed=manager.filter(Q(iniciater=iniciater,accepter=receiver) | Q(iniciater=receiver,accepter=iniciater)).first()
+            if not _existed:
+                manager.create(
+                            iniciater=iniciater,
+                            accepter=receiver,
+                            status='pending'
+                            )
+                return None
+
     @staticmethod
     def accept_request(*,accepter,connection_request):
         with transaction.atomic():

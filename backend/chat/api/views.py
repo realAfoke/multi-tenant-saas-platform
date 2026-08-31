@@ -1,8 +1,10 @@
 from asyncio import gather
 from rest_framework import generics
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from chat.models import ConnectionRequest, Conversation, Message
 from chat.service.chat import ChatService
+from chat.service.connection_request import ConnectionRequestService
 import manage
 from . serializers import MessageSerializer
 from rest_framework import permissions
@@ -35,3 +37,9 @@ class MediaFileMessage(generics.CreateAPIView):
     permission_classes=[permissions.IsAuthenticated]
     parser_classes=[MultiPartParser,FormParser]
 
+
+class DirectConnectionRequestView(APIView):
+     permission_classes=[permissions.IsAuthenticated]
+     def post(self,request,*args,**kwargs):
+         ConnectionRequestService.send_request(iniciater=request.user,receiver=request.data.get('receiver'))
+         return Response({'status':'request sent.'})

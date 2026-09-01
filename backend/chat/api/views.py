@@ -11,6 +11,7 @@ import manage
 from . serializers import MessageSerializer
 from rest_framework import permissions
 from rest_framework.parsers import MultiPartParser,FormParser
+from django.db.models import Q
 
 
 User=get_user_model()
@@ -54,7 +55,7 @@ class SearchUserView(generics.ListAPIView):
     permission_classes=[permissions.IsAuthenticated]
 
     def filter_queryset(self, queryset): 
-        return manager.filter(self.request.query_params.keys()[0]__in=self.request.query_params.values()[0])
+        return self.manager.filter(Q(name__in=self.request.query_params.get('search')) | Q(user_name__in=self.request.query_params.get('search')))
 
 
 

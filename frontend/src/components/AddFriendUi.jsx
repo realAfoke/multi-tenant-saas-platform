@@ -24,62 +24,24 @@ import { instance } from "@/api/axios"
 export default function AddPeople({ open, onOpenChange }) {
 
 	const [search, setSearch] = useState("")
+	const [startSearch, setStartSearch] = useState(false)
 	const [invited, setInvited] = useState([])
 	const [email, setEmail] = useState("")
 
-	const { data: users } = useQuery({
-		queryKey: ['addFriend'],
+	const { data: users, refetch } = useQuery({
+		queryKey: ['user', search],
 		queryFn: async () => {
 			try {
-				const response = await instance.get(`chat/search-friend/?search=${search}/`)
+				const response = await instance.get(`chat/search-friend/?search=${search}`)
+				setStartSearch(false)
 				return response.data
 			} catch (err) {
 				console.error(err)
 				throw Error(err)
 			}
-		}
+		},
+		enabled: startSearch,
 	})
-
-	// const users = [
-	// 	{
-	// 		id: 1,
-	// 		name: "Daniel",
-	// 		username: "@daniel",
-	// 		email: "daniel@example.com",
-	// 		initial: "D",
-	// 		online: true,
-	// 	},
-	// 	{
-	// 		id: 2,
-	// 		name: "Sarah",
-	// 		username: "@sarah",
-	// 		email: "sarah@example.com",
-	// 		initial: "S",
-	// 		online: true,
-	// 	},
-	// 	{
-	// 		id: 3,
-	// 		name: "Michael",
-	// 		username: "@michael",
-	// 		email: "michael@example.com",
-	// 		initial: "M",
-	// 		online: false,
-	// 	},
-	// 	{
-	// 		id: 4,
-	// 		name: "Jessica",
-	// 		username: "@jessica",
-	// 		email: "jessica@example.com",
-	// 		initial: "J",
-	// 		online: false,
-	// 	},
-	// ]
-
-	const results = users.filter((user) =>
-		`${user.name} ${user.username} ${user.email}`
-			.toLowerCase()
-			.includes(search.toLowerCase())
-	)
 
 	const inviteUser = (user) => {
 
@@ -125,7 +87,7 @@ export default function AddPeople({ open, onOpenChange }) {
 
 				{/* Search */}
 
-				<div className="relative mt-3">
+				<div className="relative mt-3 flex gap-1 items-center">
 
 					<Search className="
 						absolute
@@ -150,6 +112,14 @@ export default function AddPeople({ open, onOpenChange }) {
 							placeholder:text-zinc-600
 						"
 					/>
+					<Button
+						className="outline-none border-none bg-blue-500 p-2 py-1 rounded-xs text-white font-sm"
+						onClick={() => {
+							setStartSearch(true)
+						}}
+					>
+						search
+					</Button>
 
 				</div>
 
@@ -158,16 +128,17 @@ export default function AddPeople({ open, onOpenChange }) {
 
 				<div className="mt-4 max-h-64 overflow-y-auto">
 
-					{search.trim() ? (
+					{users ? (
 
-						results.length > 0 ? (
+						users?.length > 0 ? (
 
 							<div className="space-y-1">
 
-								{results.map((user) => {
+								{users?.map((user) => {
 
 									const alreadyInvited =
 										invited.includes(user.id)
+									const initial = user?.username ? user.username[0]?.toUpperCase() : user.firstName[0].toUpperCase()
 
 									return (
 
@@ -198,7 +169,7 @@ export default function AddPeople({ open, onOpenChange }) {
 													justify-center
 													font-semibold
 												">
-													{user.initial}
+													{initial}
 												</div>
 
 												{user.online && (
@@ -223,11 +194,11 @@ export default function AddPeople({ open, onOpenChange }) {
 											<div className="flex-1 min-w-0">
 
 												<p className="text-sm font-medium">
-													{user.name}
+													{`${user?.firstName} ${user?.lastName}`}
 												</p>
 
 												<p className="text-xs text-zinc-500 truncate">
-													{user.username}
+													{user?.username}
 												</p>
 
 											</div>
@@ -238,11 +209,11 @@ export default function AddPeople({ open, onOpenChange }) {
 											<Button
 												size="sm"
 												variant={
-													alreadyInvited
+													user.isConnected === 'Add friend'
 														? "ghost"
 														: "outline"
 												}
-												disabled={alreadyInvited}
+												disabled={!user.isConnected === 'Add friend'}
 												onClick={() =>
 													inviteUser(user)
 												}
@@ -253,15 +224,15 @@ export default function AddPeople({ open, onOpenChange }) {
 												"
 											>
 
-												{alreadyInvited ? (
+												{!user.isConnected === 'Add friend' ? (
 													<>
 														<Check className="w-4 h-4 mr-1" />
-														Invited
+														{'friend'}
 													</>
 												) : (
 													<>
 														<UserPlus className="w-4 h-4 mr-1" />
-														Invite
+														{user.isConnected}
 													</>
 												)}
 

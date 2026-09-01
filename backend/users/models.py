@@ -38,10 +38,8 @@ class UserManager(BaseUserManager):
 class CustomUser(AbstractUser):
     phone=models.CharField(max_length=17,null=True,blank=True)
     # email=models.EmailField(_('email address'),unique=True,help_text=_('Required: valid email domain are allowed'),error_messages={'unique':'A user with that username already exist'})
-    user_name=models.CharField(max_length=250,null=True,blank=True)
     email=models.EmailField(unique=True)
     username=models.CharField(max_length=200,unique=False,blank=True,null=True)
-    created_on=models.DateTimeField(auto_now_add=True)
     updated_on=models.DateTimeField(auto_now=True)
 
     objects=UserManager()

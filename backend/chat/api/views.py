@@ -12,6 +12,7 @@ from . serializers import MessageSerializer
 from rest_framework import permissions
 from rest_framework.parsers import MultiPartParser,FormParser
 from django.db.models import Q
+from users.api.serializers import UserSerializer
 
 
 User=get_user_model()
@@ -52,10 +53,13 @@ class DirectConnectionRequestView(APIView):
 class SearchUserView(generics.ListAPIView):
     manager=getattr(User,'objects')
     queryset=manager.all()
+    serializer_class=UserSerializer
     permission_classes=[permissions.IsAuthenticated]
 
     def filter_queryset(self, queryset): 
-        return self.manager.filter(Q(name__in=self.request.query_params.get('search')) | Q(user_name__in=self.request.query_params.get('search')))
+        search_param=self.request.query_params.get('search')
+        print('search:',search_param)
+        return self.manager.filter(Q(first_name__icontains=search_param) | Q(last_name__icontains=search_param) | Q(username__icontains=search_param))
 
 
 

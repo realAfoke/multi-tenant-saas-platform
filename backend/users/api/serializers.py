@@ -9,6 +9,7 @@ from rest_framework.exceptions import ValidationError
 from workspace.models import WorkSpace,Membership
 import logging
 from workspace.api.serializers import MembershipSerializer
+from django.db.models import Q
 
 
 
@@ -23,10 +24,11 @@ class UserSerializer(serializers.ModelSerializer):
     first_name=serializers.CharField(required=True)
     last_name=serializers.CharField(required=True)
     email=serializers.EmailField(required=True)
+    is_connected=serializers.SerializerMethodField()
     # membership=serializers.SerializerMethodField()
     class Meta:
         model=User
-        fields=['id','password','email','phone','first_name','last_name','username','workspace','created_on','updated_on']
+        fields=['id','password','email','phone','first_name','last_name','username','username','workspace','date_joined','is_connected','updated_on']
 
     def create(self, validated_data):
         if validated_data.get('_existing',None):
@@ -56,6 +58,13 @@ class UserSerializer(serializers.ModelSerializer):
         if not cache.get(f'confirm:{user_detail}'): 
             raise ValidationError(f'{user_detail} is not verified ')
         return attrs
+
+    def get_is_connected(self,obj):
+            user=self.context['request'].user
+            connection=user.request_iniciater.filter(Q(iniciater=obj) |Q(accepter=obj)).first()
+            return connection.status if connection else 'Add friend'
+
+
 
 
 class LoginSerializer(TokenObtainPairSerializer):

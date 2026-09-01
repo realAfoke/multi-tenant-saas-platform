@@ -18,6 +18,8 @@ import {
 	DialogTitle,
 	DialogDescription,
 } from "@/components/ui/dialog"
+import { useQuery } from "@tanstack/react-query"
+import { instance } from "@/api/axios"
 
 export default function AddPeople({ open, onOpenChange }) {
 
@@ -25,40 +27,53 @@ export default function AddPeople({ open, onOpenChange }) {
 	const [invited, setInvited] = useState([])
 	const [email, setEmail] = useState("")
 
-	const users = [
-		{
-			id: 1,
-			name: "Daniel",
-			username: "@daniel",
-			email: "daniel@example.com",
-			initial: "D",
-			online: true,
-		},
-		{
-			id: 2,
-			name: "Sarah",
-			username: "@sarah",
-			email: "sarah@example.com",
-			initial: "S",
-			online: true,
-		},
-		{
-			id: 3,
-			name: "Michael",
-			username: "@michael",
-			email: "michael@example.com",
-			initial: "M",
-			online: false,
-		},
-		{
-			id: 4,
-			name: "Jessica",
-			username: "@jessica",
-			email: "jessica@example.com",
-			initial: "J",
-			online: false,
-		},
-	]
+	const { data: users } = useQuery({
+		queryKey: ['addFriend'],
+		queryFn: async () => {
+			try {
+				const response = await instance.get(`chat/search-friend/?search=${search}/`)
+				return response.data
+			} catch (err) {
+				console.error(err)
+				throw Error(err)
+			}
+		}
+	})
+
+	// const users = [
+	// 	{
+	// 		id: 1,
+	// 		name: "Daniel",
+	// 		username: "@daniel",
+	// 		email: "daniel@example.com",
+	// 		initial: "D",
+	// 		online: true,
+	// 	},
+	// 	{
+	// 		id: 2,
+	// 		name: "Sarah",
+	// 		username: "@sarah",
+	// 		email: "sarah@example.com",
+	// 		initial: "S",
+	// 		online: true,
+	// 	},
+	// 	{
+	// 		id: 3,
+	// 		name: "Michael",
+	// 		username: "@michael",
+	// 		email: "michael@example.com",
+	// 		initial: "M",
+	// 		online: false,
+	// 	},
+	// 	{
+	// 		id: 4,
+	// 		name: "Jessica",
+	// 		username: "@jessica",
+	// 		email: "jessica@example.com",
+	// 		initial: "J",
+	// 		online: false,
+	// 	},
+	// ]
 
 	const results = users.filter((user) =>
 		`${user.name} ${user.username} ${user.email}`

@@ -1,4 +1,6 @@
 from asyncio import gather
+from django.contrib.auth import get_user_model
+from django.http import request
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -10,6 +12,8 @@ from . serializers import MessageSerializer
 from rest_framework import permissions
 from rest_framework.parsers import MultiPartParser,FormParser
 
+
+User=get_user_model()
 
 
 class GetChannelMessages(generics.ListAPIView):
@@ -43,3 +47,16 @@ class DirectConnectionRequestView(APIView):
      def post(self,request,*args,**kwargs):
          ConnectionRequestService.send_request(iniciater=request.user,receiver=request.data.get('receiver'))
          return Response({'status':'request sent.'})
+
+class SearchUserView(generics.ListAPIView):
+    manager=getattr(User,'objects')
+    queryset=manager.all()
+    permission_classes=[permissions.IsAuthenticated]
+
+    def filter_queryset(self, queryset): 
+        return manager.filter(self.request.query_params.keys()[0]__in=self.request.query_params.values()[0])
+
+
+
+
+

@@ -18,17 +18,17 @@ import {
 	DialogTitle,
 	DialogDescription,
 } from "@/components/ui/dialog"
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { instance } from "@/api/axios"
 
 export default function AddPeople({ open, onOpenChange }) {
 
 	const [search, setSearch] = useState("")
 	const [startSearch, setStartSearch] = useState(false)
-	const [invited, setInvited] = useState([])
 	const [email, setEmail] = useState("")
+	const queryClient = useQueryClient()
 
-	const { data: users, refetch } = useQuery({
+	const { data: users } = useQuery({
 		queryKey: ['user', search],
 		queryFn: async () => {
 			try {
@@ -43,14 +43,26 @@ export default function AddPeople({ open, onOpenChange }) {
 		enabled: startSearch,
 	})
 
-	const inviteUser = (user) => {
+	const sendRequest = useMutation({
+		mutationFn: async (user) => {
+			const response = await instance.post(`chat/send-connection-request/`, { recipient: user?.id })
+			return response.data
+		},
+		onSuccess: (requestData) => {
+			queryClient.setQueryData(['user', search], (old) => old?.map((obj) => obj.id === requestData?.recipient ? { ...obj, isConnected: requestData.status } : obj)
 
-		if (invited.includes(user.id)) return
+			)
+		}
+	})
 
-		setInvited((prev) => [...prev, user.id])
-
-		// Wire your invite mutation here
-	}
+	// const inviteUser = (user) => {
+	//
+	// 	if (invited.includes(user.id)) return
+	//
+	// 	setInvited((prev) => [...prev, user.id])
+	//
+	// 	// Wire your invite mutation here
+	// }
 
 	const inviteEmail = () => {
 
@@ -136,8 +148,6 @@ export default function AddPeople({ open, onOpenChange }) {
 
 								{users?.map((user) => {
 
-									const alreadyInvited =
-										invited.includes(user.id)
 									const initial = user?.username ? user.username[0]?.toUpperCase() : user.firstName[0].toUpperCase()
 
 									return (
@@ -215,7 +225,7 @@ export default function AddPeople({ open, onOpenChange }) {
 												}
 												disabled={!user.isConnected === 'Add friend'}
 												onClick={() =>
-													inviteUser(user)
+													sendRequest.mutate(user)
 												}
 												className="
 													border-zinc-700

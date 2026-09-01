@@ -61,7 +61,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_is_connected(self,obj):
             user=self.context['request'].user
-            connection=user.request_iniciater.filter(Q(iniciater=obj) |Q(accepter=obj)).first()
+            connection=user.request_sender.filter(Q(sender=obj) |Q(recipient=obj)).first()
             return connection.status if connection else 'Add friend'
 
 

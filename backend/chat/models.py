@@ -100,8 +100,8 @@ class MessageReaction(models.Model):
         return self.reaction
 
 class ConnectionRequest(models.Model):
-    iniciater=models.ForeignKey(User,related_name='request_iniciater',on_delete=models.CASCADE)
-    accepter=models.ForeignKey(User,related_name='request_accepter',on_delete=models.CASCADE)
+    sender=models.ForeignKey(User,related_name='request_sender',on_delete=models.CASCADE)
+    recipient=models.ForeignKey(User,related_name='request_recipient',on_delete=models.CASCADE)
     status=models.CharField(max_length=200,default='pending')
     timestamp=models.DateTimeField(auto_now_add=True)
 
@@ -110,7 +110,7 @@ class ConnectionRequest(models.Model):
         db_table='connection_request'
         constraints=[
                 models.UniqueConstraint(
-                fields=['iniciater','accepter'],name='unique_connection_request'
+                fields=['sender','recipient'],name='unique_connection_request'
                 )]
 
     def __str__(self):

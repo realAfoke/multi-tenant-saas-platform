@@ -8,7 +8,7 @@ from chat.models import ConnectionRequest, Conversation, Message
 from chat.service.chat import ChatService
 from chat.service.connection_request import ConnectionRequestService
 import manage
-from . serializers import MessageSerializer
+from . serializers import ConnectionRequestSerializer, MessageSerializer
 from rest_framework import permissions
 from rest_framework.parsers import MultiPartParser,FormParser
 from django.db.models import Q
@@ -44,11 +44,11 @@ class MediaFileMessage(generics.CreateAPIView):
     parser_classes=[MultiPartParser,FormParser]
 
 
-class DirectConnectionRequestView(APIView):
-     permission_classes=[permissions.IsAuthenticated]
-     def post(self,request,*args,**kwargs):
-         ConnectionRequestService.send_request(iniciater=request.user,receiver=request.data.get('receiver'))
-         return Response({'status':'request sent.'})
+class DirectConnectionRequestView(generics.ListCreateAPIView):
+    manager=getattr(ConnectionRequest,'objects')
+    queryset=manager.all()
+    serializer_class=ConnectionRequestSerializer
+    permission_classes=[permissions.IsAuthenticated]
 
 class SearchUserView(generics.ListAPIView):
     manager=getattr(User,'objects')

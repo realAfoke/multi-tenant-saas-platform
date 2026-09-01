@@ -1,11 +1,12 @@
 from os import getuid
 from os.path import exists
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from django.dispatch import receiver
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from chat.models import ConnectionRequest, Conversation,Message,MessageReaction,MessageReciept,Attachment
 from django.contrib.auth import get_user_model
+from chat.service.connection_request import ConnectionRequestService
 from workspace.models import Membership
 from users.api.serializers import UserSerializer
 from workspace.api.serializers import ProjectMemberSerializer
@@ -40,3 +41,20 @@ class MessageSerializer(serializers.ModelSerializer):
                 receiver=attrs.get('receiver')
                 )
         return attrs
+
+class ConnectionRequestSerializer(serializers.ModelSerializer):
+    sender=serializers.PrimaryKeyRelatedField(read_only=True)
+
+    recipient=serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    class Meta:
+        model=ConnectionRequest
+        fields='__all__'
+
+
+    def create(self, validated_data):
+        user=self.context['request'].user
+        connection=ConnectionRequestService.send_request(sender=user,recipient=validated_data.get('recipient'))
+
+        return connection
+
+

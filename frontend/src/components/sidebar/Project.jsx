@@ -12,7 +12,7 @@ export default function Project(props) {
 	const { setView, setMessage, selectedWorkspace, selectedChannel, setChannel, setSelectedDm, view, setTask, selectedTask } = useAppState()
 	const { channels, channelOrdering } = props
 	const openChannel = (channel) => {
-		setChannel({ id: channel.id, name: channel.name, status: true })
+		setChannel(channel)
 		setView("channel")
 		setSelectedDm(null)
 		setMessage("")

@@ -20,7 +20,7 @@ class Conversation(models.Model):
     name=models.CharField(max_length=300)
     conversation_id=models.UUIDField(editable=False,null=True,blank=True)
     workspace=models.ForeignKey(WorkSpace,related_name='workspace_conversation',on_delete=models.CASCADE,null=True,blank=True)
-    project=models.ForeignKey(Project,related_name='project_conversation',on_delete=models.CASCADE,null=True,blank=True)
+    project=models.OneToOneField(Project,related_name='project_conversation',on_delete=models.CASCADE,null=True,blank=True)
     participants=models.ManyToManyField(User,related_name='conversation')
     last_read_mssg_id=models.ForeignKey('Message',related_name='lst_read_msg_id',on_delete=models.CASCADE,null=True,blank=True)
     created_at=models.DateTimeField(auto_now_add=True)

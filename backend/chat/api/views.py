@@ -16,17 +16,17 @@ from users.api.serializers import UserSerializer
 User=get_user_model()
 
 
-class GetChannelMessages(generics.ListAPIView):
-    manager=getattr(Message,'objects')
-    queryset=manager.all()
-    serializer_class=MessageSerializer
-    permission_classes=[permissions.IsAuthenticated]
+# class GetChannelMessages(generics.ListAPIView):
+#     manager=getattr(Message,'objects')
+#     queryset=manager.all()
+#     serializer_class=MessageSerializer
+#     permission_classes=[permissions.IsAuthenticated]
+#
+#     def get_queryset(self):
+#         return self.manager.filter(conversation__project=self.kwargs.get('pk')).order_by('-timestamp')
+#
 
-    def get_queryset(self):
-        return self.manager.filter(conversation__project=self.kwargs.get('pk')).order_by('-timestamp')
-
-
-class GetDirectChataMessages(generics.ListAPIView):
+class GetMessages(generics.ListAPIView):
     manager=getattr(Message,'objects')
     queryset=manager.all()
     serializer_class=MessageSerializer

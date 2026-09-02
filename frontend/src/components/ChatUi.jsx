@@ -1,10 +1,41 @@
 import { useAppState } from "@/hooks/apptools"
 import { Hash, Paperclip, Smile, Send } from "lucide-react"
 import { Button } from "./ui/button"
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { convertObjKeys } from "@/utils/appUtil";
 
-export default function ChatUi(props) {
-	const { view, selectedChannel, selectedDm, message, setMessage } = useAppState()
-	const { messages } = props
+
+export default function Chat() {
+	const { view, selectedChannel, selectedDm, message, setMessage, socket } = useAppState()
+
+	const conversationId = selectedChannel?.conversation || selectedDm?.conversation
+	const queryClient = useQueryClient()
+
+	const { data: messages } = useQuery({
+		queryKey: ['messages', conversationId],
+		queryFn: async ({ queryKey }) => {
+			try {
+				const [, id] = queryKey
+				const response = await instance.get(`chat/${id}/messages`)
+				return response.data
+			} catch (err) {
+				console.error(err)
+				throw Error(err)
+			}
+		},
+		enabled: !!conversationId
+	})
+
+	useEffect(() => {
+		if(!socket) return
+		const ws = socket
+		ws.onmessage = (e) => {
+			const rawData = JSON.parse(e.data)
+			const camelCaseData = convertObjKeys(rawData)
+			queryClient.setQueryData(['messages', conversationId], old => [camelCaseData, ...(old ?? [])])
+		}
+	}, [conversationId,socket])
 	const sendMessage = () => {
 
 		if (!message.trim()) return
@@ -124,9 +155,9 @@ export default function ChatUi(props) {
 
 
 							<textarea
-								value={message}
+								value={message?.value}
 								onChange={(e) =>
-									setMessage(e.target.value)
+									setMessage({ content: e.target.value })
 								}
 								onKeyDown={(e) => {
 
@@ -135,7 +166,11 @@ export default function ChatUi(props) {
 										!e.shiftKey
 									) {
 										e.preventDefault()
-										sendMessage()
+										ws = socket
+										if (ws && ws.readyState === WebSocket.OPEN) {
+											ws.send(JSON.stringify(message))
+											setMessage((prev) => ({ ...prev, content: '' }))
+										}
 									}
 
 								}}
@@ -169,7 +204,7 @@ export default function ChatUi(props) {
 
 
 							<Button
-								disabled={!message.trim()}
+								disabled={!message?.content?.trim()}
 								onClick={sendMessage}
 								size="icon"
 								className="flex-shrink-0 bg-blue-500 hover:bg-blue-600"

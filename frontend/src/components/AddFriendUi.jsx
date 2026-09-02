@@ -48,7 +48,7 @@ export default function AddPeople({ open, onOpenChange }) {
 	const openDM = (dm) => {
 		setView('dm')
 		setSelectedDm(dm)
-		setChannel(null)
+		setChannel({})
 		onOpenChange(false)
 		navigate(`/dashboard/chat/${dm?.id}`)
 	}

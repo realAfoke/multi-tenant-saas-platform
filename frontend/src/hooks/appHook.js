@@ -38,7 +38,7 @@ export function useAppHook(workspaces, wkName, setWorkspace, selectedWorkspace, 
 		const { channels = {} } = workspace ?? {}
 		const channel = Object.values(channels)?.find(obj => obj?.name === channelName)
 		if (!channel || !channelName) return
-		setChannel({ id: channel?.id, name: channel?.name, show: true })
+		setChannel(channel)
 		setView('channel')
 	}, [channel, channelName, selectedWorkspace, workspaces])
 

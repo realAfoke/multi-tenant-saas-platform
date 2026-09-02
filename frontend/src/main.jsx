@@ -30,8 +30,7 @@ import VerifyEmail from './components/VerifyEmail.jsx'
 import AccountDetails from './components/AccountDetails.jsx'
 import AcceptInvite from './pages/acceptInvite.jsx'
 import TeamChat from './experiment/TempChat.jsx'
-import ChannelChat from './components/ChannelChat.jsx'
-import DirectChat from './components/DirectChat.jsx'
+import Chat from './components/ChatUi.jsx'
 
 
 
@@ -56,14 +55,14 @@ const routes = createBrowserRouter([
     path: '/dashboard', element: <ProtectedRoute />, errorElement: <ErrorPage />,
     children: [
       { index: true, element: <Home /> },
-      { path: 'chat/:userId', element: <DirectChat /> },
+      { path: 'chat/:userId', element: <Chat /> },
       {
         path: ':wkName', element: <Workspace />, children: [
           { path: 'create-project', element: <CreateProject /> },
         ]
       },
       {
-        path: ':wkName/:channelName', element: <ChannelChat />, children: [
+        path: ':wkName/:channelName', element: <Chat/>, children: [
           { index: true, element: <ProjectOverview /> },
           { path: 'board', element: <Board /> },
           { path: 'files', element: <Files /> },

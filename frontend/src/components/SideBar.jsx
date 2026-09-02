@@ -12,6 +12,7 @@ import { useAppState } from "@/hooks/apptools"
 import { Button } from "./ui/button"
 import Project from "./sidebar/Project"
 import { UserPlus } from "lucide-react"
+import DirectMessage from "./sidebar/DirectMessage"
 
 export default function SideBar(props) {
 	const ref = useRef(null)
@@ -122,6 +123,7 @@ export default function SideBar(props) {
 				}
 				{selectedWorkspace?.id && <Project channelOrdering={channelOrdering} channels={channels} />
 				}
+				<DirectMessage />
 
 			</div >
 

@@ -21,7 +21,7 @@ export default useAuthStore
 
 export const useAppStore = create(combine({
 	view: '',
-	selectedDm: null,
+	selectedDm: {},
 	message: '',
 	selectedWorkspace: {
 		id: null,
@@ -88,7 +88,7 @@ export const useAppStore = create(combine({
 				))
 			},
 			setView: (view) => set((state) => ({ view: view })),
-			setSelectedDm: (dm) => set((state) => ({ selectedDm: dm })),
+			setSelectedDm: (dm) => set((state) => ({ selectedDm:{...state.selectedDm,...dm} })),
 			setMessage: (message) => set((state) => ({ message: message }))
 
 		}

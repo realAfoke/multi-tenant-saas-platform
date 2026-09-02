@@ -1,46 +1,18 @@
 import { useAppState } from "@/hooks/apptools"
-import { instance } from "@/api/axios"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { useEffect } from "react"
 import { Hash, Paperclip, Smile, Send } from "lucide-react"
 import { Button } from "./ui/button"
 
-export default function Chat() {
-	const { socket, message, setMessage, view, selectedDm, selectedChannel, selectedWorkspace } = useAppState()
-	const queryClient = useQueryClient()
-
-	const { data: messages } = useQuery({
-		queryKey: ['discussion', selectedWorkspace?.id, selectedChannel?.id],
-		queryFn: async () => {
-			try {
-				const response = await instance.get(`chat/discussion/${selectedChannel?.id}/`)
-				return response.data
-			} catch (error) {
-				console.error(error)
-				throw Error(error)
-			}
-		},
-		enabled: !!selectedChannel?.id
-	})
+export default function ChatUi(props) {
+	const { view, selectedChannel, selectedDm, message, setMessage } = useAppState()
+	const { messages } = props
 	const sendMessage = () => {
 
 		if (!message.trim()) return
 
 		setMessage("")
 	}
-	useEffect(() => {
-		if (!socket) return
-		socket.onmessage = (e) => {
-			let data = JSON.parse(e.data)
-			const converted = convertObjKeys(data)
-			if (data?.project === selectedChannel?.id && data?.workspace === selectedWorkspace?.id) {
-				queryClient.setQueryData(['discussion', selectedWorkspace?.id, selectedChannel?.id], old => [...(old ?? []), converted])
-			}
-		}
-	}, [socket, queryClient])
-
 	return (
-		<div className="flex-1 h-screen  md:px-6 flex flex-col pt-[4rem] px-auto">
+		<div className="flex-1 h-screen md:px-6 flex flex-col pt-[4rem] px-auto">
 
 			<div className="px-3 md:px-6 flex-1 overflow-auto space-y-7 pt-[5rem] pb-[2rem] scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-zinc-900 ">
 
@@ -51,16 +23,16 @@ export default function Chat() {
 
 							<>
 
-								<div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-lg font-semibold mb-4">
-									{selectedDm.initial}
+								<div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white text-lg font-semibold mb-4">
+									{selectedDm?.firstName[0]?.toUpperCase()}
 								</div>
 
-								<h2 className="text-xl font-bold">
-									{selectedDm.name}
+								<h2 className="text-xl font-bold text-white">
+									{selectedDm?.firstName}
 								</h2>
 
 								<p className="text-sm text-zinc-500 mt-2">
-									This is the beginning of your conversation with {selectedDm.name}.
+									This is the beginning of your conversation with {selectedDm?.firstName} {selectedDm?.lastName}.
 								</p>
 
 							</>
@@ -170,7 +142,7 @@ export default function Chat() {
 								rows={1}
 								placeholder={
 									view === "dm"
-										? `Message ${selectedDM?.name}`
+										? `Message ${selectedDm?.firstName}`
 										: `Message #${selectedChannel}`
 								}
 								className="

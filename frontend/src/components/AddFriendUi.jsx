@@ -20,9 +20,12 @@ import {
 } from "@/components/ui/dialog"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { instance } from "@/api/axios"
+import { useAppState } from "@/hooks/apptools"
+import { useNavigate } from "react-router-dom"
 
 export default function AddPeople({ open, onOpenChange }) {
-
+	const navigate = useNavigate()
+	const { setView, setSelectedDm, selectedDm, setChannel } = useAppState()
 	const [search, setSearch] = useState("")
 	const [startSearch, setStartSearch] = useState(false)
 	const [email, setEmail] = useState("")
@@ -42,7 +45,13 @@ export default function AddPeople({ open, onOpenChange }) {
 		},
 		enabled: startSearch,
 	})
-
+	const openDM = (dm) => {
+		setView('dm')
+		setSelectedDm(dm)
+		setChannel(null)
+		onOpenChange(false)
+		navigate(`/dashboard/chat/${dm?.id}`)
+	}
 	const sendRequest = useMutation({
 		mutationFn: async (user) => {
 			const response = await instance.post(`chat/send-connection-request/`, { recipient: user?.id })
@@ -148,7 +157,7 @@ export default function AddPeople({ open, onOpenChange }) {
 
 								{users?.map((user) => {
 
-									const initial = user?.username ? user.username[0]?.toUpperCase() : user.firstName[0].toUpperCase()
+									const initial = user?.username ? user.username[0]?.toUpperCase() : user?.firstName[0]?.toUpperCase()
 
 									return (
 
@@ -218,34 +227,16 @@ export default function AddPeople({ open, onOpenChange }) {
 
 											<Button
 												size="sm"
-												variant={
-													user.isConnected === 'Add friend'
-														? "ghost"
-														: "outline"
-												}
+												variant="message"
 												disabled={!user.isConnected === 'Add friend'}
-												onClick={() =>
-													sendRequest.mutate(user)
+												onClick={() => openDM(user)
 												}
 												className="
 													border-zinc-700
 													bg-zinc-900
 													hover:bg-zinc-800
 												"
-											>
-
-												{!user.isConnected === 'Add friend' ? (
-													<>
-														<Check className="w-4 h-4 mr-1" />
-														{'friend'}
-													</>
-												) : (
-													<>
-														<UserPlus className="w-4 h-4 mr-1" />
-														{user.isConnected}
-													</>
-												)}
-
+											>message
 											</Button>
 
 										</div>

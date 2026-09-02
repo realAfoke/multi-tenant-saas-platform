@@ -136,4 +136,3 @@ class Me(generics.RetrieveUpdateAPIView):
         #     user=self.request.user
         #     member=Membership.objects.filter(user=user).first()
         #     return member
-

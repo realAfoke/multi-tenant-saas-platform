@@ -1,4 +1,3 @@
-from asyncio import gather
 from django.contrib.auth import get_user_model
 from django.http import request
 from rest_framework import generics
@@ -7,7 +6,6 @@ from rest_framework.views import APIView
 from chat.models import ConnectionRequest, Conversation, Message
 from chat.service.chat import ChatService
 from chat.service.connection_request import ConnectionRequestService
-import manage
 from . serializers import ConnectionRequestSerializer, MessageSerializer
 from rest_framework import permissions
 from rest_framework.parsers import MultiPartParser,FormParser
@@ -60,6 +58,7 @@ class SearchUserView(generics.ListAPIView):
         search_param=self.request.query_params.get('search')
         print('search:',search_param)
         return self.manager.filter(Q(first_name__icontains=search_param) | Q(last_name__icontains=search_param) | Q(username__icontains=search_param))
+
 
 
 

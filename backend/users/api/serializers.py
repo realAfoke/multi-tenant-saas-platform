@@ -24,11 +24,11 @@ class UserSerializer(serializers.ModelSerializer):
     first_name=serializers.CharField(required=True)
     last_name=serializers.CharField(required=True)
     email=serializers.EmailField(required=True)
-    is_connected=serializers.SerializerMethodField()
+    # is_connected=serializers.SerializerMethodField()
     # membership=serializers.SerializerMethodField()
     class Meta:
         model=User
-        fields=['id','password','email','phone','first_name','last_name','username','username','workspace','date_joined','is_connected','updated_on']
+        fields=['id','password','email','phone','first_name','last_name','username','username','workspace','date_joined','updated_on']
 
     def create(self, validated_data):
         if validated_data.get('_existing',None):
@@ -59,11 +59,11 @@ class UserSerializer(serializers.ModelSerializer):
             raise ValidationError(f'{user_detail} is not verified ')
         return attrs
 
-    def get_is_connected(self,obj):
-            user=self.context['request'].user
-            connection=user.request_sender.filter(Q(sender=obj) |Q(recipient=obj)).first()
-            return connection.status if connection else 'Add friend'
-
+    # def get_is_connected(self,obj):
+    #         user=self.context['request'].user
+    #         connection=user.request_sender.filter(Q(sender=obj) |Q(recipient=obj)).first()
+    #         return connection.status if connection else 'Add friend'
+    #
 
 
 

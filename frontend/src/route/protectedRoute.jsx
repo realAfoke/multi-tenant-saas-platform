@@ -41,7 +41,7 @@ export default function ProtectedRoute() {
 	return (
 		<div className={`flex h-screen bg-zinc-950 overflow-hidden relative`}>
 
-			{toggle ? (
+			{toggle && 
 				<div className="">
 					<SideBar
 						setToggle={setToggle}
@@ -50,7 +50,7 @@ export default function ProtectedRoute() {
 						setShowAddPeople={setShowAddPeople}
 					/>
 				</div>
-			) : <div className="md:hidden"><MenuIcon toggle={toggle} setToggle={setToggle} /></div>}
+			 }
 
 			<div className="flex flex-col flex-1 overflow-hidden relative">
 				<TopBar setToggle={setToggle} toggle={toggle} />

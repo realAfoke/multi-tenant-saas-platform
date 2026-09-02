@@ -2,7 +2,6 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.exceptions import DenyConnection,AcceptConnection
 from django.utils.html import json
 from urllib.parse import parse_qs
-from chat.service.chat import process_chat
 from asgiref.sync import sync_to_async
 
 
@@ -30,7 +29,6 @@ class ServerRealTimeUpdate(AsyncWebsocketConsumer):
 
     async def receive(self, text_data: str | None = None, bytes_data: bytes | None = None) -> None:
         received_data=json.loads(text_data)
-        chat=await sync_to_async(process_chat)(received_data,self.user)
         await self.channel_layer.group_send(f'workspace_{chat["workspace"]}',{'type':'send.discussion','discussion':chat})
 
 

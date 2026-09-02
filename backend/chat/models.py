@@ -16,7 +16,7 @@ from workspace.models import Project,WorkSpace
 User=get_user_model()
 
 class Conversation(models.Model):
-    chat_type=models.CharField(max_length=200,choices=[('Project','project'),('Individual','individual')])
+    chat_type=models.CharField(max_length=200,choices=[('Project','project'),('Direct','direct')])
     name=models.CharField(max_length=300)
     conversation_id=models.UUIDField(editable=False,null=True,blank=True)
     workspace=models.ForeignKey(WorkSpace,related_name='workspace_conversation',on_delete=models.CASCADE,null=True,blank=True)
@@ -37,7 +37,7 @@ class Conversation(models.Model):
 class Message(models.Model):
     sender=models.ForeignKey(User,related_name='message',on_delete=models.CASCADE)
     content=models.TextField()
-    conversation=models.ForeignKey(Conversation,related_name='conversation_message',on_delete=models.CASCADE)
+    conversation=models.ForeignKey(Conversation,related_name='conversation_message',on_delete=models.CASCADE,null=True,blank=True)
     client_id=models.UUIDField(editable=False,null=True,blank=True)
     timestamp=models.DateTimeField(auto_now_add=True)
     is_edited=models.BooleanField(default=False)
@@ -98,3 +98,20 @@ class MessageReaction(models.Model):
 
     def __str__(self):
         return self.reaction
+
+class ConnectionRequest(models.Model):
+    sender=models.ForeignKey(User,related_name='request_sender',on_delete=models.CASCADE)
+    recipient=models.ForeignKey(User,related_name='request_recipient',on_delete=models.CASCADE)
+    status=models.CharField(max_length=200,default='pending')
+    timestamp=models.DateTimeField(auto_now_add=True)
+
+
+    class Meta:
+        db_table='connection_request'
+        constraints=[
+                models.UniqueConstraint(
+                fields=['sender','recipient'],name='unique_connection_request'
+                )]
+
+    def __str__(self):
+        return self.status

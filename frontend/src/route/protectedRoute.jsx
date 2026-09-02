@@ -9,6 +9,7 @@ import SideBar from "@/components/SideBar"
 import { useRealTimeUpdate } from "@/hooks/appHook.js"
 import MenuIcon from "@/components/MenuIcon"
 import { useState } from "react"
+import AddPeople from "@/components/AddFriendUi"
 
 
 export default function ProtectedRoute() {
@@ -31,6 +32,7 @@ export default function ProtectedRoute() {
 	// console.log('userWorkspaces:',userWorkspaces,'workspaces:',workspaces)
 	useQuery(fetchRoleQueryOption(selectedWorkspace?.id))
 
+	const [showAddPeople, setShowAddPeople] = useState(false)
 	if (!user) {
 		<Navigate to='/login' replace />
 		return
@@ -45,6 +47,7 @@ export default function ProtectedRoute() {
 						setToggle={setToggle}
 						toggleWorkspace={toggleWorkspace}
 						handleToggleWorkspace={setToggleWorkspace}
+						setShowAddPeople={setShowAddPeople}
 					/>
 				</div>
 			) : <div className="md:hidden"><MenuIcon toggle={toggle} setToggle={setToggle} /></div>}
@@ -52,7 +55,10 @@ export default function ProtectedRoute() {
 			<div className="flex flex-col flex-1 overflow-hidden relative">
 				<TopBar setToggle={setToggle} toggle={toggle} />
 				<main className="flex-1 overflow-auto scrollbar scrollbar-thin scrollbar-thumb-zinc-600 scrollbar-track-zinc-900 md:mx-[8rem] px-2">
-
+					<AddPeople
+						open={showAddPeople}
+						onOpenChange={setShowAddPeople}
+					/>
 					<Outlet context={{ setToggle, hidechannelDetail, setHidechannelDetail }} />
 				</main>
 			</div>

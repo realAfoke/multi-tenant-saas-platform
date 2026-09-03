@@ -28,19 +28,32 @@ export default function Chat() {
 	})
 
 	useEffect(() => {
-		if(!socket) return
+		if (!socket) return
 		const ws = socket
 		ws.onmessage = (e) => {
 			const rawData = JSON.parse(e.data)
+			console.log('raw data:', rawData)
 			const camelCaseData = convertObjKeys(rawData)
 			queryClient.setQueryData(['messages', conversationId], old => [camelCaseData, ...(old ?? [])])
 		}
-	}, [conversationId,socket])
+	}, [conversationId, socket])
+
+
+	useEffect(() => {
+		if (!selectedChannel?.id && !selectedDm?.id) return
+		const messageTemplate = { conversation: conversationId }
+		if (selectedDm?.id) {
+			messageTemplate.receiver = selectedDm?.id
+		}
+		setMessage(messageTemplate)
+		console.log('inside effect message:',message)
+	},[selectedChannel.id,selectedDm.id,conversationId])
+
+	console.log(message)
 	const sendMessage = () => {
 
-		if (!message.trim()) return
 
-		setMessage("")
+		// setMessage("")
 	}
 	return (
 		<div className="flex-1 h-screen md:px-6 flex flex-col pt-[4rem] px-auto">
@@ -166,8 +179,10 @@ export default function Chat() {
 										!e.shiftKey
 									) {
 										e.preventDefault()
-										ws = socket
+										const ws = socket
 										if (ws && ws.readyState === WebSocket.OPEN) {
+											console.log('inside socker')
+											console.log('message:', message)
 											ws.send(JSON.stringify(message))
 											setMessage((prev) => ({ ...prev, content: '' }))
 										}

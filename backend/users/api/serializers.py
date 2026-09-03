@@ -62,7 +62,10 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_conversation(self,obj):
         user=self.context['request'].user
-        return user.conversation.filter(participants=obj).first()
+        if user.is_authenticated:
+            return user.conversation.filter(participants=obj).first()
+        else:
+            return None
 
     # def get_is_connected(self,obj):
     #         user=self.context['request'].user
@@ -79,7 +82,7 @@ class LoginSerializer(TokenObtainPairSerializer):
             # raise ValidationError('invalide credentials')
             raise AuthenticationFailed('Invalid credentials')
         refresh=self.get_token(user)
-        user=UserSerializer(user).data
+        user=UserSerializer(user,context=self.context).data
         user['refresh']=str(refresh)
         user['access']=str(refresh.access_token)
         return user

@@ -8,7 +8,7 @@ import TopBar from "@/components/TopBar"
 import SideBar from "@/components/SideBar"
 import { useRealTimeUpdate } from "@/hooks/appHook.js"
 import MenuIcon from "@/components/MenuIcon"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import AddPeople from "@/components/AddFriendUi"
 
 
@@ -18,7 +18,7 @@ export default function ProtectedRoute() {
 	const [toggleWorkspace, setToggleWorkspace] = useState(false)
 	const [hidechannelDetail, setHidechannelDetail] = useState(false)
 
-	const { setWorkspace, setSocket, setChannel, setTask, selectedWorkspace, selectedChannel, setView } = useAppState()
+	const { socket, setWorkspace, setSocket, setChannel, setTask, selectedWorkspace, selectedChannel, setView } = useAppState()
 	const { data: userWorkspaces } = useQuery(workspaceQueryOption())
 
 	const { data: channel } = useQuery(channelQueryOption(selectedWorkspace?.id, selectedChannel?.id))
@@ -31,6 +31,13 @@ export default function ProtectedRoute() {
 
 	// console.log('userWorkspaces:',userWorkspaces,'workspaces:',workspaces)
 	useQuery(fetchRoleQueryOption(selectedWorkspace?.id))
+	useEffect(() => {
+		if (!socket) return
+		socket.onmessage = (e) => {
+			const data = JSON.parse(e.data)
+			console.log(data)
+		}
+	}, [socket])
 
 	const [showAddPeople, setShowAddPeople] = useState(false)
 	if (!user) {
@@ -38,10 +45,11 @@ export default function ProtectedRoute() {
 		return
 	}
 
+
 	return (
 		<div className={`flex h-screen bg-zinc-950 overflow-hidden relative`}>
 
-			{toggle && 
+			{toggle &&
 				<div className="">
 					<SideBar
 						setToggle={setToggle}
@@ -50,7 +58,7 @@ export default function ProtectedRoute() {
 						setShowAddPeople={setShowAddPeople}
 					/>
 				</div>
-			 }
+			}
 
 			<div className="flex flex-col flex-1 overflow-hidden relative">
 				<TopBar setToggle={setToggle} toggle={toggle} />

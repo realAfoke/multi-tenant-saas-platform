@@ -8,6 +8,7 @@ from chat.models import ConnectionRequest, Conversation,Message,MessageReaction,
 from django.contrib.auth import get_user_model
 from chat.service.connection_request import ConnectionRequestService
 from workspace.models import Membership
+from workspace.models import Membership
 from users.api.serializers import UserSerializer
 from workspace.api.serializers import ProjectMemberSerializer
 from chat.service.message import MessageService
@@ -19,23 +20,31 @@ class MessageSerializer(serializers.ModelSerializer):
     project=serializers.SerializerMethodField()
     workspace=serializers.SerializerMethodField()
     user=serializers.SerializerMethodField()
+    sender=serializers.PrimaryKeyRelatedField(read_only=True)
     class Meta:
         model=Message
         fields='__all__'
 
     def get_project(self,obj):
-        return obj.conversation.project.id if obj.conversation.project else None
+        conversation=getattr(obj,'conversation',None)
+        project=getattr(conversation,'project',None)
+        return project.id if project else None
     def get_workspace(self,obj):
-        return obj.conversation.workspace.id if obj.conversation.workspace else None
+        conversation=getattr(obj,'conversation',None)
+        return conversation.worspace if conversation else None
+
+
     def get_user(self,obj):
-        if obj.conversation.workspace:
+        if obj.conversation and obj.conversation.workspace:
             project_member=obj.conversation.project.project_member.filter(member__user=obj.sender).first()
             return ProjectMemberSerializer(project_member).data
         else:
-            return UserSerializer(obj.sender).data
+            return UserSerializer(obj.sender,context=self.context).data
+
+
     def validate(self, attrs):
         user=self.context['request'].user
-        MessageService.validate_messae(
+        MessageService.validate_message(
                 user=user,
                 conversation_id=attrs.get('conversation_id'),
                 receiver=attrs.get('receiver')

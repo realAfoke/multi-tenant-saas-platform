@@ -89,7 +89,12 @@ export default function SideBar(props) {
 						className="bg-transparent outline-none text-white placeholder:text-zinc-500 border-none"
 					/>
 				</div>
-				<Button onClick={() => setShowAddPeople(true)} className="capitalize">
+				<Button onClick={() => {
+					setToggle(false)
+					setShowAddPeople(true)
+				}
+				}
+					className="capitalize">
 					<UserPlus />
 					Add people
 				</Button>

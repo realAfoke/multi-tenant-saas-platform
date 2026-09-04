@@ -1,12 +1,15 @@
 from enum import unique
+from itertools import count
+from sys import base_exec_prefix
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.base_user import BaseUserManager
 from django.core.exceptions import ValidationError
+import random
 
 # Create your models here.
-
 
 class UserManager(BaseUserManager):
     use_in_migrations=True
@@ -33,8 +36,6 @@ class UserManager(BaseUserManager):
             raise ValueError('superuser must have is_supersuer set=True')
         return self.create_user(email,password,phone,**extra_fields)
 
-
-
 class CustomUser(AbstractUser):
     phone=models.CharField(max_length=17,null=True,blank=True)
     # email=models.EmailField(_('email address'),unique=True,help_text=_('Required: valid email domain are allowed'),error_messages={'unique':'A user with that username already exist'})
@@ -51,11 +52,20 @@ class CustomUser(AbstractUser):
         db_table='usermodel'
 
     def __str__(self):
-        return self.user_name if self.user_name else self.email
+        return self.username or self.email
 
 
+    def save(self, **kwargs):
+        if not self.username:
+            base=self.email.split('@')[0]
 
+            username=base
+            counter=1
 
-
+            while type(self).objects.filter(username=username).exists():
+                username=f'{base}_{counter}'
+                counter +=1
+            self.username=username
+        return super().save(*kwargs)
 
 

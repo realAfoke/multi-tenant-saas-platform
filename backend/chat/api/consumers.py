@@ -42,7 +42,7 @@ class ServerRealTimeUpdate(AsyncWebsocketConsumer):
 
     async def receive(self, text_data: str | None = None, bytes_data: bytes | None = None) -> None:
         received_data=json.loads(text_data)
-        receiver_id=received_data.pop('receiver',None)
+        receiver_id=received_data.get('receiver',None)
         message=await self.serialize_data(received_data)
         workspace=message['workspace']
         if workspace:

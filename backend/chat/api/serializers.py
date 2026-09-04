@@ -1,11 +1,14 @@
 from os import getuid
 from os.path import exists
+from django.db import transaction
 from django.db.models import Q, QuerySet
 from django.dispatch import receiver
+from django.utils.translation import trans_null
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from chat.models import ConnectionRequest, Conversation,Message,MessageReaction,MessageReciept,Attachment
 from django.contrib.auth import get_user_model
+from chat.service.chat import ChatService
 from chat.service.connection_request import ConnectionRequestService
 from workspace.models import Membership
 from workspace.models import Membership
@@ -24,6 +27,22 @@ class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model=Message
         fields='__all__'
+
+
+    @transaction.atomic
+    def create(self, validated_data):
+        conversation=validated_data.get('conversation',None)
+        print('validated_data:',validated_data)
+        if not conversation:
+            conversation=ChatService.create_conversation(
+                    chat_type='direct',
+                    participants=[validated_data.get('sender'),validated_data.pop('receiver')]
+                    )
+        validated_data['conversation']=conversation
+        # validated_data.pop('receiver')
+        return super().create(validated_data)
+
+
 
     def get_project(self,obj):
         conversation=getattr(obj,'conversation',None)

@@ -11,21 +11,16 @@ class Request:
 
 class ChatService:
     @staticmethod
-    def create_conversation(*,chat_type,name,workspace=None,project=None,connection_request=None):
+    def create_conversation(*,chat_type,name=None,workspace=None,project=None,participants=None):
         with transaction.atomic():
             conversation_id=str(uuid4())
-
-            if connection_request:
+            if chat_type == 'direct':
                 conversation=Conversation(
                         chat_type=chat_type,
-                        name=name,
                         conversation_id=conversation_id
                         )
                 conversation.save()
-                conversation.participants.add(
-                        connection_request.iniciator,
-                        connection_request.accepter
-                        )
+                conversation.participants.add(*participants)
 
             conversation=Conversation(
                         chat_type=chat_type,

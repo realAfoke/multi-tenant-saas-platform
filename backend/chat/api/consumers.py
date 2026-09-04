@@ -44,7 +44,7 @@ class ServerRealTimeUpdate(AsyncWebsocketConsumer):
         received_data=json.loads(text_data)
         receiver_id=received_data.get('receiver',None)
         message=await self.serialize_data(received_data)
-        workspace=message['workspace']
+        workspace=message.get('workspace',None)
         if workspace:
             await self.channel_layer.group_send(f"workspace_{workspace}",{"type":"send.message","message":message})
         else:
@@ -55,7 +55,7 @@ class ServerRealTimeUpdate(AsyncWebsocketConsumer):
         request=Request(self.user)
         serializer=MessageSerializer(data=data,context={'request':request})
         serializer.is_valid(raise_exception=True)
-        serializer.save(sender=self.user)
+        serializer.save(sender=self.user,receiver=data.get('receiver',None))
         return serializer.data
 
 

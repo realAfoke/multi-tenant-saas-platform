@@ -6,6 +6,7 @@ from rest_framework.exceptions import AuthenticationFailed
 from typing import Any
 from django.core.cache import cache
 from rest_framework.exceptions import ValidationError
+from chat.models import Conversation
 from workspace.models import WorkSpace,Membership
 import logging
 from workspace.api.serializers import MembershipSerializer
@@ -62,11 +63,13 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_conversation(self,obj):
         user=self.context['request'].user
+        if user == obj:
+            return
+        print('obj:',obj)
         if user.is_authenticated:
-            return user.conversation.filter(participants=obj).first()
-        else:
-            return None
-
+            conversation=Conversation.objects.filter(participants=user).filter(participants=obj).first()
+            return conversation.id if conversation else None
+       
     # def get_is_connected(self,obj):
     #         user=self.context['request'].user
     #         connection=user.request_sender.filter(Q(sender=obj) |Q(recipient=obj)).first()

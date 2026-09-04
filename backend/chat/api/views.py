@@ -35,7 +35,7 @@ class GetConversationView(generics.ListAPIView):
 
 
     def get_queryset(self):
-        return self.manager.filter(participants=self.request.user).order_by('-timestamp')
+        return self.manager.filter(participants=self.request.user).order_by('-created_at')
 
 
 class GetMessages(generics.ListAPIView):

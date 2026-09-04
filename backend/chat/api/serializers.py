@@ -28,7 +28,7 @@ class ConversationSerializer(serializers.ModelSerializer):
         fields='__all__'
 
     def get_receiver(self,obj):
-        receiver=obj.participants.exclude(user=self.context['request'].user)
+        receiver=obj.participants.exclude(id=self.context['request'].user.id).first()
         return UserSerializer(receiver,context=self.context).data or None
 
 
@@ -37,6 +37,7 @@ class MessageSerializer(serializers.ModelSerializer):
     workspace=serializers.SerializerMethodField()
     user=serializers.SerializerMethodField()
     sender=serializers.PrimaryKeyRelatedField(read_only=True)
+    conversations=serializers.PrimaryKeyRelatedField(queryset=Conversation.objects.all())
     class Meta:
         model=Message
         fields='__all__'
@@ -45,7 +46,6 @@ class MessageSerializer(serializers.ModelSerializer):
     @transaction.atomic
     def create(self, validated_data):
         conversation=validated_data.get('conversation',None)
-        print('validated_data:',validated_data)
         if not conversation:
             conversation=ChatService.create_conversation(
                     chat_type='direct',
@@ -63,7 +63,7 @@ class MessageSerializer(serializers.ModelSerializer):
         return project.id if project else None
     def get_workspace(self,obj):
         conversation=getattr(obj,'conversation',None)
-        return conversation.worspace if conversation else None
+        return conversation.workspace if conversation else None
 
 
     def get_user(self,obj):

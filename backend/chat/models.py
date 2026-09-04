@@ -17,7 +17,7 @@ User=get_user_model()
 
 class Conversation(models.Model):
     chat_type=models.CharField(max_length=200,choices=[('Project','project'),('Direct','direct')])
-    name=models.CharField(max_length=300)
+    name=models.CharField(max_length=300,null=True,blank=True)
     conversation_id=models.UUIDField(editable=False,null=True,blank=True)
     workspace=models.ForeignKey(WorkSpace,related_name='workspace_conversation',on_delete=models.CASCADE,null=True,blank=True)
     project=models.OneToOneField(Project,related_name='project_conversation',on_delete=models.CASCADE,null=True,blank=True)
@@ -31,7 +31,7 @@ class Conversation(models.Model):
         db_table='conversation'
 
     def __str__(self):
-        return self.name
+        return self.name or self.chat_type
 
 
 class Message(models.Model):

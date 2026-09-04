@@ -1,7 +1,7 @@
 import { Outlet } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
 import { useAppHook } from "@/hooks/appHook.js"
-import { fetchUserQueryOption, workspaceQueryOption, channelQueryOption, fetchRoleQueryOption, activityQueryOption } from "@/queryOptions/queryOptions"
+import { fetchUserQueryOption, workspaceQueryOption, channelQueryOption, fetchRoleQueryOption, activityQueryOption, conversationsQueryOption } from "@/queryOptions/queryOptions"
 import { useParams, Navigate } from "react-router-dom"
 import { useAppState } from "@/hooks/apptools"
 import TopBar from "@/components/TopBar"
@@ -31,6 +31,8 @@ export default function ProtectedRoute() {
 
 	// console.log('userWorkspaces:',userWorkspaces,'workspaces:',workspaces)
 	useQuery(fetchRoleQueryOption(selectedWorkspace?.id))
+
+	useQuery(conversationsQueryOption())
 	useEffect(() => {
 		if (!socket) return
 		socket.onmessage = (e) => {

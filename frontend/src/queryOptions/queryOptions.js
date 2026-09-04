@@ -1,6 +1,21 @@
 import { queryOptions } from "@tanstack/react-query";
 import { instance } from "@/api/axios";
 
+
+export function conversationsQueryOption(){
+	return queryOptions({
+		queryKey:['user','conversations'],
+		queryFn:async()=>{
+			try{
+				const response=await instance.get('chat/conversations/')
+				return response.data
+			}catch(err){
+				console.error(err)
+				throw Error(err)
+			}
+		}
+	})
+}
 export function activityQueryOption(route, id) {
 	return queryOptions({
 		queryKey: ['activity', route, id],

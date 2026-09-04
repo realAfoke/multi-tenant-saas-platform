@@ -26,6 +26,17 @@ User=get_user_model()
 #         return self.manager.filter(conversation__project=self.kwargs.get('pk')).order_by('-timestamp')
 #
 
+
+class GetConversationView(generics.ListAPIView):
+    manager=getattr(Conversation,'objects')
+    queryset=manager.all()
+    permission_classes=[permissions.IsAuthenticated]
+
+
+    def get_queryset(self):
+        return self.manager.filter(participants=self.request.user).order_by('-timestamp')
+
+
 class GetMessages(generics.ListAPIView):
     manager=getattr(Message,'objects')
     queryset=manager.all()

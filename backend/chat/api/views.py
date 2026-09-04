@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from chat.models import ConnectionRequest, Conversation, Message
 from chat.service.chat import ChatService
 from chat.service.connection_request import ConnectionRequestService
-from . serializers import ConnectionRequestSerializer, MessageSerializer
+from . serializers import ConnectionRequestSerializer, ConversationSerializer, MessageSerializer
 from rest_framework import permissions
 from rest_framework.parsers import MultiPartParser,FormParser
 from django.db.models import Q
@@ -30,6 +30,7 @@ User=get_user_model()
 class GetConversationView(generics.ListAPIView):
     manager=getattr(Conversation,'objects')
     queryset=manager.all()
+    serializer_class=ConversationSerializer
     permission_classes=[permissions.IsAuthenticated]
 
 

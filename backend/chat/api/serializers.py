@@ -15,9 +15,22 @@ from workspace.models import Membership
 from users.api.serializers import UserSerializer
 from workspace.api.serializers import ProjectMemberSerializer
 from chat.service.message import MessageService
+from users.api.serializers import UserSerializer
 
 
 User=get_user_model()
+
+
+class ConversationSerializer(serializers.ModelSerializer):
+    receiver=serializers.SerializerMethodField()
+    class Meta:
+        model=Conversation
+        fields='__all__'
+
+    def get_receiver(self,obj):
+        receiver=obj.participants.exclude(user=self.context['request'].user)
+        return UserSerializer(receiver,context=self.context).data or None
+
 
 class MessageSerializer(serializers.ModelSerializer):
     project=serializers.SerializerMethodField()

@@ -1,18 +1,28 @@
+from http.client import ImproperConnectionState
 from logging import raiseExceptions
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.exceptions import DenyConnection,AcceptConnection
+from django.contrib.auth import get_user_model
 from django.core.serializers import serialize
+from django.db import transaction
+from django.dispatch import receiver
+from django.forms import ValidationError
 from django.http import request
 from django.utils.html import json
 from urllib.parse import parse_qs
 from asgiref.sync import sync_to_async
 from chat.api.serializers import MessageSerializer
 from channels.db import database_sync_to_async
+from django.db.models import Q
+from chat.models import ConnectionRequest
 
+from chat.service.chat import ChatService
+from chat.service.connection_request import ConnectionRequestService
 import workspace
 
 
 
+User=get_user_model()
 class Request:
     def __init__(self,user):
         self.user=user
@@ -43,6 +53,7 @@ class ServerRealTimeUpdate(AsyncWebsocketConsumer):
     async def receive(self, text_data: str | None = None, bytes_data: bytes | None = None) -> None:
         received_data=json.loads(text_data)
         receiver_id=received_data.get('receiver',None)
+        validated_message=await self.validate_conversation(received_data)
         message=await self.serialize_data(received_data)
         workspace=message.get('workspace',None)
         if workspace:
@@ -52,11 +63,12 @@ class ServerRealTimeUpdate(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def serialize_data(self,data):
-        request=Request(self.user)
-        serializer=MessageSerializer(data=data,context={'request':request})
-        serializer.is_valid(raise_exception=True)
-        serializer.save(sender=self.user,receiver=data.get('receiver',None))
-        return serializer.data
+        with transaction.atomic():
+            request=Request(self.user)
+            serializer=MessageSerializer(data=data,context={'request':request})
+            serializer.is_valid(raise_exception=True)
+            serializer.save(sender=self.user)
+            return serializer.data
 
 
     async def send_message(self,event):
@@ -71,6 +83,41 @@ class ServerRealTimeUpdate(AsyncWebsocketConsumer):
         activity=event['activity']
         await self.send(text_data=json.dumps(activity))
 
+    @sync_to_async
+    def validate_conversation(self, message):
+        with transaction.atomic():
+            conversation_id = message.get('conversation')
 
+            if conversation_id:
+                conversation = self.user.conversation.filter(
+                    id=conversation_id
+                ).first()
 
+                if conversation is None:
+                    raise ValidationError("Conversation does not exist.")
+
+                connection = ConnectionRequest.objects.filter(
+                    conversation=conversation
+                ).first()
+
+                if connection is None:
+                    raise ValidationError(
+                        "This conversation has no connection request."
+                    )
+                ConnectionRequestService.create_accept_request(sender=self.user)
+            else:
+                receiver_id = message.pop('receiver', None)
+
+                if not receiver_id:
+                    raise ValidationError('Recipient id is not sent.')
+
+                receiver = User.objects.filter(id=receiver_id).first()
+
+                if receiver is None:
+                    raise ValidationError('Recipient does not exist.')
+
+                conversation=ConnectionRequestService.create_accept_request(sender=self.user,recipient=receiver)
+            print('CONVERSATION:',conversation)
+            message['conversation'] = conversation.id
+            return message
 

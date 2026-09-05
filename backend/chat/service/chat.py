@@ -21,6 +21,7 @@ class ChatService:
                         )
                 conversation.save()
                 conversation.participants.add(*participants)
+                return conversation
 
             conversation=Conversation(
                         chat_type=chat_type,
@@ -32,6 +33,23 @@ class ChatService:
             conversation.save()
             return conversation
 
-
-    
+    @staticmethod
+    def validate_conversation(*,message):
+        with transaction.atomic():
+            manager=getat
+            conversation_id=message.get('conversation',None)
+            if not conversation_id:
+                conversation
+            # manager=getattr(ConnectionRequest,'objects')
+            # connection=manager.filter(Q(sender=user) | Q(recipient=user)).first()
+            #
+            # if connection and connection.recipient == user:
+            #     ConnectionRequestService.accept_request(recipient=user,connection_request=connection)
+            #     return None
+            # elif connection.sender == user:
+            #     return None
+            # else:
+            #     ConnectionRequestService.send_request(sender=user,recipient=receiver)
+            #     return None
+            #
 

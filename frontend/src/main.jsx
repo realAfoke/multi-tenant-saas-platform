@@ -62,7 +62,7 @@ const routes = createBrowserRouter([
         ]
       },
       {
-        path: ':wkName/:channelName', element: <Chat/>, children: [
+        path: ':wkName/:channelName', element: <Chat />, children: [
           { index: true, element: <ProjectOverview /> },
           { path: 'board', element: <Board /> },
           { path: 'files', element: <Files /> },

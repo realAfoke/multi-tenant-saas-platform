@@ -65,7 +65,6 @@ class UserSerializer(serializers.ModelSerializer):
         user=self.context['request'].user
         if user == obj:
             return
-        print('obj:',obj)
         if user.is_authenticated:
             conversation=Conversation.objects.filter(participants=user).filter(participants=obj).first()
             return conversation.id if conversation else None

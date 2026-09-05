@@ -18,17 +18,7 @@ class MessageService:
                 if conversation and conversation.project:
                     if not conversation.project.project_members.filter(member_user=user).exists():
                         raise ValidationError('User is not a member of this chat.')
-                    return conversation
-
-            manager=getattr(ConnectionRequest,'objects')
-            connection=manager.filter(Q(sender=user) | Q(recipient=user)).first()
-
-            if connection and connection.recipient == user:
-                ConnectionRequestService.accept_request(recipient=user,connection_request=connection)
-                return None
-            elif connection.sender == user:
-                return None
-            else:
-                ConnectionRequestService.send_request(sender=user,recipient=receiver)
-                return None
+                if not conversation.participants.filter(id=user.id):
+                    raise ValidationError('User is not a member of this chat')
+                return conversation
 

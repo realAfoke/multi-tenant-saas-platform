@@ -4,6 +4,7 @@ import { Button } from "./ui/button"
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { convertObjKeys } from "@/utils/appUtil";
+import { instance } from "@/api/axios";
 
 
 export default function Chat() {
@@ -11,6 +12,7 @@ export default function Chat() {
 
 	const conversationId = selectedChannel?.conversation || selectedDm?.conversation
 	const queryClient = useQueryClient()
+	const currentUser = queryClient.getQueryData(['user'])
 
 	const { data: messages } = useQuery({
 		queryKey: ['messages', conversationId],
@@ -18,6 +20,7 @@ export default function Chat() {
 			try {
 				const [, id] = queryKey
 				const response = await instance.get(`chat/${id}/messages`)
+				// const response = await instance.get(`chat/${id}/messages`)
 				return response.data
 			} catch (err) {
 				console.error(err)
@@ -32,8 +35,8 @@ export default function Chat() {
 		const ws = socket
 		ws.onmessage = (e) => {
 			const rawData = JSON.parse(e.data)
-			console.log('raw data:', rawData)
 			const camelCaseData = convertObjKeys(rawData)
+			console.log('converted:', camelCaseData)
 			queryClient.setQueryData(['messages', conversationId], old => [camelCaseData, ...(old ?? [])])
 		}
 	}, [conversationId, socket])
@@ -41,20 +44,13 @@ export default function Chat() {
 
 	useEffect(() => {
 		if (!selectedChannel?.id && !selectedDm?.id) return
-		const messageTemplate = { conversation: conversationId }
+		const messageTemplate = { conversation: Number(conversationId) }
 		if (selectedDm?.id) {
 			messageTemplate.receiver = selectedDm?.id
 		}
 		setMessage(messageTemplate)
-		console.log('inside effect message:',message)
-	},[selectedChannel.id,selectedDm.id,conversationId])
+	}, [selectedChannel.id, selectedDm.id, conversationId])
 
-	console.log(message)
-	const sendMessage = () => {
-
-
-		// setMessage("")
-	}
 	return (
 		<div className="flex-1 h-screen md:px-6 flex flex-col pt-[4rem] px-auto">
 
@@ -107,26 +103,26 @@ export default function Chat() {
 
 
 					{messages?.map((message) => {
-						const sender = message?.user?.member?.user ?? {}
+						const sender = message?.id === currentUser?.id ? currentUser : selectedDm
 						const initial = `${sender?.firstName[0]?.toUpperCase()}`
 						const timeStamp = new Date(message?.timestamp)
 						const time = timeStamp?.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric' })
-
 						return (
 
 							<div
 								key={message.id}
-								className="flex gap-3 my-5"
+								className={`flex gap-3 my-5 ${view === 'dm' ? message?.sender === currentUser?.id ? 'justify-end' : 'justify-start' : ''}`}
 							>
 
-								<div className="w-9 h-9 rounded-full bg-blue-500 flex-shrink-0 flex items-center justify-center text-sm font-semibold">
+								{view === 'channel' && <div className={` flex w-9 h-9 rounded-full bg-blue-500 flex-shrink-0 flex items-center justify-center text-sm font-semibold`}>
 									{initial}
 								</div>
+								}
 
 
-								<div className="min-w-0">
+								<div className={`${view === 'dm' ? 'flex items-center gap-1' : ''} min-w-0`}>
 
-									<div className="flex items-baseline gap-3">
+									<div className={`flex ${view === 'dm' ? 'order-2' : 'gap-3 items-baseline'}`}>
 
 										<p className="text-sm font-semibold">
 										</p>
@@ -137,7 +133,7 @@ export default function Chat() {
 
 									</div>
 
-									<p className="text-sm text-zinc-300 mt-1 leading-relaxed">
+									<p className={`${view === 'dm' ? 'order-1' : ''} text-sm text-zinc-300 mt-1 leading-relaxed`}>
 										{message.content}
 									</p>
 
@@ -181,8 +177,6 @@ export default function Chat() {
 										e.preventDefault()
 										const ws = socket
 										if (ws && ws.readyState === WebSocket.OPEN) {
-											console.log('inside socker')
-											console.log('message:', message)
 											ws.send(JSON.stringify(message))
 											setMessage((prev) => ({ ...prev, content: '' }))
 										}
@@ -220,7 +214,6 @@ export default function Chat() {
 
 							<Button
 								disabled={!message?.content?.trim()}
-								onClick={sendMessage}
 								size="icon"
 								className="flex-shrink-0 bg-blue-500 hover:bg-blue-600"
 							>

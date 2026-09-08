@@ -105,7 +105,7 @@ export default function Chat() {
 
 								<div
 									key={message.id || message?.clientId}
-									className={`max-w-80  md:max-w-100 rounded-xs px-2 py-1 ${view === 'dm' ? message?.sender === currentUser?.id ? 'self-end bg-blue-600' : 'self-start bg-zinc-600' : 'flex gap-3'}`}
+									className={`max-w-80  md:max-w-100 rounded-xs px-2 ${view === 'dm' ? message?.sender === currentUser?.id ? 'self-end bg-blue-600' : 'self-start bg-zinc-600' : 'flex gap-3'}`}
 								>
 
 									{view === 'channel' && <div className={` flex w-9 h-9 rounded-full bg-blue-500 flex-shrink-0 flex items-center justify-center text-sm font-semibold`}>
@@ -121,7 +121,7 @@ export default function Chat() {
 											<p className="text-sm font-semibold">
 											</p>
 
-											<span className="text-xs text-zinc-600">
+											<span className="text-xs text-black">
 												{time}
 											</span>
 

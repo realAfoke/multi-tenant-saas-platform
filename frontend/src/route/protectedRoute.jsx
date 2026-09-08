@@ -64,7 +64,7 @@ export default function ProtectedRoute() {
 	useQuery(fetchRoleQueryOption(selectedWorkspace?.id))
 
 	useEffect(() => {
-		if (!socket) return
+		if (!socket || channelName || userId) return
 		socket.onmessage = (e) => {
 			const data = JSON.parse(e.data)
 			console.log(data)

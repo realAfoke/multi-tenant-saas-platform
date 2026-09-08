@@ -2,7 +2,7 @@ import { useAppState } from "@/hooks/apptools"
 import { Hash, Paperclip, Smile, Send } from "lucide-react"
 import { Button } from "./ui/button"
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { instance } from "@/api/axios";
 import { useMessageHook } from "@/hooks/chatuihook";
 
@@ -14,14 +14,7 @@ export default function Chat() {
 	const queryClient = useQueryClient()
 	const currentUser = queryClient.getQueryData(['user'])
 
-	useMessageHook({
-		setMessage,
-		socket,
-		queryClient,
-		selectedChannel,
-		selectedDm,
-		message
-	})
+	const ref = useRef(null)
 
 	const { data: messages } = useQuery({
 		queryKey: ['messages', message?.conversation],
@@ -39,13 +32,23 @@ export default function Chat() {
 		enabled: !!message?.conversation
 	})
 
+	useMessageHook({
+		setMessage,
+		socket,
+		queryClient,
+		selectedChannel,
+		selectedDm,
+		messages,
+		ref
+	})
+
 
 
 
 	return (
 		<div className="flex-1 h-screen md:px-6 flex flex-col pt-[4rem] px-auto">
 
-			<div className="px-3 md:px-6 flex-1 overflow-auto space-y-7 pt-[5rem] pb-[2rem] scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-zinc-900 ">
+			<div className="px-3 md:px-6 flex-1 overflow-auto pt-[5rem] scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-zinc-900 ">
 
 				<div className="overflow-auto mx-auto max-w-4xl">
 					<div className="pb-5 border-b border-zinc-800">
@@ -94,7 +97,7 @@ export default function Chat() {
 
 					<div
 
-						className={`flex flex-col gap-5 my-5`}
+						className={`flex flex-col gap-5 mt-5`}
 					>
 						{messages?.map((message) => {
 							const sender = message?.project ? message?.sender?.user : currentUser
@@ -137,8 +140,9 @@ export default function Chat() {
 
 							)
 						})}
-					</div>
 
+						<div ref={ref} />
+					</div>
 				</div>
 			</div>
 			<div className="md:px-6 md:pb-5 pt-5">

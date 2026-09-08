@@ -7,7 +7,8 @@ export function useMessageHook({
 	selectedDm,
 	selectedChannel,
 	setMessage,
-	message,
+	messages,
+	ref,
 }) {
 
 	const conversationId = selectedChannel?.conversation || selectedDm?.conversation
@@ -17,9 +18,8 @@ export function useMessageHook({
 		ws.onmessage = (e) => {
 			const rawData = JSON.parse(e.data)
 			const camelCaseData = convertObjKeys(rawData)
-			queryClient.setQueryData(['messages', message?.conversation], (old) => {
+			queryClient.setQueryData(['messages', conversationId], (old) => {
 				//remember to create a message id store mapping for easy insert
-				console.log('mess:', camelCaseData)
 				const messgId = new Map(old?.map(obj => [obj.id || obj.clientId, obj]))
 				const incomingMessgKey = camelCaseData?.clientId ?? camelCaseData?.id
 				messgId.set(incomingMessgKey, camelCaseData)
@@ -38,5 +38,18 @@ export function useMessageHook({
 		setMessage(messageTemplate)
 	}, [selectedChannel, selectedDm, conversationId, setMessage])
 
+	// useEffect(() => {
+	// 	if (ref && ref.current) {
+	// 		console.log('hiii')
+	// 		console.log(ref.current)
+	// 		ref.current.scrollIntoView()
+	// 	}
+	// }, [ref])
+
+	useEffect(() => {
+		if (ref.current) {
+			ref.current?.scrollIntoView();
+		}
+	}, [messages]);
 }
 

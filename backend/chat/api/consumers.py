@@ -14,7 +14,7 @@ from asgiref.sync import sync_to_async
 from chat.api.serializers import MessageSerializer
 from channels.db import database_sync_to_async
 from django.db.models import Q
-from chat.models import ConnectionRequest
+from chat.models import ConnectionRequest, Conversation
 
 from chat.service.chat import ChatService
 from chat.service.connection_request import ConnectionRequestService
@@ -55,10 +55,14 @@ class ServerRealTimeUpdate(AsyncWebsocketConsumer):
         receiver_id=received_data.get('receiver',None)
         validated_message=await self.validate_conversation(received_data)
         message=await self.serialize_data(received_data)
+        if 'workspace' in message.keys():
+            message['workspace']=message['workspace'].id
         workspace=message.get('workspace',None)
         if workspace:
             await self.channel_layer.group_send(f"workspace_{workspace}",{"type":"send.message","message":message})
         else:
+            #broadcast back to sender server has received and sent messg
+            await self.channel_layer.group_send(f'user_{self.user.id}',{'type':'send.message','message':message})
             await self.channel_layer.group_send(f'user_{receiver_id}',{'type':'send.message','message':message})
 
     @database_sync_to_async
@@ -67,7 +71,7 @@ class ServerRealTimeUpdate(AsyncWebsocketConsumer):
             request=Request(self.user)
             serializer=MessageSerializer(data=data,context={'request':request})
             serializer.is_valid(raise_exception=True)
-            serializer.save(sender=self.user)
+            serializer.save(sender=self.user,client_id=data.get('clientId'))
             return serializer.data
 
 
@@ -89,7 +93,7 @@ class ServerRealTimeUpdate(AsyncWebsocketConsumer):
             conversation_id = message.get('conversation')
 
             if conversation_id:
-                conversation = self.user.conversation.filter(
+                conversation = Conversation.objects.filter(
                     id=conversation_id
                 ).first()
 
@@ -100,7 +104,7 @@ class ServerRealTimeUpdate(AsyncWebsocketConsumer):
                     conversation=conversation
                 ).first()
 
-                if connection is None:
+                if not hasattr(conversation,'project') and connection is None:
                     raise ValidationError(
                         "This conversation has no connection request."
                     )

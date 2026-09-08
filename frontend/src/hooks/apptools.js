@@ -15,8 +15,6 @@ export const useAppState = () => {
 	const setView = useAppStore(s => s.setView)
 	const selectedDm = useAppStore(s => s.selectedDm)
 	const setSelectedDm = useAppStore(s => s.setSelectedDm)
-	const message = useAppStore(s => s.message)
-	const setMessage = useAppStore(s => s.setMessage)
 	return {
 		setInvite,
 		inviteDetail,
@@ -32,7 +30,5 @@ export const useAppState = () => {
 		setView,
 		selectedDm,
 		setSelectedDm,
-		message,
-		setMessage
 	}
 }

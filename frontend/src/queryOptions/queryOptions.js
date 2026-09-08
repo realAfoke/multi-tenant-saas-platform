@@ -2,14 +2,14 @@ import { queryOptions } from "@tanstack/react-query";
 import { instance } from "@/api/axios";
 
 
-export function conversationsQueryOption(){
+export function conversationsQueryOption() {
 	return queryOptions({
-		queryKey:['user','conversations'],
-		queryFn:async()=>{
-			try{
-				const response=await instance.get('chat/conversations/')
+		queryKey: ['user', 'conversations'],
+		queryFn: async () => {
+			try {
+				const response = await instance.get('chat/conversations/')
 				return response.data
-			}catch(err){
+			} catch (err) {
 				console.error(err)
 				throw Error(err)
 			}
@@ -120,7 +120,7 @@ export function channelQueryOption(wkId, channelId) {
 			const channel = await instance.get(`workspaces/${wkId}/project/${channelId}/`)
 			return channel?.data
 		},
-		enabled: !!channelId,
+		enabled: !!channelId && !!wkId,
 	})
 }
 

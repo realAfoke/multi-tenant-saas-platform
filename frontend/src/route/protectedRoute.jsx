@@ -13,26 +13,56 @@ import AddPeople from "@/components/AddFriendUi"
 
 
 export default function ProtectedRoute() {
-	const { wkName, channelName, taskId } = useParams()
+	const { wkName, channelName, taskId, userId } = useParams()
 	const [toggle, setToggle] = useState(false)
 	const [toggleWorkspace, setToggleWorkspace] = useState(false)
 	const [hidechannelDetail, setHidechannelDetail] = useState(false)
 
-	const { socket, setWorkspace, setSocket, setChannel, setTask, selectedWorkspace, selectedChannel, setView } = useAppState()
+	const {
+		socket,
+		setSelectedDm,
+		setWorkspace,
+		setSocket,
+		setChannel,
+		setTask,
+		selectedWorkspace,
+		selectedChannel,
+		setView,
+		selectedDm
+	} = useAppState()
+
 	const { data: userWorkspaces } = useQuery(workspaceQueryOption())
 
 	const { data: channel } = useQuery(channelQueryOption(selectedWorkspace?.id, selectedChannel?.id))
 	const { workspaces } = userWorkspaces ?? {}
 
 	const { data: user } = useQuery(fetchUserQueryOption())
+
+	const { data: conversations } = useQuery(conversationsQueryOption())
 	useQuery(activityQueryOption('activity', selectedWorkspace?.id))
-	useAppHook(workspaces, wkName, setWorkspace, selectedWorkspace, channel, channelName, setChannel, taskId, setTask, setView)
-	useRealTimeUpdate(setSocket, workspaces)
+
+	useAppHook(
+		workspaces,
+		wkName,
+		setWorkspace,
+		selectedWorkspace,
+		channel,
+		channelName,
+		setChannel,
+		taskId,
+		setTask,
+		setView,
+		userId,
+		conversations,
+		setSelectedDm,
+		selectedChannel,
+		selectedDm
+	)
+	useRealTimeUpdate(setSocket, workspaces,user)
 
 	// console.log('userWorkspaces:',userWorkspaces,'workspaces:',workspaces)
 	useQuery(fetchRoleQueryOption(selectedWorkspace?.id))
 
-	useQuery(conversationsQueryOption())
 	useEffect(() => {
 		if (!socket) return
 		socket.onmessage = (e) => {

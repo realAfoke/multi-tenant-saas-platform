@@ -45,7 +45,7 @@ class GetMessages(generics.ListAPIView):
     permission_classes=[permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return self.manager.filter(conversation=self.kwargs.get('pk')).order_by('-timestamp')
+        return self.manager.filter(conversation=self.kwargs.get('pk')).order_by('timestamp')
 
 class MediaFileMessage(generics.CreateAPIView):
     manager=getattr(Message,'objects')

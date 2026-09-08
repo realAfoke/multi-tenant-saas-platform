@@ -40,23 +40,23 @@ export function createProjectMutationOption(queryClient) {
 				throw error
 			}
 		},
-		onSuccess: (newProject, { wk }) => {
+		onSuccess: (newChannel, { wk }) => {
 			queryClient.setQueryData(['workspace'], (old) => {
 				const workspaces = (old?.workspaces) ?? {}
 				const workspace = workspaces?.[wk] ?? {}
-				const projects = workspace?.projects ?? {}
-				const projectOrdering = workspace?.projectOrdering ?? []
+				const channels = workspace?.channel ?? {}
+				const channelOrdering = workspace?.channelOrdering ?? []
 				return {
 					...old,
 					workspaces: {
 						...workspaces,
 						[wk]: {
 							...workspace,
-							projects: {
-								...projects,
-								[newProject?.id]: newProject
+							channels: {
+								...channels,
+								[newChannel?.id]: newChannel
 							},
-							projectOrdering: [...new Set([newProject?.id, ...(projectOrdering)])]
+							channelOrdering: [...new Set([newChannel?.id, ...(channelOrdering)])]
 						}
 					},
 				}

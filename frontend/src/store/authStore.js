@@ -22,7 +22,6 @@ export default useAuthStore
 export const useAppStore = create(combine({
 	view: '',
 	selectedDm: {},
-	message: {},
 	selectedWorkspace: {
 		id: null,
 		name: '',
@@ -47,27 +46,12 @@ export const useAppStore = create(combine({
 }
 	, (set, get) => (
 		{
-			setSocket: (socket) => set((state) => ({ socket: socket })),
+			setSocket: (socket) => set({ socket: socket }),
 			setSelectedWorkspace: (workspace) => {
-				// console.log('store:', workspace)
-				set((state) =>
-				({
-					selectedWorkspace: {
-						...state.selectedWorkspace,
-						...(workspace ?? {})
-					}
-				}
-				))
+				set({ selectedWorkspace: workspace ?? {} })
 			},
 			setSelectedChannel: (channel) => {
-				set((state) =>
-				({
-					selectedChannel: {
-						...state.selectedChannel,
-						...(channel ?? {})
-					}
-				}
-				))
+				set({ selectedChannel: channel ?? {} })
 			},
 			setSelectedTask: (task) => {
 				set((state) =>
@@ -91,7 +75,9 @@ export const useAppStore = create(combine({
 			},
 			setView: (view) => set((state) => ({ view: view })),
 			setSelectedDm: (dm) => set((state) => ({ selectedDm: { ...state.selectedDm, ...dm } })),
-			setMessage: (message) => set((state) => ({ message: { ...state.message, ...message } }))
-
+			getWorkspace: () => get().selectedWorkspace,
+			getChannel: () => get().selectedChannel,
+			getTask: () => get().selectedTask,
+			getDm: () => get().selectedDm,
 		}
 	)))

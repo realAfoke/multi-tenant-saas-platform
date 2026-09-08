@@ -106,7 +106,6 @@ export default function SideBar(props) {
 						</ItemMedia>
 						<ItemContent>
 							<ItemTitle className="py-2 capitalize text-sm  w-full" onClick={() => {
-								setWorkspace((prev) => ({ ...prev, show: false }))
 								handleToggleWorkspace((prev) => (!prev))
 							}}>
 								Workspaces

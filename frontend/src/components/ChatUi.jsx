@@ -2,20 +2,29 @@ import { useAppState } from "@/hooks/apptools"
 import { Hash, Paperclip, Smile, Send } from "lucide-react"
 import { Button } from "./ui/button"
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
-import { convertObjKeys } from "@/utils/appUtil";
+import { useState } from "react";
 import { instance } from "@/api/axios";
+import { useMessageHook } from "@/hooks/chatuihook";
 
 
 export default function Chat() {
-	const { view, selectedChannel, selectedDm, message, setMessage, socket } = useAppState()
-
-	const conversationId = selectedChannel?.conversation || selectedDm?.conversation
+	const { view, selectedChannel, selectedDm, socket } = useAppState()
+	// console.log('chat channel:',selectedChannel)
+	const [message, setMessage] = useState({})
 	const queryClient = useQueryClient()
 	const currentUser = queryClient.getQueryData(['user'])
 
+	useMessageHook({
+		setMessage,
+		socket,
+		queryClient,
+		selectedChannel,
+		selectedDm,
+		message
+	})
+
 	const { data: messages } = useQuery({
-		queryKey: ['messages', conversationId],
+		queryKey: ['messages', message?.conversation],
 		queryFn: async ({ queryKey }) => {
 			try {
 				const [, id] = queryKey
@@ -27,29 +36,11 @@ export default function Chat() {
 				throw Error(err)
 			}
 		},
-		enabled: !!conversationId
+		enabled: !!message?.conversation
 	})
 
-	useEffect(() => {
-		if (!socket) return
-		const ws = socket
-		ws.onmessage = (e) => {
-			const rawData = JSON.parse(e.data)
-			const camelCaseData = convertObjKeys(rawData)
-			console.log('converted:', camelCaseData)
-			queryClient.setQueryData(['messages', conversationId], old => [camelCaseData, ...(old ?? [])])
-		}
-	}, [conversationId, socket])
 
 
-	useEffect(() => {
-		if (!selectedChannel?.id && !selectedDm?.id) return
-		const messageTemplate = { conversation: Number(conversationId) }
-		if (selectedDm?.id) {
-			messageTemplate.receiver = selectedDm?.id
-		}
-		setMessage(messageTemplate)
-	}, [selectedChannel.id, selectedDm.id, conversationId])
 
 	return (
 		<div className="flex-1 h-screen md:px-6 flex flex-col pt-[4rem] px-auto">
@@ -101,48 +92,52 @@ export default function Chat() {
 
 					</div>
 
+					<div
 
-					{messages?.map((message) => {
-						const sender = message?.id === currentUser?.id ? currentUser : selectedDm
-						const initial = `${sender?.firstName[0]?.toUpperCase()}`
-						const timeStamp = new Date(message?.timestamp)
-						const time = timeStamp?.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric' })
-						return (
+						className={`flex flex-col gap-5 my-5`}
+					>
+						{messages?.map((message) => {
+							const sender = message?.project ? message?.sender?.user : currentUser
+							const initial = `${sender?.firstName[0]?.toUpperCase()}`
+							const timeStamp = new Date(message?.timestamp)
+							const time = timeStamp?.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric' })
+							return (
 
-							<div
-								key={message.id}
-								className={`flex gap-3 my-5 ${view === 'dm' ? message?.sender === currentUser?.id ? 'justify-end' : 'justify-start' : ''}`}
-							>
+								<div
+									key={message.id || message?.clientId}
+									className={`max-w-80  md:max-w-100 rounded-xs px-2 py-1 ${view === 'dm' ? message?.sender === currentUser?.id ? 'self-end bg-blue-600' : 'self-start bg-zinc-600' : 'flex gap-3'}`}
+								>
 
-								{view === 'channel' && <div className={` flex w-9 h-9 rounded-full bg-blue-500 flex-shrink-0 flex items-center justify-center text-sm font-semibold`}>
-									{initial}
-								</div>
-								}
+									{view === 'channel' && <div className={` flex w-9 h-9 rounded-full bg-blue-500 flex-shrink-0 flex items-center justify-center text-sm font-semibold`}>
+										{initial}
+									</div>
+									}
 
 
-								<div className={`${view === 'dm' ? 'flex items-center gap-1' : ''} min-w-0`}>
+									<div className={`flex flex-col ${view === 'dm' ? `items-end ${message?.sender === currentUser?.id ? 'items-end' : 'items-start'}` : ''} min-w-0`}>
 
-									<div className={`flex ${view === 'dm' ? 'order-2' : 'gap-3 items-baseline'}`}>
+										<div className={`flex ${view === 'dm' ? 'order-2' : ''}`}>
 
-										<p className="text-sm font-semibold">
+											<p className="text-sm font-semibold">
+											</p>
+
+											<span className="text-xs text-zinc-600">
+												{time}
+											</span>
+
+										</div>
+
+										<p className={`${view === 'dm' ? 'order-1' : ''} text-sm text-white mt-1 leading-relaxed`}>
+											{message.content}
 										</p>
-
-										<span className="text-xs text-zinc-600">
-											{time}
-										</span>
 
 									</div>
 
-									<p className={`${view === 'dm' ? 'order-1' : ''} text-sm text-zinc-300 mt-1 leading-relaxed`}>
-										{message.content}
-									</p>
-
 								</div>
 
-							</div>
-
-						)
-					})}
+							)
+						})}
+					</div>
 
 				</div>
 			</div>
@@ -164,9 +159,9 @@ export default function Chat() {
 
 
 							<textarea
-								value={message?.value}
+								value={message?.content}
 								onChange={(e) =>
-									setMessage({ content: e.target.value })
+									setMessage((prev) => ({ ...prev, content: e.target.value }))
 								}
 								onKeyDown={(e) => {
 
@@ -178,7 +173,9 @@ export default function Chat() {
 										const ws = socket
 										if (ws && ws.readyState === WebSocket.OPEN) {
 											ws.send(JSON.stringify(message))
-											setMessage((prev) => ({ ...prev, content: '' }))
+											message.sender = currentUser?.id
+											queryClient.setQueryData(['messages', message?.conversation], old => [...(old ?? []), message])
+											setMessage((prev) => ({ ...prev, clientId: crypto.randomUUID(), content: '' }))
 										}
 									}
 

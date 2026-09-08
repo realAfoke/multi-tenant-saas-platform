@@ -136,3 +136,11 @@ class Me(generics.RetrieveUpdateAPIView):
         #     user=self.request.user
         #     member=Membership.objects.filter(user=user).first()
         #     return member
+        #
+        #
+
+class GetUserView(generics.RetrieveAPIView):
+        queryset=User.objects.all()
+        serializer_class=UserSerializer
+        permission_classes=[permissions.IsAuthenticated]
+

@@ -5,12 +5,14 @@ import { conversationsQueryOption } from "@/queryOptions/queryOptions"
 import { useNavigate } from "react-router-dom"
 
 export default function DirectMessage() {
-	const navigate=useNavigate()
+	const navigate = useNavigate()
 	const { view, setView, setSelectedDm, selectedDm, setChannel } = useAppState()
 	const openDM = (dm) => {
 		setView('dm')
 		setSelectedDm(dm)
+		console.log('dm:', selectedDm)
 		setChannel({})
+
 		navigate(`/dashboard/chat/${dm?.id}`)
 	}
 	const { data: directMessages } = useQuery(conversationsQueryOption())

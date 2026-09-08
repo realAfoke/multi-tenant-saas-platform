@@ -1,3 +1,4 @@
+from enum import member
 from os import getuid
 from os.path import exists
 from django.db import transaction
@@ -13,7 +14,7 @@ from chat.service.connection_request import ConnectionRequestService
 from workspace.models import Membership
 from workspace.models import Membership
 from users.api.serializers import UserSerializer
-from workspace.api.serializers import ProjectMemberSerializer
+from workspace.api.serializers import MembershipSerializer, ProjectMemberSerializer
 from chat.service.message import MessageService
 from users.api.serializers import UserSerializer
 
@@ -46,9 +47,11 @@ class ConversationSerializer(serializers.ModelSerializer):
 
 class MessageSerializer(serializers.ModelSerializer):
     project=serializers.SerializerMethodField()
-    workspace=serializers.SerializerMethodField()
+    # workspace=serializers.SerializerMethodField()
+    workspace=serializers.PrimaryKeyRelatedField(read_only=True)
     # user=serializers.SerializerMethodField()
-    sender=serializers.PrimaryKeyRelatedField(read_only=True)
+    # sender=serializers.PrimaryKeyRelatedField(read_only=True)
+    sender=serializers.SerializerMethodField()
     conversation=serializers.PrimaryKeyRelatedField(queryset=Conversation.objects.all())
     class Meta:
         model=Message
@@ -59,10 +62,18 @@ class MessageSerializer(serializers.ModelSerializer):
         conversation=getattr(obj,'conversation',None)
         project=getattr(conversation,'project',None)
         return project.id if project else None
-    def get_workspace(self,obj):
-        conversation=getattr(obj,'conversation',None)
-        return conversation.workspace if conversation else None
+    def get_sender(self,obj):
+        user=obj.sender
+        if getattr(obj.conversation,'workspace'):
+            member=Membership.objects.filter(user=user).first()
+            return MembershipSerializer(member).data
+        else:
+            return user.id
 
+    # def get_workspace(self,obj):
+    #     conversation=getattr(obj,'conversation',None)
+    #     return conversation.workspace if conversation else None
+    #
 
     # def get_user(self,obj):
     #     if obj.conversation and obj.conversation.workspace:

@@ -9,13 +9,12 @@ import { useQueryClient } from "@tanstack/react-query"
 export default function Project(props) {
 	const navigate = useNavigate()
 	const [showTask, setShowTask] = useState(false)
-	const { setView, setMessage, selectedWorkspace, selectedChannel, setChannel, setSelectedDm, view, setTask, selectedTask } = useAppState()
+	const { setView, selectedWorkspace, selectedChannel, setChannel, setSelectedDm, view, setTask, selectedTask } = useAppState()
 	const { channels, channelOrdering } = props
 	const openChannel = (channel) => {
 		setChannel(channel)
 		setView("channel")
 		setSelectedDm(null)
-		setMessage("")
 		setShowTask((prev) => !prev)
 	}
 

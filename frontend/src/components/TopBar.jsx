@@ -52,7 +52,7 @@ function Channel({ channel }) {
 }
 
 function PrivateDm({ profile }) {
-	const initial = profile?.firstName[0].toUpperCase()
+	const initial = profile?.firstName?.[0]?.toUpperCase()
 	return (
 		<div className="flex items-center gap-3">
 

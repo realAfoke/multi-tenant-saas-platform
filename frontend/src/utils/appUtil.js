@@ -42,3 +42,42 @@ export function convertObjKeys(obj) {
 	if (!obj && typeof obj !== 'object') return
 	return Object.fromEntries(Object.entries(obj).map(([key, value]) => [snakeToCamelCase(key), value && typeof value === 'object' ? convertObjKeys(value) : value]))
 }
+
+let db = null
+let queue = []
+let isOpening = false
+
+export function getIndexedDb() {
+	return new Promise((resolve, reject) => {
+		if (db) {
+			resolve(db)
+		}
+		queue.push({ resolve, reject })
+		if (isOpening) return
+		isOpening = true
+
+		const request = indexedDB.open('ORBITDB', 1)
+		request.onupgradeneeded = (event) => {
+			const database = event.target.result
+			if (!database.objectStoreNames.contains('channel')) {
+				database.createObjectStore('channel', { keyPath: 'channelId' })
+			}
+			if (!database.objectStoreNames.contains('chat')) {
+				database.createObjectStore('chat', { keyPath: 'clientId' })
+			}
+		}
+
+		request.onsuccess = (event) => {
+			db = event.target.result
+			queue.forEach((req) => req.resolve(db))
+			queue = []
+			isOpening = false
+		}
+		request.onerror = (event) => {
+			console.error('INDEXED REQUEST EERROR:', event.target.error)
+			queue.forEach(prom => prom.reject(event.target.error))
+			queue = []
+		}
+		return db
+	})
+}

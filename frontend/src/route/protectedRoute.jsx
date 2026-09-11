@@ -28,7 +28,8 @@ export default function ProtectedRoute() {
 		selectedWorkspace,
 		selectedChannel,
 		setView,
-		selectedDm
+		selectedDm,
+		setIndexedDB
 	} = useAppState()
 
 	const { data: userWorkspaces } = useQuery(workspaceQueryOption())
@@ -56,9 +57,10 @@ export default function ProtectedRoute() {
 		conversations,
 		setSelectedDm,
 		selectedChannel,
-		selectedDm
+		selectedDm,
+		setIndexedDB
 	)
-	useRealTimeUpdate(setSocket, workspaces,user)
+	useRealTimeUpdate(setSocket, workspaces, user)
 
 	// console.log('userWorkspaces:',userWorkspaces,'workspaces:',workspaces)
 	useQuery(fetchRoleQueryOption(selectedWorkspace?.id))

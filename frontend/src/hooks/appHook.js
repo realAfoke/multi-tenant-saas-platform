@@ -1,5 +1,6 @@
 import { useEffect } from "react"
 import { instance } from "@/api/axios"
+import { getIndexedDb } from "@/utils/appUtil"
 
 export function useRealTimeUpdate(setSocket, workspaces) {
 	useEffect(() => {
@@ -42,7 +43,16 @@ export function useAppHook(
 	setSelectedDm,
 	selectedChannel,
 	selectedDm,
+	setIndexedDB
 ) {
+	useEffect(() => {
+		const indexDb = async () => {
+			const db = await getIndexedDb()
+			setIndexedDB(db)
+		}
+
+		indexDb()
+	}, [setIndexedDB])
 	useEffect(() => {
 		if (!selectedWorkspace?.id && wkName) {
 			const workspace = Object.values(workspaces ?? {}).find(wk => wk?.name === wkName)

@@ -15,6 +15,9 @@ export const useAppState = () => {
 	const setView = useAppStore(s => s.setView)
 	const selectedDm = useAppStore(s => s.selectedDm)
 	const setSelectedDm = useAppStore(s => s.setSelectedDm)
+	const setIndexedDB = useAppStore(s => s.setIndexedDB)
+	const indexedDB = useAppStore(s => s.db)
+
 	return {
 		setInvite,
 		inviteDetail,
@@ -30,5 +33,7 @@ export const useAppState = () => {
 		setView,
 		selectedDm,
 		setSelectedDm,
+		setIndexedDB,
+		indexedDB,
 	}
 }

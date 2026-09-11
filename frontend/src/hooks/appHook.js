@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 import { instance } from "@/api/axios"
 
-export function useRealTimeUpdate(setSocket, workspaces, user) {
+export function useRealTimeUpdate(setSocket, workspaces) {
 	useEffect(() => {
 		if (!workspaces) return
 		const workspaceIds = [...new Set(Object.keys(workspaces ?? {}))].join(",")
@@ -20,6 +20,11 @@ export function useRealTimeUpdate(setSocket, workspaces, user) {
 		ws.onclose = () => console.log('connection closed!!!')
 		return () => ws.close()
 	}, [workspaces])
+
+	// useEffect(() => {
+	// 	const db =indexedDB.open('orbit', 1)
+	// 	console.log(db)
+	// }, [])
 }
 export function useAppHook(
 	workspaces,

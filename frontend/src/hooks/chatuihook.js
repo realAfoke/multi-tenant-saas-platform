@@ -38,14 +38,6 @@ export function useMessageHook({
 		setMessage(messageTemplate)
 	}, [selectedChannel, selectedDm, conversationId, setMessage])
 
-	// useEffect(() => {
-	// 	if (ref && ref.current) {
-	// 		console.log('hiii')
-	// 		console.log(ref.current)
-	// 		ref.current.scrollIntoView()
-	// 	}
-	// }, [ref])
-
 	useEffect(() => {
 		if (ref.current) {
 			ref.current?.scrollIntoView();

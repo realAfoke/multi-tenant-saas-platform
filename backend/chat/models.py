@@ -3,6 +3,7 @@ from operator import mod
 from os.path import realpath
 from django.db import models
 from django.db.models import constraints
+from django.db.models.fields import related
 from django.utils import choices
 from django.contrib.auth import get_user_model
 from workspace.models import Project,WorkSpace
@@ -17,10 +18,10 @@ User=get_user_model()
 
 class Conversation(models.Model):
     chat_type=models.CharField(max_length=200,choices=[('Project','project'),('Direct','direct')])
-    name=models.CharField(max_length=300)
+    name=models.CharField(max_length=300,null=True,blank=True)
     conversation_id=models.UUIDField(editable=False,null=True,blank=True)
     workspace=models.ForeignKey(WorkSpace,related_name='workspace_conversation',on_delete=models.CASCADE,null=True,blank=True)
-    project=models.ForeignKey(Project,related_name='project_conversation',on_delete=models.CASCADE,null=True,blank=True)
+    project=models.OneToOneField(Project,related_name='project_conversation',on_delete=models.CASCADE,null=True,blank=True)
     participants=models.ManyToManyField(User,related_name='conversation')
     last_read_mssg_id=models.ForeignKey('Message',related_name='lst_read_msg_id',on_delete=models.CASCADE,null=True,blank=True)
     created_at=models.DateTimeField(auto_now_add=True)
@@ -31,7 +32,7 @@ class Conversation(models.Model):
         db_table='conversation'
 
     def __str__(self):
-        return self.name
+        return self.name or self.chat_type
 
 
 class Message(models.Model):
@@ -103,6 +104,7 @@ class ConnectionRequest(models.Model):
     sender=models.ForeignKey(User,related_name='request_sender',on_delete=models.CASCADE)
     recipient=models.ForeignKey(User,related_name='request_recipient',on_delete=models.CASCADE)
     status=models.CharField(max_length=200,default='pending')
+    conversation=models.OneToOneField(Conversation,related_name='conversation_status',on_delete=models.CASCADE,null=True,blank=True)
     timestamp=models.DateTimeField(auto_now_add=True)
 
 

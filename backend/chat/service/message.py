@@ -9,23 +9,16 @@ from chat.service.connection_request import ConnectionRequestService
 
 class MessageService:
     @staticmethod
-    @transaction.atomic
     def validate_message(*,user,conversation_id,receiver):
-        if conversation_id:
-            manager=getattr(Conversation,'objects')
-            conversation=manager.filter(conversation_id=conversation_id).first()
+        with transaction.atomic():
+            if conversation_id:
+                manager=getattr(Conversation,'objects')
+                conversation=manager.filter(conversation_id=conversation_id).first()
 
-            if conversation and conversation.project:
-                if not conversation.project.project_members.filter(member_user=user).exists():
-                    raise ValidationError('User is not a member of this chat.')
+                if conversation and conversation.project:
+                    if not conversation.project.project_members.filter(member_user=user).exists():
+                        raise ValidationError('User is not a member of this chat.')
+                if not conversation.participants.filter(id=user.id):
+                    raise ValidationError('User is not a member of this chat')
                 return conversation
-
-        manager=getattr(ConnectionRequest,'objects')
-        connection=manager.filter(Q(iniciater=user) | Q(accepter=user)).exists()
-        if not connection:
-            ConnectionRequestService.send_request(iniciater=user,receiver=receiver)
-        else:
-            ConnectionRequestService.accept_request(accepter=user,connection_request=connection)
-
-
 

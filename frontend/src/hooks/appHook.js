@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useEffect } from "react"
+import { instance } from "@/api/axios"
 
 export function useRealTimeUpdate(setSocket, workspaces) {
 	useEffect(() => {
@@ -19,35 +20,94 @@ export function useRealTimeUpdate(setSocket, workspaces) {
 		ws.onclose = () => console.log('connection closed!!!')
 		return () => ws.close()
 	}, [workspaces])
+
+	// useEffect(() => {
+	// 	const db =indexedDB.open('orbit', 1)
+	// 	console.log(db)
+	// }, [])
 }
-export function useAppHook(workspaces, wkName, setWorkspace, selectedWorkspace, channel, channelName, setChannel, taskName, setTask, setView) {
-
+export function useAppHook(
+	workspaces,
+	wkName,
+	setWorkspace,
+	selectedWorkspace,
+	channel,
+	channelName,
+	setChannel,
+	taskName,
+	setTask,
+	setView,
+	userId,
+	conversations,
+	setSelectedDm,
+	selectedChannel,
+	selectedDm,
+) {
 	useEffect(() => {
-		if (workspaces && !wkName) {
-			setWorkspace({ id: null, name: '', show: false })
+		if (!selectedWorkspace?.id && wkName) {
+			const workspace = Object.values(workspaces ?? {}).find(wk => wk?.name === wkName)
+			if (workspace) {
+				setWorkspace({ ...workspace, show: true })
+			}
 		}
-		if (!workspaces || !wkName) return
-		const workspace = Object.values(workspaces ?? {}).find(wk => wk?.name == wkName)
-		if (workspace) {
-			setWorkspace({ id: workspace?.id, name: wkName, show: true })
+	}, [workspaces, selectedWorkspace, wkName])
+
+	useEffect(() => {
+		if (!selectedChannel?.name && channelName) {
+			const { channels = {} } = selectedWorkspace ?? {}
+			const channel = Object.values(channels)?.find(
+				obj => obj?.name === channelName
+			)
+			setChannel(channel)
+			setSelectedDm({})
+			setView('channel')
 		}
-	}, [workspaces, wkName])
+	}, [selectedWorkspace])
 
 	useEffect(() => {
-		const workspace = workspaces?.[selectedWorkspace?.id]
-		const { channels = {} } = workspace ?? {}
-		const channel = Object.values(channels)?.find(obj => obj?.name === channelName)
-		if (!channel || !channelName) return
-		setChannel({ id: channel?.id, name: channel?.name, show: true })
-		setView('channel')
-	}, [channel, channelName, selectedWorkspace, workspaces])
-
-	useEffect(() => {
-		if (!channel || !taskName) return
+		if (!channel || !taskName) {
+			setTask({})
+			return
+		}
 		const tasks = (channel?.tasks) ?? []
-		const task = tasks?.find((tsk) => tsk?.title === taskName)
+
+		const task = tasks?.find(
+			(tsk) => tsk?.title === taskName
+		)
 		if (task) {
 			setTask({ id: task?.id, title: task?.title, show: false })
 		}
 	}, [channel, taskName])
+
+
+
+	useEffect(() => {
+		const fetchUser = async (userId) => {
+			try {
+				const response = await instance.get(`users/${userId}/`)
+				return response.data
+			} catch (error) {
+				console.error(error)
+			}
+		}
+		if (userId && !selectedDm?.id) {
+
+			const setDm = async () => {
+				let user = conversations?.find(
+					conv => conv.receiver?.id === userId
+				)
+
+				if (!user) {
+					user = await fetchUser(userId)
+				}
+				if (!user) return
+				setSelectedDm(user)
+				setChannel({})
+				setView('dm')
+			}
+			setDm()
+		}
+
+
+	}, [userId, conversations, setSelectedDm])
 }

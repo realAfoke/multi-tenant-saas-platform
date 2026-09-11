@@ -140,6 +140,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     project_members=serializers.SerializerMethodField()
     member=serializers.PrimaryKeyRelatedField(queryset=models.Membership.objects.all(),many=True,write_only=True,required=False)
     workspace_name=serializers.SerializerMethodField()
+    conversation=serializers.PrimaryKeyRelatedField(source="project_conversation",read_only=True)
     class Meta:
         model=models.Project
         fields='__all__'
@@ -274,7 +275,20 @@ class WorkSpaceSerializer(serializers.ModelSerializer):
         projects=obj.projects.filter(project_member__member=workspace_membership)
         # projects=obj.projects.filter(Q(admins=workspace_membership)|Q(members=workspace_membership)).order_by('-updated_at')
 
-        return [{'id':project.id,'name':project.name,'status':project.status,'description':project.description,'updated_at':project.updated_at} for project in projects]
+
+        # for project in projects:
+            # print('conversation:',getattr(project,'project_conversation',None))
+
+        return [{
+            'id':project.id,
+            'name':project.name,
+            'status':project.status,
+            'description':project.description,
+            'conversation':(project.project_conversation.id if hasattr(project,'project_conversation') else None),
+            'updated_at':project.updated_at
+            } 
+            for project in projects
+                ]
 
    
 # class FileSerializer(serializers.ModelSerializer):

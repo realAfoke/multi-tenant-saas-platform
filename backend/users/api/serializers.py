@@ -6,6 +6,7 @@ from rest_framework.exceptions import AuthenticationFailed
 from typing import Any
 from django.core.cache import cache
 from rest_framework.exceptions import ValidationError
+from chat.models import Conversation
 from workspace.models import WorkSpace,Membership
 import logging
 from workspace.api.serializers import MembershipSerializer
@@ -24,11 +25,12 @@ class UserSerializer(serializers.ModelSerializer):
     first_name=serializers.CharField(required=True)
     last_name=serializers.CharField(required=True)
     email=serializers.EmailField(required=True)
-    is_connected=serializers.SerializerMethodField()
+    conversation=serializers.SerializerMethodField()
+    # is_connected=serializers.SerializerMethodField()
     # membership=serializers.SerializerMethodField()
     class Meta:
         model=User
-        fields=['id','password','email','phone','first_name','last_name','username','username','workspace','date_joined','is_connected','updated_on']
+        fields=['id','password','email','phone','first_name','last_name','username','username','workspace','conversation','date_joined','updated_on']
 
     def create(self, validated_data):
         if validated_data.get('_existing',None):
@@ -59,11 +61,19 @@ class UserSerializer(serializers.ModelSerializer):
             raise ValidationError(f'{user_detail} is not verified ')
         return attrs
 
-    def get_is_connected(self,obj):
-            user=self.context['request'].user
-            connection=user.request_sender.filter(Q(sender=obj) |Q(recipient=obj)).first()
-            return connection.status if connection else 'Add friend'
-
+    def get_conversation(self,obj):
+        user=self.context['request'].user
+        if user == obj:
+            return
+        if user.is_authenticated:
+            conversation=Conversation.objects.filter(participants=user).filter(participants=obj).first()
+            return conversation.id if conversation else None
+       
+    # def get_is_connected(self,obj):
+    #         user=self.context['request'].user
+    #         connection=user.request_sender.filter(Q(sender=obj) |Q(recipient=obj)).first()
+    #         return connection.status if connection else 'Add friend'
+    #
 
 
 
@@ -74,7 +84,7 @@ class LoginSerializer(TokenObtainPairSerializer):
             # raise ValidationError('invalide credentials')
             raise AuthenticationFailed('Invalid credentials')
         refresh=self.get_token(user)
-        user=UserSerializer(user).data
+        user=UserSerializer(user,context=self.context).data
         user['refresh']=str(refresh)
         user['access']=str(refresh.access_token)
         return user

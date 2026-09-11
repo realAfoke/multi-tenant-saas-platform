@@ -12,6 +12,7 @@ import { useAppState } from "@/hooks/apptools"
 import { Button } from "./ui/button"
 import Project from "./sidebar/Project"
 import { UserPlus } from "lucide-react"
+import DirectMessage from "./sidebar/DirectMessage"
 
 export default function SideBar(props) {
 	const ref = useRef(null)
@@ -88,7 +89,12 @@ export default function SideBar(props) {
 						className="bg-transparent outline-none text-white placeholder:text-zinc-500 border-none"
 					/>
 				</div>
-				<Button onClick={() => setShowAddPeople(true)} className="capitalize">
+				<Button onClick={() => {
+					setToggle(false)
+					setShowAddPeople(true)
+				}
+				}
+					className="capitalize">
 					<UserPlus />
 					Add people
 				</Button>
@@ -100,7 +106,6 @@ export default function SideBar(props) {
 						</ItemMedia>
 						<ItemContent>
 							<ItemTitle className="py-2 capitalize text-sm  w-full" onClick={() => {
-								setWorkspace((prev) => ({ ...prev, show: false }))
 								handleToggleWorkspace((prev) => (!prev))
 							}}>
 								Workspaces
@@ -122,6 +127,7 @@ export default function SideBar(props) {
 				}
 				{selectedWorkspace?.id && <Project channelOrdering={channelOrdering} channels={channels} />
 				}
+				<DirectMessage />
 
 			</div >
 

@@ -15,7 +15,6 @@ export default function NestedList(props) {
 				<ItemTitle className="lowercase w-full text-sm" onClick={() => {
 					setter({ id: Number(list?.id), name: list?.name || list?.title, show: true })
 					const route = isWorkspace ? workspaceRoute : isProject ? projectRoute : taskRoute
-					console.log(route)
 					navigate(route.trim())
 				}}>
 					{list?.name || list?.title}

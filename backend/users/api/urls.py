@@ -10,4 +10,5 @@ urlpatterns=[
         path('logout/',views.logout,name='logout-view'),
         path('refresh-token/',views.RefreshTokenView.as_view(),name='refresh_view'),
         path('me/',views.Me.as_view(),name='me_view'),
+        path('<int:pk>/',views.GetUserView.as_view()),
         ]

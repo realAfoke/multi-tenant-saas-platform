@@ -46,7 +46,7 @@ class ConversationSerializer(serializers.ModelSerializer):
 
 
 class MessageSerializer(serializers.ModelSerializer):
-    project=serializers.SerializerMethodField()
+    channel_id=serializers.SerializerMethodField()
     # workspace=serializers.SerializerMethodField()
     workspace=serializers.PrimaryKeyRelatedField(read_only=True)
     # user=serializers.SerializerMethodField()
@@ -58,7 +58,7 @@ class MessageSerializer(serializers.ModelSerializer):
         fields='__all__'
 
 
-    def get_project(self,obj):
+    def get_channel_id(self,obj):
         conversation=getattr(obj,'conversation',None)
         project=getattr(conversation,'project',None)
         return project.id if project else None

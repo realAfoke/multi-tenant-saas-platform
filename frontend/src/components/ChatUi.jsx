@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { instance } from "@/api/axios";
 import { useMessageHook } from "@/hooks/chatuihook";
+import { getMessages, saveMessageOffline } from "@/utils/appUtil";
 
 
 export default function Chat() {
@@ -16,13 +17,15 @@ export default function Chat() {
 
 	const ref = useRef(null)
 
-	const { data: messages } = useQuery({
+	const chatType = selectedChannel?.id ? 'channel' : 'chat'
+	let { data: messages } = useQuery({
 		queryKey: ['messages', message?.conversation],
 		queryFn: async ({ queryKey }) => {
 			try {
 				const [, id] = queryKey
 				const response = await instance.get(`chat/${id}/messages`)
-				// const response = await instance.get(`chat/${id}/messages`)
+				const clientStoredMessages = await getMessages(chatType, message.conversation, response.data)
+				response.data = [...(clientStoredMessages ?? [])]
 				return response.data
 			} catch (err) {
 				console.error(err)
@@ -32,6 +35,7 @@ export default function Chat() {
 		enabled: !!message?.conversation
 	})
 
+
 	useMessageHook({
 		setMessage,
 		socket,
@@ -39,11 +43,9 @@ export default function Chat() {
 		selectedChannel,
 		selectedDm,
 		messages,
-		ref
+		ref,
+		chatType
 	})
-
-
-
 
 	return (
 		<div className="flex-1 h-screen md:px-6 flex flex-col pt-[4rem] px-auto">
@@ -167,7 +169,7 @@ export default function Chat() {
 								onChange={(e) =>
 									setMessage((prev) => ({ ...prev, content: e.target.value }))
 								}
-								onKeyDown={(e) => {
+								onKeyDown={async (e) => {
 
 									if (
 										e.key === "Enter" &&
@@ -180,6 +182,7 @@ export default function Chat() {
 											message.sender = currentUser?.id
 											queryClient.setQueryData(['messages', message?.conversation], old => [...(old ?? []), message])
 											setMessage((prev) => ({ ...prev, clientId: crypto.randomUUID(), content: '' }))
+											await saveMessageOffline(message, chatType)
 										}
 									}
 

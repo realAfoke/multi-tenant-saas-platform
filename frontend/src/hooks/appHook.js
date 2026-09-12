@@ -52,7 +52,7 @@ export function useAppHook(
 		}
 
 		indexDb()
-	}, [setIndexedDB])
+	},)
 	useEffect(() => {
 		if (!selectedWorkspace?.id && wkName) {
 			const workspace = Object.values(workspaces ?? {}).find(wk => wk?.name === wkName)

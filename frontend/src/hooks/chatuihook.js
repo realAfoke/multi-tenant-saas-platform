@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { convertObjKeys } from "@/utils/appUtil";
+import { convertObjKeys, saveMessageOffline } from "@/utils/appUtil";
 
 export function useMessageHook({
 	socket,
@@ -9,15 +9,21 @@ export function useMessageHook({
 	setMessage,
 	messages,
 	ref,
+	chatType,
 }) {
 
 	const conversationId = selectedChannel?.conversation || selectedDm?.conversation
+
+	useEffect(() => {
+		if (!socket || !conversationId) return
+	})
 	useEffect(() => {
 		if (!socket || !conversationId) return
 		const ws = socket
-		ws.onmessage = (e) => {
+		ws.onmessage = async (e) => {
 			const rawData = JSON.parse(e.data)
 			const camelCaseData = convertObjKeys(rawData)
+			await saveMessageOffline(camelCaseData, chatType)
 			queryClient.setQueryData(['messages', conversationId], (old) => {
 				//remember to create a message id store mapping for easy insert
 				const messgId = new Map(old?.map(obj => [obj.id || obj.clientId, obj]))
@@ -26,12 +32,16 @@ export function useMessageHook({
 				return Array.from(messgId.values())
 			}
 			)
+
+			if (ws && ws.readyState === WebSocket.OPEN) {
+				ws.send(JSON.stringify({ status: 'seen', conversation: conversationId }))
+			}
 		}
 	}, [conversationId, socket, queryClient])
 
 	useEffect(() => {
 		if (!selectedChannel?.id && !selectedDm?.id) return
-		const messageTemplate = { conversation: conversationId, clientId: crypto.randomUUID() }
+		const messageTemplate = { conversation: conversationId, clientId: crypto.randomUUID(), status: 'pending' }
 		if (selectedDm?.id) {
 			messageTemplate.receiver = selectedDm?.id
 		}
@@ -43,5 +53,6 @@ export function useMessageHook({
 			ref.current?.scrollIntoView();
 		}
 	}, [messages]);
+
 }
 

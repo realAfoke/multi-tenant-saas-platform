@@ -66,6 +66,6 @@ class CustomUser(AbstractUser):
                 username=f'{base}_{counter}'
                 counter +=1
             self.username=username
-        return super().save(*kwargs)
+        return super().save(**kwargs)
 
 

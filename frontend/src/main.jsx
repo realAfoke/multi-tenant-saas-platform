@@ -37,7 +37,7 @@ import Chat from './components/ChatUi.jsx'
 const queryClient = new QueryClient()
 
 const routes = createBrowserRouter([
-  // { path: 'team-chat', element: <TeamChat /> },
+  { path: 'team-chat', element: <TeamChat /> },
   { path: 'accept-invite', element: <AcceptInvite /> },
   {
     path: 'signup', element: <SignUp />, loader: signUpLoader, children: [
@@ -55,7 +55,7 @@ const routes = createBrowserRouter([
     path: '/dashboard', element: <ProtectedRoute />, errorElement: <ErrorPage />,
     children: [
       { index: true, element: <Home /> },
-      { path: 'chat/:userId', element: <Chat /> },
+      { path: 'chat/:conversationId', element: <Chat /> },
       {
         path: ':wkName', element: <Workspace />, children: [
           { path: 'create-project', element: <CreateProject /> },

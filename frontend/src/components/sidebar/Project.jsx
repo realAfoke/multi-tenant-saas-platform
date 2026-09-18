@@ -6,11 +6,11 @@ import { useNavigate } from "react-router-dom"
 import { useQueryClient } from "@tanstack/react-query"
 
 
-export default function Project(props) {
+export default function Project() {
 	const navigate = useNavigate()
 	const [showTask, setShowTask] = useState(false)
 	const { setView, selectedWorkspace, selectedChannel, setChannel, setSelectedDm, view, setTask, selectedTask } = useAppState()
-	const { channels, channelOrdering } = props
+	const { channels, channelOrdering } = selectedWorkspace
 	const openChannel = (channel) => {
 		setChannel(channel)
 		setView("channel")
@@ -35,9 +35,10 @@ export default function Project(props) {
 					</ItemTitle>
 				</ItemContent>
 			</Item>
-			{selectedWorkspace?.show && <ItemGroup className="gap-0">
+			{selectedWorkspace?.id && <ItemGroup className="gap-0">
 				{channelOrdering?.map((channelId) => {
 					const channel = channels?.[channelId]
+					const conversation = channel?.conversation ?? {}
 					return (
 						<div key={channel?.id} className="">
 							<button
@@ -70,9 +71,9 @@ export default function Project(props) {
 									{channel.name}
 								</span>
 
-								{channel?.unread > 0 && (
+								{conversation?.unread > 0 && (
 									<span className="text-xs bg-blue-500 text-white min-w-5 h-5 px-1 rounded-full flex items-center justify-center">
-
+										{conversation?.unread}
 									</span>
 								)}
 

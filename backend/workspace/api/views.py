@@ -64,7 +64,7 @@ class WorkSpace(generics.ListCreateAPIView):
     permission_classes=[permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return models.WorkSpace.objects.filter(membership__user=self.request.user) 
+        return models.WorkSpace.objects.filter(membership__user=self.request.user) .order_by('-updated_at')
 
     
 class WorkSpaceMembers(generics.ListAPIView):

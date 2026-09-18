@@ -4,7 +4,7 @@ import searchIcon from "@/assets/search1.svg"
 import cog from "@/assets/project.svg"
 import closeMenu from '@/assets/close.svg'
 import { Fragment, useState, useRef, useEffect } from "react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import profile from "@/assets/profileIcon.svg"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { workspaceQueryOption, taskQueryOption } from "@/queryOptions/queryOptions"
@@ -16,6 +16,7 @@ import DirectMessage from "./sidebar/DirectMessage"
 
 export default function SideBar(props) {
 	const ref = useRef(null)
+	const navigate = useNavigate()
 
 	const { setToggle, handleToggleWorkspace, toggleWorkspace, setShowAddPeople } = props
 	const { setWorkspace, selectedWorkspace } = useAppState()
@@ -24,7 +25,7 @@ export default function SideBar(props) {
 
 	const { data: userWorkspaces } = useQuery(workspaceQueryOption())
 	const { workspaces, ordering } = userWorkspaces ?? {}
-	const { channels, channelOrdering } = workspaces?.[selectedWorkspace?.id] ?? {}
+	// const { channels, channelOrdering } = workspaces?.[selectedWorkspace?.id] ?? {}
 
 	const user = queryClient.getQueryData(['user'])
 	const openDM = (person) => {
@@ -52,7 +53,7 @@ export default function SideBar(props) {
 		return () => { document.removeEventListener('click', handleClick) }
 	}, [])
 	return (
-		<div ref={ref} className={`py-3 flex h-full flex-col absolute text-white bg-zinc-900 shadow-lg border-r border-[#f6f3f438] px-2 w-[calc(100%-30%)] md:relative md:min-w-[18rem] z-99 `}>
+		<div ref={ref} className={`py-3 flex h-full flex-col absolute text-white bg-zinc-900 shadow-lg border-r border-[#f6f3f438] px-2 w-[13rem] md:w-[15rem] md:relative z-99 `}>
 			<div className="border-b border-zinc-800 pb-4">
 
 				<div className="flex justify-between items-start border-b border-zinc-800 pb-1">
@@ -117,15 +118,38 @@ export default function SideBar(props) {
 							{
 								ordering?.map((id) => {
 									const main = workspaces?.[id]
+									// console.log('main:', main)
 									return (
-										<NestedList key={main?.id} list={main} isWorkspace={true} setter={setWorkspace} />)
+										<Link
+											to={`/dashboard/${main?.name}`}
+											onClick={() => {
+												setWorkspace({ ...main, show: true })
+											}}
+											className={`p-2 px-5 my-0 hover:bg-[#ffffff1a] rounded-md ${selectedWorkspace?.id === main?.id
+												? 'bg-blue-400 text-black'
+												: ''
+												}`}
+										>
+											{main.name}
+										</Link>
+										// <Link onClick={() => {
+										// 	setWorkspace({ ...main, show: true })
+										// 	// const wkName = main?.name
+										// 	// console.log(wkName)
+										// 	navigate(`dashboard/${main?.name}`)
+										// }
+										// } className={`p-2 px-5 my-0 hover:bg-[#ffffff1a] rounded-md px-2 ${selectedWorkspace?.id === main?.id ? 'bg-blue-400 text-black' : ''}`}>
+										// 	{main.name}
+										// </Link>
+
+									)
 								})
 							}
 						</ItemGroup>
 					}
 				</div>
 				}
-				{selectedWorkspace?.id && <Project channelOrdering={channelOrdering} channels={channels} />
+				{selectedWorkspace?.id && <Project />
 				}
 				<DirectMessage />
 

@@ -141,6 +141,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     member=serializers.PrimaryKeyRelatedField(queryset=models.Membership.objects.all(),many=True,write_only=True,required=False)
     workspace_name=serializers.SerializerMethodField()
     conversation=serializers.PrimaryKeyRelatedField(source="project_conversation",read_only=True)
+    # unread=serializers.SerializerMethodField()
     class Meta:
         model=models.Project
         fields='__all__'
@@ -148,6 +149,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
+        print('INSIDE HERE NOW >>>>>>>>>>..')
         if '_existing' in validated_data:
             return validated_data['_existing']
 
@@ -168,8 +170,9 @@ class ProjectSerializer(serializers.ModelSerializer):
         #add members
         member_mapping={member.id:member for member in member_to_add}
         manager=getattr(models.Membership,'objects')
+        print('PROJECT MEMBER >>>>>>>>>>>>>>>>:',member_mapping)
         project_member_manager.bulk_create([
-            models.ProjectMember(project=project,members=member) for member in list(member_mapping.values())
+            models.ProjectMember(project=project,member=member) for member in list(member_mapping.values())
             ])
         #create project discussion room
         ChatService.create_conversation(chat_type='project',name=validated_data.get('name'),workspace=workspace,project=project)
@@ -208,6 +211,13 @@ class ProjectSerializer(serializers.ModelSerializer):
         membership=current_user.user_membership.filter(workspace=obj.workspace).first()
         tasks=obj.task_project.filter(task_member__member=membership)
         return [{'id':task.id,'title':task.title,'description':task.description,'priority':task.priority,'comment':task.comment_task.count()} for task in tasks] if tasks else []
+
+    # def get_unread(self,obj):
+    #     user=self.context['request'].user
+    #     last_mssg_read=user.user_reciept.filter(conversation__project=obj).first()
+    #     print('last_mssg_read:',last_mssg_read)
+    #     return None
+
 
 class InviteTokenSerializer(serializers.ModelSerializer):
     class Meta:
@@ -270,9 +280,14 @@ class WorkSpaceSerializer(serializers.ModelSerializer):
                 raise ValidationError('workspace membership limmit reached')
             return attrs
     def get_projects(self,obj):
+        from chat.api.serializers import ConversationSerializer
         user=self.context['request'].user
         workspace_membership=user.user_membership.filter(workspace=obj).first()
-        projects=obj.projects.filter(project_member__member=workspace_membership)
+        projects=obj.projects.filter(project_member__member=workspace_membership).order_by('-updated_at')
+        print('projects:',projects)
+
+        exp=obj.projects.filter(project_member__member=workspace_membership).order_by("-project_conversation__updated_at")
+        print('EXP:',exp)
         # projects=obj.projects.filter(Q(admins=workspace_membership)|Q(members=workspace_membership)).order_by('-updated_at')
 
 
@@ -284,7 +299,7 @@ class WorkSpaceSerializer(serializers.ModelSerializer):
             'name':project.name,
             'status':project.status,
             'description':project.description,
-            'conversation':(project.project_conversation.id if hasattr(project,'project_conversation') else None),
+            'conversation':(ConversationSerializer(project.project_conversation,context=self.context).data if hasattr(project,'project_conversation') else None),
             'updated_at':project.updated_at
             } 
             for project in projects

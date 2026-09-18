@@ -20,9 +20,11 @@ import { Link } from "react-router-dom"
 
 export default function Notifications() {
 	const { selectedWorkspace } = useAppState()
-	const { data: notifications } = useQuery(notificationQueryOption(selectedWorkspace?.id))
+	// const { data: notifications } = useQuery(notificationQueryOption(selectedWorkspace?.id))
 
-	const markNotification = useMutation(markNotificationMutationOption(selectedWorkspace?.id))
+	// const markNotification = useMutation(markNotificationMutationOption(selectedWorkspace?.id))
+	const notifications = []
+	const markNofitification = []
 
 	// const notifications = [
 	// 	{

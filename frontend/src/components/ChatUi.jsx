@@ -6,14 +6,15 @@ import { useRef, useState } from "react";
 import { instance } from "@/api/axios";
 import { useMessageHook } from "@/hooks/chatuihook";
 import { getMessages, saveMessageOffline } from "@/utils/appUtil";
+import tick from "../assets/tick.svg"
 
 
 export default function Chat() {
-	const { view, selectedChannel, selectedDm, socket } = useAppState()
-	// console.log('chat channel:',selectedChannel)
+	const { view, selectedChannel, selectedDm, setSelectedDm, setChannel, socket } = useAppState()
 	const [message, setMessage] = useState({})
 	const queryClient = useQueryClient()
 	const currentUser = queryClient.getQueryData(['user'])
+	const recipient = selectedDm?.receiver ?? selectedDm
 
 	const ref = useRef(null)
 
@@ -23,8 +24,15 @@ export default function Chat() {
 		queryFn: async ({ queryKey }) => {
 			try {
 				const [, id] = queryKey
-				const response = await instance.get(`chat/${id}/messages`)
-				const clientStoredMessages = await getMessages(chatType, message.conversation, response.data)
+				let clientStoredMessages = await getMessages(chatType, message.conversation)
+				let response
+				if (clientStoredMessages.length < 1) {
+					response = await instance.get(`chat/${id}/all-message/`)
+				} else {
+					response = await instance.get(`chat/${id}/messages`)
+				}
+
+				clientStoredMessages = await getMessages(chatType, message.conversation, response.data)
 				response.data = [...(clientStoredMessages ?? [])]
 				return response.data
 			} catch (err) {
@@ -44,9 +52,12 @@ export default function Chat() {
 		selectedDm,
 		messages,
 		ref,
-		chatType
+		chatType,
+		recipient,
+		setSelectedDm,
 	})
 
+	// console.log(selectedDm)
 	return (
 		<div className="flex-1 h-screen md:px-6 flex flex-col pt-[4rem] px-auto">
 
@@ -60,15 +71,15 @@ export default function Chat() {
 							<>
 
 								<div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white text-lg font-semibold mb-4">
-									{selectedDm?.firstName[0]?.toUpperCase()}
+									{recipient?.firstName[0]?.toUpperCase()}
 								</div>
 
 								<h2 className="text-xl font-bold text-white">
-									{selectedDm?.firstName}
+									{recipient?.firstName}
 								</h2>
 
 								<p className="text-sm text-zinc-500 mt-2">
-									This is the beginning of your conversation with {selectedDm?.firstName} {selectedDm?.lastName}.
+									This is the beginning of your conversation with {recipient?.firstName} {recipient?.lastName}.
 								</p>
 
 							</>
@@ -110,39 +121,30 @@ export default function Chat() {
 
 								<div
 									key={message.id || message?.clientId}
-									className={`max-w-80  md:max-w-100 rounded-xs px-2 ${view === 'dm' ? message?.sender === currentUser?.id ? 'self-end bg-blue-600' : 'self-start bg-zinc-600' : 'flex gap-3'}`}
+									className={`max-w-80  md:max-w-100 rounded-xs px-2 ${view === 'dm' ? message?.sender === currentUser?.id ? `self-end  ${selectedDm?.lastReadMssgId >= message?.id ? 'bg-[#7dd3fc]' : selectedDm?.lastDeliveredMssgId >= message?.id ? 'bg-[#3bbdf8]' : message?.status === 'pending' ? 'bg-[#0759b5]' : 'bg-[#0ea5e9]'} ` : 'self-start bg-zinc-600' : 'flex gap-3'}`}
 								>
 
 									{view === 'channel' && <div className={` flex w-9 h-9 rounded-full bg-blue-500 flex-shrink-0 flex items-center justify-center text-sm font-semibold`}>
 										{initial}
 									</div>
 									}
-
-
 									<div className={`flex flex-col ${view === 'dm' ? `items-end ${message?.sender === currentUser?.id ? 'items-end' : 'items-start'}` : ''} min-w-0`}>
 
 										<div className={`flex ${view === 'dm' ? 'order-2' : ''}`}>
 
 											<p className="text-sm font-semibold">
 											</p>
-
 											<span className="text-xs text-black">
 												{time}
 											</span>
-
 										</div>
-
 										<p className={`${view === 'dm' ? 'order-1' : ''} text-sm text-white mt-1 leading-relaxed`}>
 											{message.content}
 										</p>
-
 									</div>
-
 								</div>
-
 							)
 						})}
-
 						<div ref={ref} />
 					</div>
 				</div>
@@ -180,9 +182,11 @@ export default function Chat() {
 										if (ws && ws.readyState === WebSocket.OPEN) {
 											ws.send(JSON.stringify(message))
 											message.sender = currentUser?.id
+											console.log('conversationid:', message?.conversation)
 											queryClient.setQueryData(['messages', message?.conversation], old => [...(old ?? []), message])
 											setMessage((prev) => ({ ...prev, clientId: crypto.randomUUID(), content: '' }))
 											await saveMessageOffline(message, chatType)
+											console.log('sent')
 										}
 									}
 
@@ -190,7 +194,7 @@ export default function Chat() {
 								rows={1}
 								placeholder={
 									view === "dm"
-										? `Message ${selectedDm?.firstName}`
+										? `Message ${recipient?.firstName}`
 										: `Message #${selectedChannel}`
 								}
 								className="

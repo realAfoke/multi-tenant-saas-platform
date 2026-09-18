@@ -38,17 +38,29 @@ class GetConversationView(generics.ListAPIView):
         return self.manager.filter(participants=self.request.user).order_by('-created_at')
 
 
-class GetMessages(generics.ListAPIView):
+class GetAllMessage(generics.ListAPIView):
     manager=getattr(Message,'objects')
     queryset=manager.all()
     serializer_class=MessageSerializer
     permission_classes=[permissions.IsAuthenticated]
 
+    
     def get_queryset(self):
+        return self.manager.filter(conversation=self.kwargs.get('pk')).order_by('-timestamp')
+
+
+class GetMessages(GetAllMessage):
+    def get_queryset(self):
+        conversation=Conversation.objects.filter(id=self.kwargs.get('pk')).first()
         last_sent=self.request.user.message.filter(conversation=self.kwargs.get('pk')).order_by('-id').first()
-        if last_sent is None:
-            return self.manager.filter(conversation=self.kwargs.get('pk')).order_by('-timestamp')
-        return self.manager.filter(conversation=self.kwargs.get('pk'),id__gte=last_sent.id).order_by('timestamp')
+        last_msg=self.manager.filter(conversation=self.kwargs.get('pk')).order_by('-timestamp').first()
+        if last_msg and last_msg.sender == self.request.user:
+            return [last_msg]
+        elif conversation.last_read_mssg_id:
+            return self.manager.filter(conversation=self.kwargs.get('pk'),id__gte=conversation.last_read_mssg_id.id).order_by('timestamp')
+        else:
+            return self.manager.all()
+            # return self.request.user.message.filter(conversation=self.kwargs.get('pk')).order_by('-timestamp')
 
 class MediaFileMessage(generics.CreateAPIView):
     manager=getattr(Message,'objects')

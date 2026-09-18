@@ -10,40 +10,27 @@ export function useMessageHook({
 	messages,
 	ref,
 	chatType,
+	recipient,
+	setSelectedDm,
 }) {
-
-	const conversationId = selectedChannel?.conversation || selectedDm?.conversation
-
+	const conversationId = selectedChannel?.conversation?.id || selectedDm?.id
 	useEffect(() => {
-		if (!socket || !conversationId) return
-	})
-	useEffect(() => {
-		if (!socket || !conversationId) return
+		if (!socket) return
 		const ws = socket
-		ws.onmessage = async (e) => {
-			const rawData = JSON.parse(e.data)
-			const camelCaseData = convertObjKeys(rawData)
-			await saveMessageOffline(camelCaseData, chatType)
-			queryClient.setQueryData(['messages', conversationId], (old) => {
-				//remember to create a message id store mapping for easy insert
-				const messgId = new Map(old?.map(obj => [obj.id || obj.clientId, obj]))
-				const incomingMessgKey = camelCaseData?.clientId ?? camelCaseData?.id
-				messgId.set(incomingMessgKey, camelCaseData)
-				return Array.from(messgId.values())
+		if (ws && ws.readyState === WebSocket.OPEN) {
+			const SEEN = { conversation: conversationId, status: 'seen' }
+			if (chatType === 'chat') {
+				SEEN.receiver = recipient?.id
 			}
-			)
-
-			if (ws && ws.readyState === WebSocket.OPEN) {
-				ws.send(JSON.stringify({ status: 'seen', conversation: conversationId }))
-			}
+			ws.send(JSON.stringify(SEEN))
 		}
-	}, [conversationId, socket, queryClient])
+	}, [messages])
 
 	useEffect(() => {
 		if (!selectedChannel?.id && !selectedDm?.id) return
 		const messageTemplate = { conversation: conversationId, clientId: crypto.randomUUID(), status: 'pending' }
 		if (selectedDm?.id) {
-			messageTemplate.receiver = selectedDm?.id
+			messageTemplate.receiver = recipient?.id
 		}
 		setMessage(messageTemplate)
 	}, [selectedChannel, selectedDm, conversationId, setMessage])

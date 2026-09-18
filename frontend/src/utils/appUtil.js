@@ -92,7 +92,7 @@ export async function saveMessageOffline(message, chatType) {
 
 }
 
-export async function getMessages(chatType, conversation, markMessages) {
+export async function getMessages(chatType, conversation, markMessages = []) {
 	const database = await getIndexedDb()
 	const tx = database.transaction(['channels', 'chats'], 'readwrite')
 	let store = chatType === 'channel' ? tx.objectStore('channels') : tx.objectStore('chats')

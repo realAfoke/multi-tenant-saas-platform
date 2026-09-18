@@ -1,13 +1,10 @@
-from enum import member
-from os import getuid
-from os.path import exists
 from django.db import transaction
 from django.db.models import Q, QuerySet
 from django.dispatch import receiver
 from django.utils.translation import trans_null
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from chat.models import ConnectionRequest, Conversation,Message,MessageReaction,MessageReciept,Attachment
+from chat.models import ConnectionRequest, Conversation,Message,MessageReaction,ChannelReadStatus,Attachment
 from django.contrib.auth import get_user_model
 from chat.service.chat import ChatService
 from chat.service.connection_request import ConnectionRequestService
@@ -27,6 +24,7 @@ class ConversationSerializer(serializers.ModelSerializer):
     participants=serializers.PrimaryKeyRelatedField(queryset=User.objects.all(),many=True,write_only=True)
     last_message=serializers.SerializerMethodField()
     status=serializers.SerializerMethodField()
+    unread=serializers.SerializerMethodField()
     class Meta:
         model=Conversation
         fields='__all__'
@@ -44,11 +42,22 @@ class ConversationSerializer(serializers.ModelSerializer):
         connection=getattr(obj,'conversation_status',None)
         return connection.status if connection else None
 
+    def get_unread(self,obj):
+        user=self.context['request'].user
+        if obj.chat_type == 'Direct' and getattr(obj,'last_read_mssg_id'):
+            unread=obj.conversation_message.filter(id__gt=obj.last_read_mssg_id.id).exclude(sender=user) 
+            return unread.count() if unread else None
+        last_mssg=Message.objects.filter(conversation=obj).order_by('-id').first()
+        messages=obj.conversation_message.all()
+        if last_mssg and last_mssg.sender == user:
+            return None
+        last_read=obj.conversation_reciept.filter(user=user).first()
+        return obj.conversation_message.filter(id__gt=last_read.message.id).count() if last_read else obj.conversation_message.all().count()
 
 class MessageSerializer(serializers.ModelSerializer):
     channel_id=serializers.SerializerMethodField()
     # workspace=serializers.SerializerMethodField()
-    workspace=serializers.PrimaryKeyRelatedField(read_only=True)
+    workspace=serializers.SerializerMethodField()
     # user=serializers.SerializerMethodField()
     # sender=serializers.PrimaryKeyRelatedField(read_only=True)
     sender=serializers.SerializerMethodField()
@@ -70,10 +79,10 @@ class MessageSerializer(serializers.ModelSerializer):
         else:
             return user.id
 
-    # def get_workspace(self,obj):
-    #     conversation=getattr(obj,'conversation',None)
-    #     return conversation.workspace if conversation else None
-    #
+    def get_workspace(self,obj):
+        conversation=getattr(obj,'conversation',None)
+        return conversation.workspace.id if conversation.workspace else None
+
 
     # def get_user(self,obj):
     #     if obj.conversation and obj.conversation.workspace:

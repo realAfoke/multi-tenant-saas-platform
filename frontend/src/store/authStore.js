@@ -77,7 +77,7 @@ export const useAppStore = create(combine({
 			},
 			setIndexedDB: (db) => set({ db: db }),
 			setView: (view) => set({ view: view }),
-			setSelectedDm: (dm) => set((state) => ({ selectedDm: { ...state.selectedDm, ...dm } })),
+			setSelectedDm: (dm) => set({ selectedDm: dm }),
 			getWorkspace: () => get().selectedWorkspace,
 			getChannel: () => get().selectedChannel,
 			getTask: () => get().selectedTask,

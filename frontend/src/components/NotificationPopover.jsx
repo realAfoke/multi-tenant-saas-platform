@@ -35,13 +35,16 @@ export default function NotificationPopover() {
 			queryClient.setQueryData(['notification', 'workspace', selectedWorkspace?.id], (old) => [data, ...(old ?? [])])
 		}
 	}, [socket])
-	const { data: notifications } = useQuery(notificationQueryOption(selectedWorkspace?.id))
+	const notifications = []
+	const markNofitification = []
+
+	// const { data: notifications } = useQuery(notificationQueryOption(selectedWorkspace?.id))
 	const noOfUnread = notifications?.filter((notification) => !notification?.read)?.length
 	const { wkName } = useParams()
 	const navigate = useNavigate()
 	const [open, setOpen] = useState(false)
 
-	const markNotification = useMutation(markNotificationMutationOption(selectedWorkspace?.id, queryClient))
+	// const markNotification = useMutation(markNotificationMutationOption(selectedWorkspace?.id, queryClient))
 
 	return (
 		<Popover open={open} onOpenChange={setOpen} className="">

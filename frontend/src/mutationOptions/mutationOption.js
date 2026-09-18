@@ -29,7 +29,7 @@ export function markNotificationMutationOption(wkId, queryClient) {
 	})
 }
 
-export function createProjectMutationOption(queryClient) {
+export function createProjectMutationOption(queryClient, setWorkspace) {
 	return mutationOptions({
 		mutationFn: async ({ wk, data }) => {
 			try {
@@ -44,7 +44,7 @@ export function createProjectMutationOption(queryClient) {
 			queryClient.setQueryData(['workspace'], (old) => {
 				const workspaces = (old?.workspaces) ?? {}
 				const workspace = workspaces?.[wk] ?? {}
-				const channels = workspace?.channel ?? {}
+				const channels = workspace?.channels ?? {}
 				const channelOrdering = workspace?.channelOrdering ?? []
 				return {
 					...old,

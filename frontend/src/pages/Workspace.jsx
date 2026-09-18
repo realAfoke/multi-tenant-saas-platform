@@ -51,15 +51,15 @@ export default function Workspace() {
 	];
 	const [activeTab, setActiveTab] = useState("members");
 
-	useEffect(() => {
-		if (!socket) return
-		const ws = socket
-		ws.onmessage = (e) => {
-			const data = JSON.parse(e.data)
-			const cameCaseObj = convertObjKeys(data)
-			queryClient.setQueryData(['activity', 'activity', data?.workspace], old => [cameCaseObj, ...(old ?? [])])
-		}
-	}, [socket])
+	// useEffect(() => {
+	// 	if (!socket) return
+	// 	const ws = socket
+	// 	ws.onmessage = (e) => {
+	// 		const data = JSON.parse(e.data)
+	// 		const cameCaseObj = convertObjKeys(data)
+	// 		queryClient.setQueryData(['activity', 'activity', data?.workspace], old => [cameCaseObj, ...(old ?? [])])
+	// 	}
+	// }, [socket])
 	useEffect(() => {
 		const handleClick = (e) => {
 			if (ref.current && !ref.current.contains(e.target)) {

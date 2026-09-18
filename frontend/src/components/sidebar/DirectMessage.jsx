@@ -10,12 +10,12 @@ export default function DirectMessage() {
 	const openDM = (dm) => {
 		setView('dm')
 		setSelectedDm(dm)
-		console.log('dm:', selectedDm)
 		setChannel({})
 
 		navigate(`/dashboard/chat/${dm?.id}`)
 	}
 	const { data: directMessages } = useQuery(conversationsQueryOption())
+	// console.log('directMessage:',directMessages)
 	return (
 		<div>
 			<div className="flex items-center justify-between p-2 mb-2">
@@ -33,13 +33,14 @@ export default function DirectMessage() {
 			<div className="space-y-1">
 
 				{directMessages?.map((conversation) => {
-					const person = conversation?.receiver
-					const initial = person?.firstName[0].toUpperCase()
+					// console.log('conversation:', conversation)
+					const person = conversation?.receiver ?? {}
+					const initial = person?.firstName?.[0]?.toUpperCase()
 					return (
 
 						<button
 							key={conversation.id}
-							onClick={() => openDM(person)}
+							onClick={() => openDM(conversation)}
 							className={`
 										w-full
 										flex
@@ -83,9 +84,9 @@ export default function DirectMessage() {
 										{person?.firstName}
 									</p>
 
-									{person?.unread > 0 && (
+									{conversation?.unread > 0 && (
 										<span className="text-xs bg-blue-500 text-white min-w-5 h-5 px-1 rounded-full flex items-center justify-center">
-											{person?.unread}
+											{conversation?.unread}
 										</span>
 									)}
 

@@ -11,7 +11,7 @@ from chat.service.connection_request import ConnectionRequestService
 from workspace.models import Membership
 from workspace.models import Membership
 from users.api.serializers import UserSerializer
-from workspace.api.serializers import MembershipSerializer, ProjectMemberSerializer
+from workspace.api.serializers import MembershipSerializer, ChannelMemberSerializer
 from chat.service.message import MessageService
 from users.api.serializers import UserSerializer
 
@@ -25,6 +25,7 @@ class ConversationSerializer(serializers.ModelSerializer):
     last_message=serializers.SerializerMethodField()
     status=serializers.SerializerMethodField()
     unread=serializers.SerializerMethodField()
+    is_pinned=serializers.SerializerMethodField()
     class Meta:
         model=Conversation
         fields='__all__'
@@ -52,7 +53,14 @@ class ConversationSerializer(serializers.ModelSerializer):
         if last_mssg and last_mssg.sender == user:
             return None
         last_read=obj.conversation_reciept.filter(user=user).first()
-        return obj.conversation_message.filter(id__gt=last_read.message.id).count() if last_read else obj.conversation_message.all().count()
+        if last_read and last_read.message:
+            return obj.conversation_message.filter(id__gt=last_read.message.id).count()  
+        return obj.conversation_message.all().count()
+
+        # return obj.conversation_message.filter(id__gt=last_read.message.id).count() if last_read else obj.conversation_message.all().count()
+        #
+    def get_is_pinned(self,obj):
+        return obj.channel.is_pinned if obj.channel else False
 
 class MessageSerializer(serializers.ModelSerializer):
     channel_id=serializers.SerializerMethodField()
@@ -67,10 +75,17 @@ class MessageSerializer(serializers.ModelSerializer):
         fields='__all__'
 
 
+    @transaction.atomic
+    def create(self, validated_data):
+        message=super().create(validated_data)
+        message.conversation.save()
+        return message
+
+
     def get_channel_id(self,obj):
         conversation=getattr(obj,'conversation',None)
-        project=getattr(conversation,'project',None)
-        return project.id if project else None
+        channel=getattr(conversation,'channel',None)
+        return channel.id if channel else None
     def get_sender(self,obj):
         user=obj.sender
         if getattr(obj.conversation,'workspace'):
@@ -86,8 +101,8 @@ class MessageSerializer(serializers.ModelSerializer):
 
     # def get_user(self,obj):
     #     if obj.conversation and obj.conversation.workspace:
-    #         project_member=obj.conversation.project.project_member.filter(member__user=obj.sender).first()
-    #         return ProjectMemberSerializer(project_member).data
+    #         channel_member=obj.conversation.channel.channel_member.filter(member__user=obj.sender).first()
+    #         return ChannelMemberSerializer(channel_member).data
     #     else:
     #         return UserSerializer(obj.sender,context=self.context).data
     #

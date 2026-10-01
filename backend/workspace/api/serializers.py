@@ -3,7 +3,7 @@ from rest_framework.exceptions import ValidationError
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth import get_user_model
 from chat.service.chat import ChatService
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from django.core.mail import send_mail,send_mass_mail
 import logging
 import workspace
@@ -65,7 +65,7 @@ class TaskSerializer(serializers.ModelSerializer):
         if '_existing' in validated_data.keys():
             return validated_data.get('_existing')
         user=self.context['request'].user
-        creator=user.user_membership.filter(members_project__project=validated_data.get('project')).first()
+        creator=user.user_membership.filter(members_channel__channel=validated_data.get('channel')).first()
         task_members=validated_data.pop('members',None)
         validated_data['created_by']=creator
         task =super().create(validated_data)
@@ -93,11 +93,11 @@ class TaskSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         user=self.context['request'].user
         if self.instance:
-             member=self.instance.project.project_member.filter(member__user=user).first()
+             member=self.instance.channel.channel_member.filter(member__user=user).first()
              if not member.role in ['admin','owner']:
                  raise PermissionDenied('you dont have the permissions to perform this operation')
              return attrs
-        if not user.user_membership.filter(members_project__project=attrs.get('project'),members_project__role='admin').exists():
+        if not user.user_membership.filter(members_channel__channel=attrs.get('channel'),members_channel__role='admin').exists():
             raise PermissionDenied('you dont have the permissions to perform this operation')
         manager=getattr(models.Task,'objects')
         existing=manager.filter(title=attrs.get('title')).first()
@@ -129,55 +129,54 @@ class TaskSerializer(serializers.ModelSerializer):
         return comments_count
 
 
-class ProjectMemberSerializer(serializers.ModelSerializer):
+class ChannelMemberSerializer(serializers.ModelSerializer):
     member=MembershipSerializer()
     class Meta:
-        model=models.ProjectMember
+        model=models.ChannelMember
         fields='__all__'
 
-class ProjectSerializer(serializers.ModelSerializer):
+class ChannelSerializer(serializers.ModelSerializer):
     tasks=serializers.SerializerMethodField()
-    project_members=serializers.SerializerMethodField()
+    channel_members=serializers.SerializerMethodField()
     member=serializers.PrimaryKeyRelatedField(queryset=models.Membership.objects.all(),many=True,write_only=True,required=False)
     workspace_name=serializers.SerializerMethodField()
-    conversation=serializers.PrimaryKeyRelatedField(source="project_conversation",read_only=True)
+    conversation=serializers.SerializerMethodField()
+    # conversation=serializers.PrimaryKeyRelatedField(source="channel_conversation",read_only=True)
     # unread=serializers.SerializerMethodField()
     class Meta:
-        model=models.Project
+        model=models.Channel
         fields='__all__'
         read_only_fields=['created_by']
 
     @transaction.atomic
     def create(self, validated_data):
-        print('INSIDE HERE NOW >>>>>>>>>>..')
         if '_existing' in validated_data:
             return validated_data['_existing']
 
         member_to_add=validated_data.pop('member',[])
         workspace=validated_data['workspace']
-        project=super().create(validated_data)
+        channel=super().create(validated_data)
 
-        #project member
+        #channel member
         creater=self.context['request'].user
-        project_member_manager=getattr(models.ProjectMember,'objects')
+        channel_member_manager=getattr(models.ChannelMember,'objects')
 
         #add creator and workspace owner as admin
         admins=workspace.membership.filter(Q(role='owner')|Q(user=creater),workspace=workspace)
         admin_mapping={member.id:member for member in admins}
-        project_member_manager.bulk_create([
-            models.ProjectMember(project=project,member=member,role='admin') for member in list(admin_mapping.values())
+        channel_member_manager.bulk_create([
+            models.ChannelMember(channel=channel,member=member,role='admin') for member in list(admin_mapping.values())
             ])
         #add members
         member_mapping={member.id:member for member in member_to_add}
         manager=getattr(models.Membership,'objects')
-        print('PROJECT MEMBER >>>>>>>>>>>>>>>>:',member_mapping)
-        project_member_manager.bulk_create([
-            models.ProjectMember(project=project,member=member) for member in list(member_mapping.values())
+        channel_member_manager.bulk_create([
+            models.ChannelMember(channel=channel,member=member) for member in list(member_mapping.values())
             ])
-        #create project discussion room
-        ChatService.create_conversation(chat_type='project',name=validated_data.get('name'),workspace=workspace,project=project)
+        #create channel discussion room
+        ChatService.create_conversation(chat_type='channel',name=validated_data.get('name'),workspace=workspace,channel=channel)
 
-        return project
+        return channel
 
 
     def validate(self, attrs):
@@ -186,22 +185,22 @@ class ProjectSerializer(serializers.ModelSerializer):
         membership=current_user.user_membership.filter(workspace=workspace).first()
         if membership.role not in {'admin','owner'}:
             raise PermissionDenied('you dont have permission to perform this operation')
-        manager=getattr(models.Project,'objects')
+        manager=getattr(models.Channel,'objects')
         existing=manager.filter(workspace=workspace,name=attrs.get('name'),created_by=membership).first()
         if existing:
             attrs['_existing']=existing
         attrs['created_by']=membership
         return attrs
 
-    def get_project_members(self,obj):
+    def get_channel_members(self,obj):
         current_user=self.context['request'].user
         membership=current_user.user_membership.filter(workspace=obj.workspace).first()
-        members=obj.project_member.all().exclude(member=membership)
+        members=obj.channel_member.all().exclude(member=membership)
 
         if membership and membership.role != 'owner':
             members=members.exclude(member__role='owner')
 
-        return ProjectMemberSerializer(members,many=True,context=self.context).data
+        return ChannelMemberSerializer(members,many=True,context=self.context).data
 
 
     def get_workspace_name(self,obj):
@@ -209,12 +208,17 @@ class ProjectSerializer(serializers.ModelSerializer):
     def get_tasks(self,obj):
         current_user=self.context['request'].user
         membership=current_user.user_membership.filter(workspace=obj.workspace).first()
-        tasks=obj.task_project.filter(task_member__member=membership)
+        tasks=obj.channel_task.filter(task_member__member=membership)
         return [{'id':task.id,'title':task.title,'description':task.description,'priority':task.priority,'comment':task.comment_task.count()} for task in tasks] if tasks else []
+
+    def get_conversation(self,obj):
+        from chat.api.serializers import ConversationSerializer
+        convo=obj.channel_conversation
+        return ConversationSerializer(convo,context=self.context).data
 
     # def get_unread(self,obj):
     #     user=self.context['request'].user
-    #     last_mssg_read=user.user_reciept.filter(conversation__project=obj).first()
+    #     last_mssg_read=user.user_reciept.filter(conversation__channel=obj).first()
     #     print('last_mssg_read:',last_mssg_read)
     #     return None
 
@@ -242,24 +246,28 @@ class InviteTokenSerializer(serializers.ModelSerializer):
     #     return attrs
 
 class WorkSpaceSerializer(serializers.ModelSerializer):
-    projects=serializers.SerializerMethodField()
-    # project_ids=serializers.PrimaryKeyRelatedField(source='projects',many=True,read_only=True)
+    channels=serializers.SerializerMethodField()
+    pinned_channels=serializers.SerializerMethodField()
+    # channel_ids=serializers.PrimaryKeyRelatedField(source='channels',many=True,read_only=True)
     class Meta:
         model=models.WorkSpace
-        # fields=['id','name','description','projects','created_at','updated_at']
+        # fields=['id','name','description','channels','created_at','updated_at']
         fields='__all__'
-        read_only_fields=['projects']
+        read_only_fields=['channels']
 
-
+    @transaction.atomic
     def create(self, validated_data):
         owner=self.context['request'].user
         if '_existing' in validated_data:
             return validated_data['_existing']
-        
         manger=getattr(models.WorkSpace,'objects')
         workspace=manger.create(**validated_data)
         member=models.Membership(workspace=workspace,user=owner,role='owner')
         member.save()
+        ## create general channel on workspace creation
+        serializer=ChannelSerializer(data={'workspace':workspace.id,'name':'general','description':'general channel'},context=self.context)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return workspace
 
     def validate(self, attrs):
@@ -279,31 +287,50 @@ class WorkSpaceSerializer(serializers.ModelSerializer):
             if len(self.instance.membership.all()) > 500:
                 raise ValidationError('workspace membership limmit reached')
             return attrs
-    def get_projects(self,obj):
+    def get_channels(self,obj):
         from chat.api.serializers import ConversationSerializer
         user=self.context['request'].user
         workspace_membership=user.user_membership.filter(workspace=obj).first()
-        projects=obj.projects.filter(project_member__member=workspace_membership).order_by('-updated_at')
-        print('projects:',projects)
+        # channels=obj.channels.filter(channel_member__member=workspace_membership).order_by('-updated_at')
 
-        exp=obj.projects.filter(project_member__member=workspace_membership).order_by("-project_conversation__updated_at")
-        print('EXP:',exp)
-        # projects=obj.projects.filter(Q(admins=workspace_membership)|Q(members=workspace_membership)).order_by('-updated_at')
+        channels=obj.channels.filter(Q(channel_member__member=workspace_membership) | Q(channel_type='public'),is_pinned=False).order_by("-channel_conversation__updated_at")
+        # channels=obj.channels.filter(Q(admins=workspace_membership)|Q(members=workspace_membership)).order_by('-updated_at')
 
 
-        # for project in projects:
-            # print('conversation:',getattr(project,'project_conversation',None))
+        # for channel in channels:
+            # print('conversation:',getattr(channel,'channel_conversation',None))
 
         return [{
-            'id':project.id,
-            'name':project.name,
-            'status':project.status,
-            'description':project.description,
-            'conversation':(ConversationSerializer(project.project_conversation,context=self.context).data if hasattr(project,'project_conversation') else None),
-            'updated_at':project.updated_at
+            'id':channel.id,
+            'name':channel.name,
+            'status':channel.status,
+            'is_pinned':channel.is_pinned,
+            'description':channel.description,
+            'conversation':(ConversationSerializer(channel.channel_conversation,context=self.context).data if hasattr(channel,'channel_conversation') else None),
+            'membersCount':obj.membership.count()  if channel.channel_type == 'public' else obj.channel_member.count(),
+            'updated_at':channel.updated_at
             } 
-            for project in projects
+            for channel in channels
                 ]
+    def get_pinned_channels(self,obj):
+        from chat.api.serializers import ConversationSerializer
+        user=self.context['request'].user
+        workspace_membership=user.user_membership.filter(workspace=obj).first()
+
+        channels=obj.channels.filter(Q(channel_member__member=workspace_membership) | Q(channel_type='public'),is_pinned=True).order_by("-channel_conversation__updated_at")
+
+        return [{
+            'id':channel.id,
+            'name':channel.name,
+            'status':channel.status,
+            'is_pinned':channel.is_pinned,
+            'description':channel.description,
+            'conversation':(ConversationSerializer(channel.channel_conversation,context=self.context).data if hasattr(channel,'channel_conversation') else None),
+            'updated_at':channel.updated_at
+            } 
+            for channel in channels
+                ]
+       
 
    
 # class FileSerializer(serializers.ModelSerializer):
@@ -315,11 +342,11 @@ class WorkSpaceSerializer(serializers.ModelSerializer):
 #     def validate(self, attrs):
 #         user=self.context['request'].user
 #         workspace=attrs['work_space']
-#         project=attrs['project']
+#         channel=attrs['channel']
 #         task=attrs['task']
 #         if not workspace.members.filter(id=user.id).exists():
 #             raise PermissionDenied('you dont have permission to perform this operation')
-#         if not project.members.filter(id=user.id).exists():
+#         if not channel.members.filter(id=user.id).exists():
 #             raise PermissionDenied('you dont have permission to perform this operation')
 #         if not task.members.filter(id=user.id).exists():
 #             raise PermissionDenied('you dont have permission to perform this operation')
@@ -334,36 +361,37 @@ class TokenAuditTrailSerializer(serializers.ModelSerializer):
 
 
 class InviteSerializer(serializers.ModelSerializer):
-    workspace=serializers.CharField(source='project.workspace.name',read_only=True)
-    project_name=serializers.CharField(source='project.name',read_only=True)
-    invited_by=MembershipSerializer(read_only=True)
+    workspace=serializers.PrimaryKeyRelatedField(queryset=models.WorkSpace.objects.all())
+    channel_name=serializers.CharField(source='channel.name',read_only=True)
+    inviter=MembershipSerializer(read_only=True)
     token=serializers.CharField(write_only=True)
     is_valid=serializers.SerializerMethodField()
+    workspace_name=serializers.SerializerMethodField()
     class Meta:
         model=models.Invite
         fields='__all__'
 
     def create(self, validated_data):
-        project=validated_data.pop('project',None)
-        email=validated_data.pop('email',None)
-        workspace=getattr(project,'workspace')
+        ##create or get new token 
         manager=getattr(models.InviteToken,'objects')
-        token,_=manager.get_or_create(token=validated_data.pop('token'),defaults={'workspace':workspace,**validated_data})
-        validated_data['token']=token
-        user=self.context['request'].user
-        invited_by=user.user_membership.filter(workspace=workspace).first()
-        invite=models.Invite(invited_by=invited_by,project=project,email=email,**validated_data)
+        token,_=manager.get_or_create(token=validated_data.pop('token'),defaults={'workspace':validated_data['workspace']})
+        ##create invite
+        invite=models.Invite(token=token,**validated_data)
         invite.save()
+        ##create invite log
         manager=getattr(models.InviteTokenAuditLog,'objects')
-        manager.create(user=invited_by,token=token)
+        manager.create(user=invite.inviter,token=token)
         return invite
 
     def get_is_valid(self,obj):
         token=obj.token
         return token.no_used <= 0 and not token.revoked
 
-    def get_invited_by(self,obj):
+    def get_inviter(self,obj):
         return obj.invitd_by.invite.values('id','first_name','last_name')
+    
+    def get_workspace_name(self,obj):
+        return obj.workspace.name
 
     def update(self, instance, validated_data):
         if validated_data.get('status') == 'accept':
@@ -372,23 +400,23 @@ class InviteSerializer(serializers.ModelSerializer):
             plan_limit=workspace.subscription.filter(status='active').first().plan.members_limit
             if wk_members_count >= plan_limit:
                 raise ValidationError('Members limit exceeded for this plan, upgrade your plan to add/accept more user invite')
-            project=getattr(self.instance,'project')
-            project.members.add(instance.pending_user)
-            # wk_memb=models.Membership.objects.create(workspace=project.workspace,user=instance.pending_user,role='member')
+            channel=getattr(self.instance,'channel')
+            channel.members.add(instance.pending_user)
+            # wk_memb=models.Membership.objects.create(workspace=channel.workspace,user=instance.pending_user,role='member')
             instance.status=validated_data.get('status')
-            project.save()
+            channel.save()
             instance.save()
         return instance
 
 
-class ActivityLogSerializer(serializers.ModelSerializer):
-    project_info=serializers.SerializerMethodField()
-    class Meta:
-        model=models.ActivityLog
-        fields='__all__'
-
-
-    def get_project_info(self,obj):
-        return {'name':obj.project.name} if obj.project else None
-
+# class ActivityLogSerializer(serializers.ModelSerializer):
+#     channel_info=serializers.SerializerMethodField()
+#     class Meta:
+#         model=models.ActivityLog
+#         fields='__all__'
+#
+#
+#     def get_channel_info(self,obj):
+#         return {'name':obj.channel.name} if obj.channel else None
+#
 

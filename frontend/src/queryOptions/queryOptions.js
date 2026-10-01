@@ -51,6 +51,7 @@ export function notificationQueryOption(wk) {
 }
 
 export function fetchRoleQueryOption(id) {
+	console.log('id:', id)
 	return queryOptions({
 		queryKey: ['role', id],
 		queryFn: async () => {
@@ -77,37 +78,28 @@ async function getUser() {
 	}
 }
 
-
 export function workspaceQueryOption() {
 	return queryOptions({
 		queryKey: ['workspace'],
 		queryFn: async () => {
 			try {
 				const dashboard = await instance.get('workspaces/')
-				const workspaces = dashboard?.data?.map((workspace) => {
+				const workspaces = dashboard.data.map((workspace) => {
 					return ({
 						...workspace,
-						channels: Object.fromEntries(workspace?.projects?.map((obj) => [obj?.id, obj])),
-						channelOrdering: [...new Set(workspace?.projects?.map(prj => prj?.id))]
+						channels: Object.fromEntries(workspace?.channels?.map((obj) => [obj?.id, obj])),
+						channelOrdering: [...new Set(workspace?.channels?.map(prj => prj?.id))]
 					})
 				})
 				return {
 					workspaces: Object.fromEntries(workspaces?.map((obj) => [obj?.id, obj])),
 					ordering: workspaces?.map((obj) => obj?.id)
 				}
-
 			} catch (err) {
 				console.error(err)
 				throw new Error(err)
 			}
 		}
-		// select: (data) => {
-		// 	const workspaceMap = Object.fromEntries(data.map((obj) => [obj.id, obj]))
-		// 	return {
-		// 		workspace: workspaceMap,
-		// 		ordering: data.map((obj) => obj.id)
-		// 	}
-		// }
 	})
 }
 
@@ -203,18 +195,20 @@ async function getDashboardData(id) {
 export function workspaceMemberQueryOption(id) {
 	return queryOptions({
 		queryKey: ['workspace', id, 'members'],
-		queryFn: () => getMembers(id),
+		queryFn: async ({ queryKey }) => {
+			const [, id,] = queryKey
+			try {
+				const members = await instance.get(`workspaces/${id}/members/`)
+				return members?.data
+			}
+			catch (error) {
+				console.error(error)
+				throw Error(error)
+			}
+		},
 		enabled: !!id
 	})
 }
 
 
-async function getMembers(id) {
-	try {
-		const members = await instance.get(`workspaces/${id}/members/`)
-		return members?.data
-	}
-	catch (error) {
-		console.error(error)
-	}
-}
+

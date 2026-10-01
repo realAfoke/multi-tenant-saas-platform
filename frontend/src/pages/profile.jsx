@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom"
 import { fetchUserQueryOption } from "@/queryOptions/queryOptions"
 import { useQuery } from "@tanstack/react-query"
 
-export default function Profile() {
+export default function Profiles() {
 	const navigate = useNavigate()
 	const queryClient = useQueryClient()
 

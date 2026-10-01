@@ -7,8 +7,8 @@ urlpatterns=[
         path('<int:pk>/role/',views.RoleView.as_view(),name='role_view'),
         # path('dashboard/<int:wk>/',views.DashBoard.as_view(),name='dashboard_view'),
         path('',views.WorkSpace.as_view(),name='workspace_view'),
-        path('<int:wk>/projects/',views.GetCreateProjectView.as_view(),name='project_view'),
-        path('<int:wk>/project/<int:pk>/',views.ProjectDetailView.as_view(),name='project_view'),
+        path('<int:wk>/channels/',views.GetCreateChannelView.as_view(),name='project_view'),
+        path('<int:wk>/project/<int:pk>/',views.ChannelDetailView.as_view(),name='project_view'),
         #task
         path('project/<int:pk>/tasks/',views.GetCreateTaskView.as_view(),name='task_view'),
         path('project/<int:pk>/task/<int:tk>/',views.TaskDetail.as_view(),name='task_detail'),
@@ -18,6 +18,7 @@ urlpatterns=[
         path('<int:wk>/invite/',views.SendInviteView.as_view(),name='send_invite'),
         path('<int:pk>/comments/',views.Comment.as_view(),name='comment_view'),
         path('<int:pk>/accept-invite/',views.AcceptInviteView.as_view(),name='accept_invite'),
-        path('<int:pk>/pending-request/',views.GetInviteView.as_view(),name='pending_requesst'),
-        path('<int:pk>/activity/',views.WorkspaceActivity.as_view()),
+        path('<int:pk>/get-invite',views.AcceptInviteView.as_view()),
+        path('<int:pk>/invites/',views.GetInviteView.as_view(),name='pending_requesst'),
+        # path('<int:pk>/activity/',views.WorkspaceActivity.as_view()),
         ]

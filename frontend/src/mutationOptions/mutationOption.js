@@ -3,6 +3,20 @@ import { instance } from "@/api/axios"
 
 
 
+
+export function sendInviteMutationOption(wk, email, hideDialog) {
+	return mutationOptions({
+		mutationFn: async () => {
+			console.log(email)
+			const response = await instance.post(`workspaces/${wk}/invite/`, { workspace: wk, inviteeEmail: email })
+			return response.data
+		},
+		onSuccess: (resp) => {
+			console.log(resp)
+			hideDialog(prev => !prev)
+		}
+	})
+}
 export function markNotificationMutationOption(wkId, queryClient) {
 	return mutationOptions({
 		mutationFn: async (id) => {
@@ -29,41 +43,7 @@ export function markNotificationMutationOption(wkId, queryClient) {
 	})
 }
 
-export function createProjectMutationOption(queryClient, setWorkspace) {
-	return mutationOptions({
-		mutationFn: async ({ wk, data }) => {
-			try {
-				const newProject = await instance.post(`workspaces/${wk}/projects/`, { ...data, workspace: wk })
-				return newProject?.data
-			} catch (error) {
-				console.error(error)
-				throw error
-			}
-		},
-		onSuccess: (newChannel, { wk }) => {
-			queryClient.setQueryData(['workspace'], (old) => {
-				const workspaces = (old?.workspaces) ?? {}
-				const workspace = workspaces?.[wk] ?? {}
-				const channels = workspace?.channels ?? {}
-				const channelOrdering = workspace?.channelOrdering ?? []
-				return {
-					...old,
-					workspaces: {
-						...workspaces,
-						[wk]: {
-							...workspace,
-							channels: {
-								...channels,
-								[newChannel?.id]: newChannel
-							},
-							channelOrdering: [...new Set([newChannel?.id, ...(channelOrdering)])]
-						}
-					},
-				}
-			})
-		}
-	})
-}
+
 
 export function createTaskMutationOption(queryClient) {
 	return mutationOptions({

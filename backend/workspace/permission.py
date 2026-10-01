@@ -34,18 +34,18 @@ class IsWorkspaceMember(BasePermission):
 
 
 
-class IsProjectMember(BasePermission):
+class IsChannelMember(BasePermission):
     def has_permission(self, request, view):
         if not request.user.is_authenticated:
             return False
         wk=view.kwargs.get('pk')
         user=request.user
-        return request.user.user_membership.filter(workspace__projects=view.kwargs.get('pk')).exists()
+        return request.user.user_membership.filter(workspace__channels=view.kwargs.get('pk')).exists()
 
     def has_object_permission(self, request, view, obj):
         if not request.user.is_authenticated:
             return False
-        is_member=obj.project_member.filter(member__user=request.user).first()
+        is_member=obj.channel_member.filter(member__user=request.user).first()
         if not is_member:
             return False
 

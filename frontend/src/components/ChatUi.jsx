@@ -55,6 +55,7 @@ export default function Chat() {
 		chatType,
 		recipient,
 		setSelectedDm,
+		setChannel
 	})
 
 	// console.log(selectedDm)
@@ -124,7 +125,7 @@ export default function Chat() {
 									className={`max-w-80  md:max-w-100 rounded-xs px-2 ${view === 'dm' ? message?.sender === currentUser?.id ? `self-end  ${selectedDm?.lastReadMssgId >= message?.id ? 'bg-[#7dd3fc]' : selectedDm?.lastDeliveredMssgId >= message?.id ? 'bg-[#3bbdf8]' : message?.status === 'pending' ? 'bg-[#0759b5]' : 'bg-[#0ea5e9]'} ` : 'self-start bg-zinc-600' : 'flex gap-3'}`}
 								>
 
-									{view === 'channel' && <div className={` flex w-9 h-9 rounded-full bg-blue-500 flex-shrink-0 flex items-center justify-center text-sm font-semibold`}>
+									{view === 'channel' && <div className={` flex w-9 h-9 md:w-7 md:h-7 rounded-full bg-blue-500 flex-shrink-0 flex items-center justify-center text-sm font-semibold text-white font-bold`}>
 										{initial}
 									</div>
 									}
@@ -134,7 +135,7 @@ export default function Chat() {
 
 											<p className="text-sm font-semibold">
 											</p>
-											<span className="text-xs text-black">
+											<span className="text-xs text-gray-400">
 												{time}
 											</span>
 										</div>
@@ -172,7 +173,7 @@ export default function Chat() {
 									setMessage((prev) => ({ ...prev, content: e.target.value }))
 								}
 								onKeyDown={async (e) => {
-
+									console.log('clicked!!!')
 									if (
 										e.key === "Enter" &&
 										!e.shiftKey

@@ -5,6 +5,8 @@ from django.db.models.fields.files import default_storage
 from django.utils import choices
 from django.utils.module_loading import module_dir
 
+import workspace
+
 # from django.utils.text import slugify
 
 
@@ -54,34 +56,36 @@ class Membership(models.Model):
         return getattr(self.user,'email')
 
 
-class Project(models.Model):
+class Channel(models.Model):
     name=models.CharField(max_length=100)
-    workspace=models.ForeignKey(WorkSpace,related_name='projects',on_delete=models.CASCADE)
+    workspace=models.ForeignKey(WorkSpace,related_name='channels',on_delete=models.CASCADE)
     created_by=models.ForeignKey(Membership,related_name='creator',on_delete=models.CASCADE)
+    channel_type=models.CharField(max_length=100,choices=[('private','Private'),('public','Public')],null=True,blank=True)
     description=models.TextField()
+    is_pinned=models.BooleanField(default=False,null=True,blank=True)
     status=models.CharField(max_length=200,blank=True,default='active')
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table='project'
+        db_table='channel'
 
     def __str__(self):
         return self.name
 
-class ProjectMember(models.Model):
+class ChannelMember(models.Model):
     class Role(models.TextChoices):
         ADMIN='admin'
         MEMBER='member'
     role=models.CharField(max_length=200,choices=Role.choices,default=Role.MEMBER)
-    project=models.ForeignKey(Project,related_name='project_member',on_delete=models.CASCADE)
-    member=models.ForeignKey(Membership,related_name='members_project',on_delete=models.CASCADE)
+    channel=models.ForeignKey(Channel,related_name='channel_member',on_delete=models.CASCADE,null=True,blank=True)
+    member=models.ForeignKey(Membership,related_name='members_channel',on_delete=models.CASCADE)
 
     class Meta:
-        db_table='project_member'
+        db_table='channel_member'
         constraints=[
                 models.UniqueConstraint(
-                    fields=['project','member'],name='unique_project_membership'
+                    fields=['channel','member'],name='unique_channel_membership'
                     )
                 ]
 
@@ -101,7 +105,7 @@ class Task(models.Model):
     priority=models.CharField(max_length=100,choices=Priority.choices,default=Priority.NORMAL)
     check_list=models.JSONField(default=list)
     status=models.CharField(max_length=200,choices=Choices.choices,default=Choices.IN_PROGRESS)
-    project=models.ForeignKey(Project,related_name='task_project',on_delete=models.CASCADE)
+    channel=models.ForeignKey(Channel,related_name='channel_task',on_delete=models.CASCADE,null=True,blank=True)
     workspace=models.ForeignKey(WorkSpace,related_name='task_workspace',on_delete=models.CASCADE)
     created_by=models.ForeignKey(Membership,related_name='task_creator',on_delete=models.CASCADE)
     created_at=models.DateTimeField(auto_now_add=True)
@@ -139,7 +143,7 @@ class Comment(models.Model):
     content=models.TextField()
     user=models.ForeignKey(Membership,related_name='commentor',on_delete=models.CASCADE)
     workspace=models.ForeignKey(WorkSpace,related_name='comment_workspace',on_delete=models.CASCADE)
-    project=models.ForeignKey(Project,related_name='comment_project',on_delete=models.CASCADE)
+    channel=models.ForeignKey(Channel,related_name='comment_project',on_delete=models.CASCADE,null=True,blank=True)
     task=models.ForeignKey(Task,related_name='comment_task',on_delete=models.CASCADE)
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
@@ -155,7 +159,7 @@ class FileAttachment(models.Model):
     file=models.FileField(upload_to='task_attachment/')
     task=models.ForeignKey(Task,related_name='task_attachment',on_delete=models.CASCADE)
     workspace=models.ForeignKey(WorkSpace,related_name='workspace_file',on_delete=models.CASCADE)
-    project=models.ForeignKey(Project,related_name='project_file',on_delete=models.CASCADE)
+    channel=models.ForeignKey(Channel,related_name='channel_file',on_delete=models.CASCADE,null=True,blank=True)
     uploader=models.ForeignKey(UserModel,related_name='file_uploader',on_delete=models.CASCADE)
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
@@ -199,11 +203,11 @@ class InviteTokenAuditLog(models.Model):
         return str(self.action)
 
 class Invite(models.Model):
-    invited_by=models.ForeignKey(Membership,related_name='invite',on_delete=models.SET_NULL,null=True,blank=True)
-    email=models.EmailField()
+    inviter=models.ForeignKey(Membership,related_name='invite',on_delete=models.SET_NULL,null=True,blank=True)
+    invitee_email=models.EmailField()
     token=models.ForeignKey(InviteToken,related_name='invites',on_delete=models.SET_NULL,null=True,blank=True)
     status=models.CharField(max_length=200,default='pending',)
-    project=models.ForeignKey(Project,related_name='project_invite',on_delete=models.CASCADE)
+    workspace=models.ForeignKey(WorkSpace,related_name='workspace_invite',on_delete=models.CASCADE,null=True,blank=True)
     timestamp=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
 
@@ -211,26 +215,24 @@ class Invite(models.Model):
         db_table='invite'
         constraints=[
                 models.UniqueConstraint(
-                    fields=['invited_by','email','project'],name='unique_project_request'
+                    fields=['invitee_email','workspace'],name='unique_invite_workspace_request'
                     )
                 ]
 
     def __str__(self):
-        return str(self.email)
+        return str(self.invitee_email)
 
 
-class ActivityLog(models.Model):
-    member=models.ForeignKey(Membership,related_name='activity_user',on_delete=models.SET_NULL,null=True,blank=True)
-    workspace=models.ForeignKey(WorkSpace,related_name='workspace_activity',on_delete=models.CASCADE)
-    project=models.ForeignKey(Project,related_name='activity_project',on_delete=models.CASCADE,null=True)
-    task=models.ForeignKey(Task,related_name='task_activity',on_delete=models.CASCADE,null=True)
-    action=models.CharField(max_length=200)
-    message=models.TextField(null=True,blank=True)
-    timestamp=models.DateTimeField(auto_now_add=True)
-
-
-    def __str__(self):
-        return self.action
-
-    class Meta:
-        db_table='activity_log'
+# class ActivityLog(models.Model):
+#     member=models.ForeignKey(Membership,related_name='activity_user',on_delete=models.SET_NULL,null=True,blank=True)
+#     workspace=models.ForeignKey(WorkSpace,related_name='workspace_activity',on_delete=models.CASCADE)
+#     action=models.CharField(max_length=200)
+#     message=models.TextField(null=True,blank=True)
+#     timestamp=models.DateTimeField(auto_now_add=True)
+#
+#
+#     def __str__(self):
+#         return self.action
+#
+#     class Meta:
+#         db_table='activity_log'

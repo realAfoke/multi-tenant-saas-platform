@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { convertObjKeys, saveMessageOffline } from "@/utils/appUtil";
+import { SquarePilcrowIcon } from "lucide-react";
 
 export function useMessageHook({
 	socket,
@@ -12,17 +13,50 @@ export function useMessageHook({
 	chatType,
 	recipient,
 	setSelectedDm,
+	setChannel,
 }) {
-	const conversationId = selectedChannel?.conversation?.id || selectedDm?.id
+	const conversation = selectedChannel?.conversation || selectedDm
+	const conversationId = conversation?.id
 	useEffect(() => {
 		if (!socket) return
+		const unread = conversation?.unread
 		const ws = socket
-		if (ws && ws.readyState === WebSocket.OPEN) {
+		if (ws && ws.readyState === WebSocket.OPEN && unread >= 1) {
+			// console.log('bout send seen')
 			const SEEN = { conversation: conversationId, status: 'seen' }
 			if (chatType === 'chat') {
 				SEEN.receiver = recipient?.id
 			}
 			ws.send(JSON.stringify(SEEN))
+			if (selectedChannel?.id) {
+				setChannel({ ...selectedChannel, conversation: { ...selectedChannel?.conversation, unread: 0 } })
+				queryClient.setQueryData(['workspace'], (old) => {
+					const workspaces = old?.workspaces ?? {}
+					const workspace = workspaces?.[selectedChannel?.workspace] ?? {}
+					const channels = workspace?.channels ?? {}
+					return {
+						...(old ?? {}),
+						workspaces: {
+							...workspaces,
+							[selectedChannel?.workspace]: {
+								...workspace,
+								channels: {
+									...channels,
+									[selectedChannel?.id]: {
+										...selectedChannel,
+										conversation: {
+											...(selectedChannel?.conversation ?? {}),
+											unread: 0
+										}
+									}
+								}
+							}
+						}
+					}
+
+				})
+			}
+
 		}
 	}, [messages])
 

@@ -8,7 +8,7 @@ import { Hash, MoreHorizontal } from "lucide-react"
 export default function TopBar({ setToggle, toggle }) {
 	const { selectedChannel, view, selectedDm } = useAppState()
 	return (
-		<header className="h-16 absolute w-full bg-red-500 top-0 border-b flex border-zinc-800 bg-zinc-950 items-center justify-between px-2 md:px-6">
+		<header className="h-16 absolute w-full top-0 border-b flex border-zinc-800 bg-zinc-950 items-center justify-between px-2 md:px-6">
 			<div className="flex items-center gap-3">
 				{!toggle && <MenuIcon setToggle={setToggle} toggle={toggle} />}
 				{view && (
@@ -34,22 +34,32 @@ export default function TopBar({ setToggle, toggle }) {
 		</header>
 	)
 }
-
-
 function Channel({ channel }) {
 	return (
-		<>
-			<div className="w-9 h-9 rounded-lg bg-zinc-900 flex items-center justify-center">
-				<Hash className="w-5 h-5 text-zinc-400" />
-			</div>
-			<div className="text-white">
-				<h1 className="text-white font-semibold">{channel?.name}</h1>
-				<span className="text-xs text-zinc-500 block -mt-1">Team conersation</span>
+		<div className="flex items-center gap-3">
+			<div className="w-9 h-9 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+				<Hash className="w-4 h-4 text-zinc-400" />
 			</div>
 
-		</>
+			<div className="min-w-0">
+				<div className="flex items-center gap-2">
+					<h1 className="text-sm font-semibold text-white truncate">
+						{channel?.name}
+					</h1>
+
+					<span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-900 text-zinc-500 border border-zinc-800">
+						Channel
+					</span>
+				</div>
+
+				<p className="text-[11px] text-zinc-500 truncate">
+					Team conversation
+				</p>
+			</div>
+		</div>
 	)
 }
+
 
 function PrivateDm({ profile }) {
 	const initial = profile?.firstName?.[0]?.toUpperCase()

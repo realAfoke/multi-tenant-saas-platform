@@ -1,4 +1,5 @@
 from os import access
+import re
 from asgiref.sync import async_to_sync
 from channels.middleware import BaseMiddleware
 from django.contrib.auth import get_user_model
@@ -26,10 +27,8 @@ class CustomWsAuthMiddleware(BaseMiddleware):
                 user=await self.get_user(access.get('user_id',None))
                 scope['user']=user
             except Exception as e:
-                raise ValidationError('User not found')
                 scope['user']=AnonymousUser()
         else:
-            raise ValidationError('Invalid token')
             scope['user']=AnonymousUser()
 
         return await super().__call__(scope, receive, send)
@@ -41,7 +40,7 @@ class CustomWsAuthMiddleware(BaseMiddleware):
             user=User.objects.get(id=token)
             return user
         except User.DoesNotExist:
-            raise ValueError('User does not exist')
+            raise ValidationError('user not found')
 
 
 

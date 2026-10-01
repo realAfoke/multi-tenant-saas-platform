@@ -2,7 +2,7 @@ import { useEffect } from "react"
 import { instance } from "@/api/axios"
 import { getIndexedDb } from "@/utils/appUtil"
 
-export function useRealTimeUpdate(setSocket) {
+export function useRealTimeUpdate(setSocket, workspaces) {
 	useEffect(() => {
 		const ws = new WebSocket(`wss://localhost/ws/user/`)
 		ws.onopen = () => {
@@ -15,7 +15,7 @@ export function useRealTimeUpdate(setSocket) {
 		}
 		ws.onclose = () => console.log('connection closed!!!')
 		return () => ws.close()
-	}, [])
+	}, [workspaces])
 }
 
 
@@ -35,7 +35,8 @@ export function useAppHook(
 	setSelectedDm,
 	selectedChannel,
 	selectedDm,
-	setIndexedDB
+	setIndexedDB,
+	navigate
 ) {
 	useEffect(() => {
 		const indexDb = async () => {
@@ -46,24 +47,16 @@ export function useAppHook(
 		indexDb()
 	},)
 	useEffect(() => {
-
-		if (!selectedWorkspace?.id && !wkName) return
-		if (!!Object.values(selectedWorkspace ?? {}).find(channel => channel?.name === channelName)) {
-			const workspace = Object.values(workspaces ?? {}).find(wk => wk?.name === wkName)
-			if (workspace) {
-				setWorkspace({ ...workspace, show: true })
-			}
-			return
-		}
 		if (selectedWorkspace?.id && !wkName) {
 			setWorkspace({})
 			return
 		}
-		if (!selectedWorkspace?.id && wkName) {
-			const workspace = Object.values(workspaces ?? {}).find(wk => wk?.name === wkName)
-			if (workspace) {
-				setWorkspace({ ...workspace, show: true })
-			}
+		const workspace = Object.values(workspaces ?? {}).find((wk) => {
+			return wk?.name === wkName
+		})
+		if (workspace) {
+			setWorkspace({ ...workspace, show: true })
+
 		}
 	}, [workspaces, wkName])
 

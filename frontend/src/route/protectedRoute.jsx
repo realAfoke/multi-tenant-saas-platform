@@ -1,23 +1,29 @@
-import { Outlet } from "react-router-dom"
+import { Outlet, useNavigate } from "react-router-dom"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useAppHook } from "@/hooks/appHook.js"
 import { fetchUserQueryOption, workspaceQueryOption, channelQueryOption, fetchRoleQueryOption, activityQueryOption, conversationsQueryOption } from "@/queryOptions/queryOptions"
 import { convertObjKeys, saveMessageOffline } from "@/utils/appUtil";
-import { useParams, Navigate } from "react-router-dom"
+import { useParams, Navigate, useLocation } from "react-router-dom"
 import { useAppState } from "@/hooks/apptools"
 import TopBar from "@/components/TopBar"
 import SideBar from "@/components/SideBar"
 import { useRealTimeUpdate } from "@/hooks/appHook.js"
 import { useEffect, useState } from "react"
 import AddPeople from "@/components/AddFriendUi"
+import { handleChannelUpdate } from "@/service/channel";
+import { handleConversationUpdate } from "@/service/conversation";
+import { handleMessageUpdate } from "@/service/message";
 
 
 export default function ProtectedRoute() {
+	const location = useLocation()
+	const navigate = useNavigate()
 	const { wkName, channelName, taskId, conversationId } = useParams()
 	const [toggle, setToggle] = useState(false)
 	const [toggleWorkspace, setToggleWorkspace] = useState(false)
 	const [hidechannelDetail, setHidechannelDetail] = useState(false)
 	const queryClient = useQueryClient()
+	const isCreatePage = ['/create-workspace', `/${wkName}/create-channel`].includes(location.pathname)
 
 	const {
 		socket,
@@ -41,7 +47,7 @@ export default function ProtectedRoute() {
 	const { data: user } = useQuery(fetchUserQueryOption())
 
 	const { data: conversations } = useQuery(conversationsQueryOption())
-	useQuery(activityQueryOption('activity', selectedWorkspace?.id))
+	// useQuery(activityQueryOption('activity', selectedWorkspace?.id))
 
 	useAppHook(
 		workspaces,
@@ -59,9 +65,10 @@ export default function ProtectedRoute() {
 		setSelectedDm,
 		selectedChannel,
 		selectedDm,
-		setIndexedDB
+		setIndexedDB,
+		navigate
 	)
-	useRealTimeUpdate(setSocket)
+	useRealTimeUpdate(setSocket, workspaces)
 
 	// console.log('userWorkspaces:',userWorkspaces,'workspaces:',workspaces)
 	useQuery(fetchRoleQueryOption(selectedWorkspace?.id))
@@ -73,122 +80,43 @@ export default function ProtectedRoute() {
 		ws.onmessage = async (e) => {
 			const rawData = JSON.parse(e.data)
 			const camelCaseData = convertObjKeys(rawData)
-			if ('lastMessage' in camelCaseData) {
-				if (camelCaseData?.chatType === 'project') {
-					queryClient.setQueryData(['workspace'], (old) => {
-						const ordering = old?.ordering ?? []
-						const workspaces = old?.workspaces ?? {}
-						const wkId = camelCaseData?.workspace
-						const mainWk = workspaces?.[wkId] ?? {}
-						const channelOrdering = mainWk.channelOrdering ?? []
-						const channels = mainWk?.channels ?? {}
-						const channelId = camelCaseData?.project
-						const mainChannel = channels?.[channelId] ?? {}
-						const newConv = {
-							...old,
-							workspaces: {
-								...workspaces,
-								[wkId]: {
-									...mainWk,
-									channels: {
-										...channels,
-										[channelId]: {
-											...mainChannel,
-											conversation: {
-												...(mainChannel?.conversation ?? {}),
-												...camelCaseData
-											}
-										}
-									},
-									channelOrdering: [... new Set([channelId, ...channelOrdering])]
-								},
-							},
-							ordering: [...new Set([wkId, ...ordering])]
-						}
-						setWorkspace(newConv?.workspaces?.wkId)
-						return newConv
-					})
-					return
-				}
-				queryClient.setQueryData(['user', 'conversations'], (old) => {
-					if (camelCaseData?.receiver?.id === user?.id) return
-					const convoIds = new Map(old.map(convo => [convo.id, convo]))
-					convoIds.set(camelCaseData?.id, camelCaseData)
-					return Array.from(convoIds.values())
-				})
-				setSelectedDm(camelCaseData)
-				return
-			}
-			const chatType = camelCaseData?.workspace ? 'channel' : 'chat'
-			await saveMessageOffline(camelCaseData, chatType)
-			queryClient.setQueryData(['messages', camelCaseData?.conversation], (old) => {
-				// 	//remember to create a message id store mapping for easy insert
-				const messgId = new Map(old?.map(obj => [obj.id || obj.clientId, obj]))
-				messgId.set(camelCaseData?.clientId, camelCaseData)
-				return Array.from(messgId.values())
-			}
-			)
+			console.log('camelcase:', camelCaseData)
 
-			if (ws && ws.readyState === WebSocket.OPEN) {
-				console.log('inside received')
-				const data = { messageId: camelCaseData?.id, status: 'received', conversation: camelCaseData?.conversation }
-				if (!camelCaseData?.channel) {
-					data['receiver'] = camelCaseData?.sender
-				}
-				ws.send(JSON.stringify(data))
+			switch (camelCaseData?.tag) {
+				// case 'channel': handleChannelUpdate(queryClient, camelCaseData)
+				// break;
+				case 'conversation': handleConversationUpdate(queryClient, camelCaseData, setWorkspace, setSelectedDm, user)
+					break;
+				case 'message': handleMessageUpdate(queryClient, camelCaseData, ws)
+					break;
 			}
 		}
 	}, [conversationId, socket])
 
-	// useEffect(() => {
-	// 	if (!socket || channelName || conversationId) return
-	// 	socket.onmessage = (e) => {
-	// 		let data = JSON.parse(e.data)
-	// 		data = convertObjKeys(data)
-	// 		if ('lastMessage' in data) {
-	// 			queryClient.setQueryData(['user', 'conversations'], (old) => {
-	// 				const convoIds = new Map(old.map(convo => [convo.id, convo]))
-	// 				convoIds.set(data?.id, data)
-	// 				const newA = Array.from(convoIds.values())
-	// 				console.log('old:', old)
-	// 				console.log('new:', newA)
-	// 				return newA
-	// 			})
-	// 			return
-	// 		}
-	// 		if (data && !data?.channelId) {
-	// 			if (socket && socket.readyState === WebSocket.OPEN) {
-	// 				const ACKNOWLEDGEMENT = { messageId: data?.id, 'status': 'received', conversation: data?.conversation, receiver: data?.sender, sender: user?.firstName }
-	// 				socket.send(JSON.stringify(ACKNOWLEDGEMENT))
-	// 			}
-	// 		}
-	// 	}
-	// }, [socket])
-
 	const [showAddPeople, setShowAddPeople] = useState(false)
 	if (!user) {
-		<Navigate to='/login' replace />
+		< Navigate to='/landing' replace />
 		return
 	}
-
 
 	return (
 		<div className={`flex h-screen bg-zinc-950 overflow-hidden relative`}>
 
 			{toggle &&
 				<div className="">
-					<SideBar
+					{!isCreatePage && <SideBar
 						setToggle={setToggle}
 						toggleWorkspace={toggleWorkspace}
 						handleToggleWorkspace={setToggleWorkspace}
 						setShowAddPeople={setShowAddPeople}
 					/>
+					}
 				</div>
 			}
 
 			<div className="flex flex-col flex-1 overflow-hidden relative">
-				<TopBar setToggle={setToggle} toggle={toggle} />
-				<main className="flex-1 self-center overflow-auto scrollbar scrollbar-thin scrollbar-thumb-zinc-600 scrollbar-track-zinc-900 px-5 w-[100%] md:w-[clamp(70%,80%,90%)]">
+				{!isCreatePage && <TopBar setToggle={setToggle} toggle={toggle} />}
+				<main className="flex-1 overflow-auto scrollbar scrollbar-thin scrollbar-thumb-zinc-600 scrollbar-track-zinc-900 px-5 w-full">
 					<AddPeople
 						open={showAddPeople}
 						onOpenChange={setShowAddPeople}
@@ -203,3 +131,4 @@ export default function ProtectedRoute() {
 
 
 
+// <main className="flex-1 self-center overflow-auto scrollbar scrollbar-thin scrollbar-thumb-zinc-600 scrollbar-track-zinc-900 px-5 w-[100%] md:w-[clamp(70%,80%,90%)]">

@@ -16,7 +16,7 @@ class ConsumerService:
         elif status == 'seen':
             last_msg = conversation.conversation_message.all().order_by('-timestamp').first()
 
-            if conversation.chat_type == 'project':
+            if conversation.chat_type == 'channel':
                 ChannelReadStatus.objects.update_or_create(
                     user=user,conversation=conversation,defaults={'message': last_msg})
                 return conversation

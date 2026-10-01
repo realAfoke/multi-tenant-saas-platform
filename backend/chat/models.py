@@ -6,7 +6,7 @@ from django.db.models import constraints
 from django.db.models.fields import related
 from django.utils import choices
 from django.contrib.auth import get_user_model
-from workspace.models import Project,WorkSpace
+from workspace.models import Channel,WorkSpace
 
 
 # Create your models here.
@@ -17,11 +17,11 @@ from workspace.models import Project,WorkSpace
 User=get_user_model()
 
 class Conversation(models.Model):
-    chat_type=models.CharField(max_length=200,choices=[('Project','project'),('Direct','direct')])
+    chat_type=models.CharField(max_length=200,choices=[('Channel','channel'),('Direct','direct')])
     name=models.CharField(max_length=300,null=True,blank=True)
     conversation_id=models.UUIDField(editable=False,null=True,blank=True)
     workspace=models.ForeignKey(WorkSpace,related_name='workspace_conversation',on_delete=models.CASCADE,null=True,blank=True)
-    project=models.OneToOneField(Project,related_name='project_conversation',on_delete=models.CASCADE,null=True,blank=True)
+    channel=models.OneToOneField(Channel,related_name='channel_conversation',on_delete=models.CASCADE,null=True,blank=True)
     participants=models.ManyToManyField(User,related_name='conversation')
     last_read_mssg_id=models.ForeignKey('Message',related_name='lst_read_msg_id',on_delete=models.CASCADE,null=True,blank=True)
     last_delivered_mssg_id=models.ForeignKey('Message',related_name='delivered_message',on_delete=models.CASCADE,null=True,blank=True)

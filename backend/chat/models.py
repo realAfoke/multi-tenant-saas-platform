@@ -104,7 +104,7 @@ class ConnectionRequest(models.Model):
     sender=models.ForeignKey(User,related_name='request_sender',on_delete=models.CASCADE)
     recipient=models.ForeignKey(User,related_name='request_recipient',on_delete=models.CASCADE)
     status=models.CharField(max_length=200,default='pending')
-    conversation=models.OneToOneField(Conversation,related_name='conversation_status',on_delete=models.CASCADE,null=True,blank=True)
+    conversation=models.ForeignKey(Conversation,related_name='connection_status',on_delete=models.CASCADE,null=True,blank=True)
     timestamp=models.DateTimeField(auto_now_add=True)
 
 

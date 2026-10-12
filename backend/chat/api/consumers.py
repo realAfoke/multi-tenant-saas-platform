@@ -63,7 +63,8 @@ class ServerRealTimeUpdate(AsyncWebsocketConsumer):
         # print('RECEIVED DATA:',received_data)
         receiver_id=received_data.get('receiver',None)
         await self.validate_conversation(received_data)
-
+        print('data:',received_data)
+        is_new_conversation=received_data.pop('new_conversation',None)
         message=await self.serialize_data(received_data)
         if message is None:
             return
@@ -84,6 +85,11 @@ class ServerRealTimeUpdate(AsyncWebsocketConsumer):
                     )
         else:
             #broadcast back to sender server has received and sent messg
+            if is_new_conversation:
+                await self.channel_layer.group_send(f'user_{is_new_conversation}',{'type':'send.message','message':message})
+                await self.channel_layer.group_send(self.group_name,{'type':'send.message','message':message})
+                return
+
             if message['tag'] == 'conversation':
                 await self.channel_layer.group_send(self.group_name,{'type':'send.message','message':message})
                 return
@@ -135,38 +141,26 @@ class ServerRealTimeUpdate(AsyncWebsocketConsumer):
     def validate_conversation(self, message):
         with transaction.atomic():
             conversation_id = message.get('conversation')
-            if conversation_id:
-                conversation = Conversation.objects.filter(
+            if conversation_id is None:
+                raise ValidationError('Conversation ID not sent')
+            conversation = Conversation.objects.filter(
                     id=conversation_id
                 ).first()
-
-                if conversation is None:
-                    raise ValidationError("Conversation does not exist.")
-
+            if conversation:
                 connection = ConnectionRequest.objects.filter(
                     conversation=conversation
                 ).first()
 
-                if not hasattr(conversation,'channel') and connection is None:
-                    raise ValidationError(
-                        "This conversation has no connection request."
-                    )
-                if hasattr(conversation,'channel'):
-                    return
-
-                ConnectionRequestService.create_accept_request(sender=self.user)
+                if conversation.chat_type == 'direct' and connection:
+                    ConnectionRequestService.validate_connectiont(user=self.user,connection=connection)
             else:
-                receiver_id = message.pop('receiver', None)
-
-                if not receiver_id:
-                    raise ValidationError('Recipient id is not sent.')
-
-                receiver = User.objects.filter(id=receiver_id).first()
-
-                if receiver is None:
-                    raise ValidationError('Recipient does not exist.')
-
-                conversation=ConnectionRequestService.create_accept_request(sender=self.user,recipient=receiver)
+                #conversation_id is recipient id for new conversation
+                receiver = User.objects.filter(id=conversation_id).first()
+                conversation=ChatService.create_conversation(chat_type='direct',participants=[self.user,receiver])
+                connection=conversation.connection_status.create(sender=self.user,recipient=receiver,status='pending')
+                message['new_conversation']=conversation_id
             message['conversation'] = conversation.id
             return message
 
+
+##CONTINUE WORKING ON CONVERSATION AND CONNECTION REQUEST FOR NEW DIRECT CHAT

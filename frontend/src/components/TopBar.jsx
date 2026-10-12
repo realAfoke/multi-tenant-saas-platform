@@ -4,16 +4,20 @@ import MenuIcon from "./MenuIcon"
 import { useAppState } from "@/hooks/apptools"
 import { Button } from "./ui/button"
 import { Hash, MoreHorizontal } from "lucide-react"
+import ChannelMenu from "./ChannelMenu"
+import { useState } from "react"
 
 export default function TopBar({ setToggle, toggle }) {
 	const { selectedChannel, view, selectedDm } = useAppState()
+	const [showChannelMenu, setShowChannelMenu] = useState(false)
 	return (
-		<header className="h-16 absolute w-full top-0 border-b flex border-zinc-800 bg-zinc-950 items-center justify-between px-2 md:px-6">
+		<header className="h-16 absolute w-full z-999 top-0 border-b flex border-zinc-800 bg-zinc-950 items-center justify-between px-2 md:px-6">
 			<div className="flex items-center gap-3">
 				{!toggle && <MenuIcon setToggle={setToggle} toggle={toggle} />}
 				{view && (
 					<>
-						{selectedChannel?.id && view === 'channel' ? <Channel channel={selectedChannel} /> : <PrivateDm profile={selectedDm} />}
+						{selectedDm?.id && view === 'dm' && <PrivateDm profile={selectedDm} />}
+						{selectedChannel?.id && view === 'channel' && <Channel channel={selectedChannel} />}
 
 					</>
 				)}
@@ -23,13 +27,20 @@ export default function TopBar({ setToggle, toggle }) {
 					<img src={searchIcon} className="w-5 h-5" />
 				</button>
 				<NotificationPopover />
-				<Button
-					variant="ghost"
-					size="icon"
-					className="text-zinc-500 hover:text-white"
-				>
-					<MoreHorizontal className="w-5 h-5" />
-				</Button>
+				<div className="relative">
+					<Button
+						variant="ghost"
+						size="icon"
+						className="text-zinc-500 hover:text-white"
+						onClick={() => setShowChannelMenu(prev => !prev)}
+					>
+						<MoreHorizontal className="w-5 h-5" />
+					</Button>
+
+					{showChannelMenu && view === "channel" && (
+						<ChannelMenu channel={selectedChannel} />
+					)}
+				</div>
 			</div>
 		</header>
 	)

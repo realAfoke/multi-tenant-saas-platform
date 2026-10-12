@@ -1,4 +1,6 @@
 from enum import member
+from functools import partial
+from typing_extensions import ReadOnly
 from asgiref.sync import async_to_sync
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
@@ -6,7 +8,7 @@ import manage
 import workspace
 from workspace.permission import IsChannelMember, IsWorkspaceMember
 # from .serializers import CommentSerializer, FileSerializer, InviteSerializer, TaskSerializer, WorkSpaceSerializer,ChannelSerializer
-from .serializers import  CommentSerializer, MembershipSerializer, TaskSerializer,WorkSpaceSerializer,ChannelSerializer,InviteSerializer
+from .serializers import  ChannelMemberSerializer, CommentSerializer, MembershipSerializer, TaskSerializer,WorkSpaceSerializer,ChannelSerializer,InviteSerializer
 from rest_framework.response import Response
 from rest_framework import permissions
 from workspace import models
@@ -34,7 +36,7 @@ logger=logging.getLogger(__name__)
 #         # return models.Task.objects.all()
 #
 
-class RoleView(generics.RetrieveAPIView):
+class RoleView(generics.RetrieveUpdateDestroyAPIView):
     queryset=models.Membership.objects.all()
     permission_classes=[permissions.IsAuthenticated]
     serializer_class=MembershipSerializer
@@ -42,23 +44,6 @@ class RoleView(generics.RetrieveAPIView):
     def get_object(self):
         user=self.request.user
         return user.user_membership.filter(workspace=self.kwargs.get('pk')).first()
-
-
-
-# class Base(generics.ListCreateAPIView):
-#     permission_classes=[IsWorkspaceMember]
-#     serializer_class=None
-#     queryset=None
-#
-#     instance_model=None
-#     def perform_create(self, serializer):
-#         serializer.is_valid(raise_exception=True)
-#         serializer.save(created_by=self.request.user)
-#
-#     def get_queryset(self):
-#         user=self.request.user
-#         return self.instance_model.objects.filter(members=user).order_by('-updated_at')
-#
 
 class WorkSpace(generics.ListCreateAPIView):
     queryset=models.WorkSpace.objects.all()
@@ -76,14 +61,25 @@ class WorkSpaceMembers(generics.ListAPIView):
 
     def get_queryset(self):
         return models.Membership.objects.filter(workspace=self.kwargs.get('wk'))
-    
+
+class UpdateWorkspaceMembershipRole(generics.RetrieveUpdateDestroyAPIView):
+    manager=getattr(models.Membership,'objects')
+    queryset=manager.all()
+    permission_classes=[IsWorkspaceMember]
+    serializer_class=MembershipSerializer
+
+    def get_object(self):
+        return get_object_or_404(models.Membership,id=self.request.data.get('member_id'),workspace_id=self.kwargs.get('wk'))
+
 class WorkSpaceDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset=models.WorkSpace.objects.all()
     serializer_class=WorkSpaceSerializer
     permission_classes=[IsWorkspaceMember]
 
+    def get_object(self):
+        return get_object_or_404(models.WorkSpace,pk=self.kwargs.get('wk'))
+
     def perform_update(self, serializer):
-        serializer.is_valid(raise_exception=True)
         serializer.save(members=self.request.data.get('members'))
 
 class GetCreateChannelView(generics.ListCreateAPIView):
@@ -119,13 +115,23 @@ class ChannelDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes=[IsChannelMember]
 
 
+class ChannelMembers(generics.ListAPIView):
+    manager=getattr(models.ChannelMember,'objects')
+    queryset=manager.all()
+    serializer_class=ChannelMemberSerializer
+    permission_classes=[permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return self.manager.filter(channel=self.kwargs.get('pk'))
+
+
 class GetCreateTaskView(generics.ListCreateAPIView):
     queryset=models.Task.objects.all()
     serializer_class=TaskSerializer
     permission_classes=[permissions.IsAuthenticated,IsChannelMember]
 
     def get_queryset(self):
-        return models.Task.objects.filter(workspace=self.kwargs.get('wk'),channel=self.kwargs.get('pk'))
+        return models.Task.objects.filter(channel=self.kwargs.get('pk'))
 
 
 class TaskDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -174,8 +180,11 @@ class GetInviteView(generics.ListAPIView):
         return  self.manager.filter(workspace=self.kwargs.get('pk')).exclude(status='Accepted')
 
 class AcceptInviteView(APIView):
-    # permission_classes=[permissions.IsAuthenticated]
-    @permission_classes(permissions.IsAuthenticated)
+    def get_permissions(self):
+        if self.request.method in permissions.SAFE_METHODS:
+            return [permissions.AllowAny()]
+        return [permissions.IsAuthenticated()]
+
     def patch(self,request,pk):
         token=request.data.get('token')
         user=request.user
@@ -195,5 +204,4 @@ class AcceptInviteView(APIView):
 #     permission_classes=[permissions.IsAuthenticated]
 #
 #     def get_queryset(self):
-#         return self.manager.filter(workspace=self.kwargs.get('pk')).order_by("-timestamp")
-
+#       

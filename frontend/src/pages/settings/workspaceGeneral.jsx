@@ -1,7 +1,39 @@
-
-
-
+import { instance } from "@/api/axios"
+import { useAppState } from "@/hooks/apptools"
+import { useState } from "react"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 export default function WorkspaceGeneral() {
+	const { selectedWorkspace } = useAppState()
+	const [name, setName] = useState(selectedWorkspace?.name)
+	const [description, setDescription] = useState(selectedWorkspace?.description)
+	const queryClient = useQueryClient()
+	const updateWorkspace = useMutation({
+		mutationFn: async (action) => {
+			console.log('action:', action)
+			let response;
+			switch (action) {
+				case 'patch': response = await instance.patch(`workspaces/${selectedWorkspace?.id}/`, { name: name, descrition: description })
+					break;
+				case 'delete': response = await instance.delete(`workspace/${selectedWorkspace?.id}/`)
+					break;
+			}
+			return response.data
+		},
+		onSuccess: (update) => {
+			queryClient.setQueryData(['workspace'], (old) => {
+				return {
+					...old,
+					workspaces: {
+						...(old?.workspaces ?? {}),
+						[update?.id]: {
+							...(old?.workspaces?.[update?.id] ?? {}),
+							...update
+						}
+					}
+				}
+			})
+		}
+	})
 	return (
 		< section className="flex-1 max-w-2xl pt-[5rem]" >
 
@@ -17,7 +49,6 @@ export default function WorkspaceGeneral() {
 
 			<div className="rounded-xl border border-zinc-800 bg-zinc-900/40">
 
-				{/* Icon */}
 				<div className="p-5 border-b border-zinc-800">
 					<label className="text-sm font-medium text-zinc-300">
 						Workspace icon
@@ -34,7 +65,6 @@ export default function WorkspaceGeneral() {
 					</div>
 				</div>
 
-				{/* Name */}
 				<div className="p-5 border-b border-zinc-800">
 					<label className="block text-sm font-medium text-zinc-300 mb-2">
 						Workspace name
@@ -42,13 +72,13 @@ export default function WorkspaceGeneral() {
 
 					<input
 						type="text"
-						value="Acme Inc."
-						readOnly
+						value={name}
+						onChange={(e) => setName(e.target.value)}
+						// readOnly
 						className="w-full h-10 rounded-lg border border-zinc-800 bg-zinc-950 px-3 text-sm text-white outline-none"
 					/>
 				</div>
 
-				{/* Description */}
 				<div className="p-5">
 					<label className="block text-sm font-medium text-zinc-300 mb-2">
 						Description
@@ -56,6 +86,8 @@ export default function WorkspaceGeneral() {
 
 					<textarea
 						rows={3}
+						value={description}
+						onChange={(e) => setDescription(e.target.value)}
 						placeholder="Describe your workspace..."
 						className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-3 text-sm text-white placeholder:text-zinc-600 resize-none outline-none focus:border-zinc-600 transition"
 					/>
@@ -64,11 +96,11 @@ export default function WorkspaceGeneral() {
 			</div>
 
 			<div className="flex justify-end mt-4 *:mx-2">
-				<button className="h-10 px-5 rounded-lg bg-red-900 hover:bg-blue-600 text-sm font-medium text-gray-400 transition">
+				<button className="h-10 px-5 rounded-lg bg-red-900 hover:bg-blue-600 text-sm font-medium text-gray-400 transition" onClick={() => updateWorkspace.mutate('delete')}>
 					Delete workspace
 				</button>
 
-				<button className="h-10 px-5 rounded-lg bg-blue-500 hover:bg-blue-600 text-sm font-medium text-white transition">
+				<button className="h-10 px-5 rounded-lg bg-blue-500 hover:bg-blue-600 text-sm font-medium text-white transition" onClick={() => updateWorkspace.mutate('patch')}>
 					Save changes
 				</button>
 			</div>

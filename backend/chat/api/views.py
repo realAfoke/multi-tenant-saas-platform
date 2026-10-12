@@ -56,7 +56,7 @@ class GetMessages(GetAllMessage):
         last_msg=self.manager.filter(conversation=self.kwargs.get('pk')).order_by('-timestamp').first()
         if last_msg and last_msg.sender == self.request.user:
             return [last_msg]
-        elif conversation.last_read_mssg_id:
+        elif conversation and conversation.last_read_mssg_id:
             return self.manager.filter(conversation=self.kwargs.get('pk'),id__gte=conversation.last_read_mssg_id.id).order_by('timestamp')
         else:
             return self.manager.all()

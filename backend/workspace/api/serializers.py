@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from django.core.exceptions import PermissionDenied
@@ -6,7 +7,6 @@ from chat.service.chat import ChatService
 from django.db.models import Q, QuerySet
 from django.core.mail import send_mail,send_mass_mail
 import logging
-import workspace
 from django.db import transaction
 from chat.models import Conversation
 from workspace import models
@@ -53,8 +53,10 @@ class TaskMemberSerializer(serializers.ModelSerializer):
 class TaskSerializer(serializers.ModelSerializer):
     created_by=MembershipSerializer(read_only=True)
     comments=serializers.SerializerMethodField()
-    check_list=serializers.ListField()
+    check_list=serializers.ListField(required=False)
+    due_date=serializers.DateField(required=False,allow_null=True)
     members=serializers.PrimaryKeyRelatedField(queryset=models.Membership.objects.all(),many=True,write_only=True,required=False)
+    workspace=serializers.PrimaryKeyRelatedField(read_only=True)
     # comment_task=CommentSerializer(many=True,read_only=True)
     class Meta:
         model=models.Task
@@ -65,9 +67,12 @@ class TaskSerializer(serializers.ModelSerializer):
         if '_existing' in validated_data.keys():
             return validated_data.get('_existing')
         user=self.context['request'].user
-        creator=user.user_membership.filter(members_channel__channel=validated_data.get('channel')).first()
+        print('VALIDATED DATA:',validated_data)
+        creater=user.user_membership.filter(members_channel__channel=validated_data.get('channel')).first()
         task_members=validated_data.pop('members',None)
-        validated_data['created_by']=creator
+        validated_data['created_by']=creater
+        if len(task_members) > 0:
+            validated_data['is_general']=False
         task =super().create(validated_data)
         manager=getattr(models.TaskMember,'objects')
         manager.create(role='admin',task=task,member=task.created_by)
@@ -92,6 +97,7 @@ class TaskSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         user=self.context['request'].user
+        print('ATTRS:',attrs)
         if self.instance:
              member=self.instance.channel.channel_member.filter(member__user=user).first()
              if not member.role in ['admin','owner']:
@@ -103,6 +109,7 @@ class TaskSerializer(serializers.ModelSerializer):
         existing=manager.filter(title=attrs.get('title')).first()
         if existing:
             attrs['_existing']=existing
+        attrs['workspace']=attrs.get('channel').workspace
         return attrs
 
     def update(self, instance, validated_data):
@@ -265,7 +272,7 @@ class WorkSpaceSerializer(serializers.ModelSerializer):
         member=models.Membership(workspace=workspace,user=owner,role='owner')
         member.save()
         ## create general channel on workspace creation
-        serializer=ChannelSerializer(data={'workspace':workspace.id,'name':'general','description':'general channel'},context=self.context)
+        serializer=ChannelSerializer(data={'workspace':workspace.id,'name':'general','description':'general channel','is_public':True},context=self.context)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return workspace
@@ -292,11 +299,8 @@ class WorkSpaceSerializer(serializers.ModelSerializer):
         user=self.context['request'].user
         workspace_membership=user.user_membership.filter(workspace=obj).first()
         # channels=obj.channels.filter(channel_member__member=workspace_membership).order_by('-updated_at')
-
-        channels=obj.channels.filter(Q(channel_member__member=workspace_membership) | Q(channel_type='public'),is_pinned=False).order_by("-channel_conversation__updated_at")
+        channels=obj.channels.filter(Q(channel_member__member=workspace_membership) | Q(is_public=True),is_pinned=False).order_by("-channel_conversation__updated_at")
         # channels=obj.channels.filter(Q(admins=workspace_membership)|Q(members=workspace_membership)).order_by('-updated_at')
-
-
         # for channel in channels:
             # print('conversation:',getattr(channel,'channel_conversation',None))
 
@@ -307,8 +311,9 @@ class WorkSpaceSerializer(serializers.ModelSerializer):
             'is_pinned':channel.is_pinned,
             'description':channel.description,
             'conversation':(ConversationSerializer(channel.channel_conversation,context=self.context).data if hasattr(channel,'channel_conversation') else None),
-            'membersCount':obj.membership.count()  if channel.channel_type == 'public' else obj.channel_member.count(),
-            'updated_at':channel.updated_at
+            'membersCount':obj.membership.count()  if channel.is_public else channel.channel_member.count(),
+            'updated_at':channel.updated_at,
+            'created_on':channel.created_at
             } 
             for channel in channels
                 ]
@@ -317,7 +322,7 @@ class WorkSpaceSerializer(serializers.ModelSerializer):
         user=self.context['request'].user
         workspace_membership=user.user_membership.filter(workspace=obj).first()
 
-        channels=obj.channels.filter(Q(channel_member__member=workspace_membership) | Q(channel_type='public'),is_pinned=True).order_by("-channel_conversation__updated_at")
+        channels=obj.channels.filter(Q(channel_member__member=workspace_membership) | Q(is_public=True),is_pinned=True).order_by("-channel_conversation__updated_at")
 
         return [{
             'id':channel.id,
@@ -326,7 +331,8 @@ class WorkSpaceSerializer(serializers.ModelSerializer):
             'is_pinned':channel.is_pinned,
             'description':channel.description,
             'conversation':(ConversationSerializer(channel.channel_conversation,context=self.context).data if hasattr(channel,'channel_conversation') else None),
-            'updated_at':channel.updated_at
+            'updated_at':channel.updated_at,
+            'created_on':channel.created_at
             } 
             for channel in channels
                 ]
@@ -419,4 +425,4 @@ class InviteSerializer(serializers.ModelSerializer):
 #     def get_channel_info(self,obj):
 #         return {'name':obj.channel.name} if obj.channel else None
 #
-
+# https://localhost:5173/accept-invite/?token=qC60Kjn87lyLxqr7_x4rlUDZishbfivU_wxWmiaWRQU&invite=1

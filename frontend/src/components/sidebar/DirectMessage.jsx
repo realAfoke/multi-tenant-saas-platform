@@ -3,15 +3,16 @@ import { useAppState } from "@/hooks/apptools"
 import { Plus } from "lucide-react"
 import { conversationsQueryOption } from "@/queryOptions/queryOptions"
 import { useNavigate } from "react-router-dom"
+import InviteToDirectChat from "../DirectChatInvite"
 
-export default function DirectMessage() {
+export default function DirectMessage({ showAddPeople, setShowAddPeople }) {
 	const navigate = useNavigate()
 	const { view, setView, setSelectedDm, selectedDm, setChannel } = useAppState()
 	const openDM = (dm) => {
 		setView('dm')
 		setSelectedDm(dm)
 		setChannel({})
-
+		console.log(dm)
 		navigate(`/chat/${dm?.id}`)
 	}
 	const { data: directMessages } = useQuery(conversationsQueryOption())
@@ -23,7 +24,7 @@ export default function DirectMessage() {
 					Direct Messages
 				</p>
 
-				<button
+				<button onClick={() => setShowAddPeople(true)}
 					className="flex items-center justify-center w-6 h-6 rounded-md text-zinc-500 hover:text-white hover:bg-zinc-800 transition"
 				>
 					<Plus className="w-4 h-4" />
@@ -77,7 +78,6 @@ export default function DirectMessage() {
 
 							</div>
 
-							{/* Person */}
 							<div className="flex-1 min-w-0 text-left">
 
 								<div className="flex items-center justify-between gap-2">
@@ -124,8 +124,7 @@ export default function DirectMessage() {
 				})}
 
 			</div>
-
-
+			{showAddPeople && <InviteToDirectChat onOpenChange={setShowAddPeople} />}
 		</div>
 	)
 }

@@ -61,6 +61,10 @@ export function useAppHook(
 	}, [workspaces, wkName])
 
 	useEffect(() => {
+		if (selectedChannel?.id && !channelName) {
+			setChannel({})
+			return
+		}
 		if (
 			channelName &&
 			(
@@ -97,6 +101,10 @@ export function useAppHook(
 
 
 	useEffect(() => {
+		if (selectedDm?.id && !conversationId) {
+			setSelectedDm({})
+			return
+		}
 		const fetchUser = async (conversationId) => {
 			try {
 				const response = await instance.get(`users/${conversationId}/`)

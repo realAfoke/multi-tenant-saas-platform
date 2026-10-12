@@ -97,7 +97,7 @@ class InviteService:
         if workspace.membership.filter(user=user).exists():
             raise ValidationError('invalid request')
         if not invite.token.token == token:
-            raise ValidationError('invalid operation')
+            raise ValidationError('invalid invite token')
 
         with transaction.atomic():
             invite.status=(
@@ -121,8 +121,6 @@ class InviteService:
             audit.is_valid(raise_exception=True)
             audit.save()
             # return {'status':'thanks for accepting to join the workspace,our admins will get your request approved immediately'}
-
-
 
 
 # https://localhost:5173/accept-invite/?token=BDe951oyM4_RMXrKds60HFwYOis_5C09QdwGQ749NBo&invite=3

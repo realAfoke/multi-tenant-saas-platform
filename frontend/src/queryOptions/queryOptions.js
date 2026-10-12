@@ -51,7 +51,6 @@ export function notificationQueryOption(wk) {
 }
 
 export function fetchRoleQueryOption(id) {
-	console.log('id:', id)
 	return queryOptions({
 		queryKey: ['role', id],
 		queryFn: async () => {
@@ -109,7 +108,7 @@ export function channelQueryOption(wkId, channelId) {
 		queryKey: [wkId, 'channel', channelId],
 		queryFn: async ({ queryKey }) => {
 			const [wkId, , channelId] = queryKey
-			const channel = await instance.get(`workspaces/${wkId}/project/${channelId}/`)
+			const channel = await instance.get(`workspaces/${wkId}/channel/${channelId}/`)
 			return channel?.data
 		},
 		enabled: !!channelId && !!wkId,

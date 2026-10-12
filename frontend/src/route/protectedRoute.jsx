@@ -93,7 +93,7 @@ export default function ProtectedRoute() {
 		}
 	}, [conversationId, socket])
 
-	const [showAddPeople, setShowAddPeople] = useState(false)
+	// const [showAddPeople, setShowAddPeople] = useState(false)
 	if (!user) {
 		< Navigate to='/landing' replace />
 		return
@@ -108,7 +108,7 @@ export default function ProtectedRoute() {
 						setToggle={setToggle}
 						toggleWorkspace={toggleWorkspace}
 						handleToggleWorkspace={setToggleWorkspace}
-						setShowAddPeople={setShowAddPeople}
+					// setShowAddPeople={setShowAddPeople}
 					/>
 					}
 				</div>
@@ -117,10 +117,6 @@ export default function ProtectedRoute() {
 			<div className="flex flex-col flex-1 overflow-hidden relative">
 				{!isCreatePage && <TopBar setToggle={setToggle} toggle={toggle} />}
 				<main className="flex-1 overflow-auto scrollbar scrollbar-thin scrollbar-thumb-zinc-600 scrollbar-track-zinc-900 px-5 w-full">
-					<AddPeople
-						open={showAddPeople}
-						onOpenChange={setShowAddPeople}
-					/>
 					<Outlet context={{ setToggle, hidechannelDetail, setHidechannelDetail }} />
 				</main>
 			</div>

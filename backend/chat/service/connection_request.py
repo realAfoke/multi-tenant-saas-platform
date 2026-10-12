@@ -33,26 +33,10 @@ class ConnectionRequestService:
             return None
 
     @staticmethod
-    def create_accept_request(*,sender,recipient=None):
-        is_connected=ConnectionRequest.objects.filter(Q(sender=sender)| Q(recipient=sender)).first()
-        if is_connected:
-            if is_connected.status == 'pending':
-                if is_connected.sender == recipient:
-                    is_connected.status='accepted'
-                elif is_connected.sender == sender:
-                    pass
-                elif is_connected.status == 'rejected':
-                    raise ValidationError("You're blocked.")
-        else:
-            conversation = ChatService.create_conversation(
-                        chat_type='direct',
-                        participants=[sender, recipient]
-                    )
-            connection = ConnectionRequest(
-            conversation=conversation,
-            sender=sender,
-            recipient=recipient,
-            status='pending',
-            )
-            connection.save()
-            return conversation
+    def validate_connectiont(*,user,connection):
+        if connection.status in ['Blocked','Rejected']:
+            raise ValidationError('Conversation not available')
+        if connection.status == 'pending' and connection.recipient == user:
+            connection.status='Accepted'
+            connection.save(update_fields=['status'])
+

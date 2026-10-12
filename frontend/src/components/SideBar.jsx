@@ -22,8 +22,10 @@ import DirectMessage from "./sidebar/DirectMessage"
 export default function SideBar(props) {
 	const ref = useRef(null)
 	const navigate = useNavigate()
+
+	const [showAddPeople, setShowAddPeople] = useState(false)
 	const [showWorkspaceList, setShowWorkspaceList] = useState(false)
-	const { setToggle, handleToggleWorkspace, toggleWorkspace, setShowAddPeople } = props
+	const { setToggle, handleToggleWorkspace, toggleWorkspace } = props
 	const { setWorkspace, selectedWorkspace } = useAppState()
 	const [showOptions, setShowOptions] = useState(false)
 	const queryClient = useQueryClient()
@@ -187,7 +189,7 @@ export default function SideBar(props) {
 				}
 				{selectedWorkspace?.id && <Project />
 				}
-				<DirectMessage />
+				<DirectMessage setShowAddPeople={setShowAddPeople} showAddPeople={showAddPeople} />
 
 			</div >
 			<Link

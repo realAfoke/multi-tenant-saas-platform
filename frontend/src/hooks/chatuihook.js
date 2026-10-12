@@ -16,7 +16,7 @@ export function useMessageHook({
 	setChannel,
 }) {
 	const conversation = selectedChannel?.conversation || selectedDm
-	const conversationId = conversation?.id
+	const conversationId = conversation?.conversation || conversation?.id
 	useEffect(() => {
 		if (!socket) return
 		const unread = conversation?.unread
@@ -63,9 +63,6 @@ export function useMessageHook({
 	useEffect(() => {
 		if (!selectedChannel?.id && !selectedDm?.id) return
 		const messageTemplate = { conversation: conversationId, clientId: crypto.randomUUID(), status: 'pending' }
-		if (selectedDm?.id) {
-			messageTemplate.receiver = recipient?.id
-		}
 		setMessage(messageTemplate)
 	}, [selectedChannel, selectedDm, conversationId, setMessage])
 

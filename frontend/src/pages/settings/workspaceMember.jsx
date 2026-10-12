@@ -1,5 +1,6 @@
 import RemoveUserDialog from "@/components/setting/RemoveUserDialog"
 import SendInviteDialog from "@/components/setting/SendInviteDialog"
+import UpdateMember from "@/components/setting/UpdateMember"
 import { useAppState } from "@/hooks/apptools"
 import { workspaceMemberQueryOption } from "@/queryOptions/queryOptions"
 import { useMutation, useQuery } from "@tanstack/react-query"
@@ -12,7 +13,6 @@ export default function WorkspaceMembers() {
 
 
 	const { data: members } = useQuery(workspaceMemberQueryOption(selectedWorkspace?.id))
-	console.log('members:', members)
 	return (
 		<section className="flex-1 min-w-0 h-screen flex flex-col pt-[5rem]">
 			<div>
@@ -100,47 +100,17 @@ export default function WorkspaceMembers() {
 							<span className="text-xs text-zinc-400">
 								{role}
 							</span>
-							<div className="relative">
-								<button
-									onClick={() => setOpenMemberMenu(prev => !prev)}
-									className="flex w-8 h-8 items-center justify-center rounded-md text-zinc-600 hover:text-zinc-300 hover:bg-zinc-800 transition"
-								>
-									•••
-								</button>
-								{openMemberMenu &&
-									<div className="absolute right-0 top-10 z-20 w-44 rounded-lg border border-zinc-800 bg-zinc-900 p-1 shadow-xl">
-
-										<div className="relative group">
-											<button
-												className="w-full flex items-center justify-between px-3 py-2 rounded-md text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition"
-											>
-												<span className="text-sm">Change role</span>
-												<span className="text-zinc-600">›</span>
-											</button>
-
-											{/* Role submenu */}
-											<div className="absolute right-full top-0 mr-1 hidden group-hover:block w-32 rounded-lg border border-zinc-800 bg-zinc-900 p-1 shadow-xl">
-												<button className="w-full text-left px-3 py-2 rounded-md text-xs text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
-													Admin
-												</button>
-
-												<button className="w-full text-left px-3 py-2 rounded-md text-xs text-zinc-300 hover:bg-zinc-800 hover:text-white transition">
-													Member
-												</button>
-											</div>
-										</div>
-
-										<div className="my-1 border-t border-zinc-800" />
-
-										<button
-											onClick={() => setShowRemoveDialog(`${user?.firstName} ${user?.lastName}`)}
-											className="w-full text-left px-3 py-2 rounded-md text-xs text-red-400 hover:bg-red-500/10 transition"
-										>
-											Remove from workspace
-										</button>
-									</div>
-								}
-							</div>
+							{role !== 'owner' &&
+								<div className="relative">
+									<button
+										onClick={() => setOpenMemberMenu((prev) => prev === member?.id ? false : member?.id)}
+										className="flex w-8 h-8 items-center justify-center rounded-md text-zinc-600 hover:text-zinc-300 hover:bg-zinc-800 transition"
+									>
+										•••
+									</button>
+									{openMemberMenu === member?.id && <UpdateMember currentRole={role} workspace={selectedWorkspace} memberId={member?.id} />}
+								</div>
+							}
 						</div>
 					)
 				})}

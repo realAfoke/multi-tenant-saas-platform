@@ -28,6 +28,12 @@ import WorkspaceGeneral from './pages/settings/workspaceGeneral.jsx'
 import WorkspaceMembers from './pages/settings/workspaceMember.jsx'
 import WorkspaceInvitations from './pages/settings/workspaceInvite.jsx'
 import WkChannel from './pages/settings/channels.jsx'
+// import CreateTask from './components/Tsk.jsx'
+import CreateTask from './components/CreateTask.jsx'
+import ChannelMembers from './pages/channelMember.jsx'
+import Channel from './pages/channel/channnel.jsx'
+import ChannelInfo from './pages/channel/channelInfo.jsx'
+import ChannelSettings from './pages/channel/setting.jsx'
 
 
 
@@ -60,7 +66,16 @@ const routes = createBrowserRouter([
     path: '/', element: <ProtectedRoute />, errorElement: <ErrorPage />,
     children: [
       { index: true, element: <DashboardHome /> },
-      { path: ':wkName/:channelName', element: <Chat /> },
+      {
+        path: ':wkName/:channelName', element: <Channel />, children: [
+          { index: true, element: <Chat /> },
+          { path: 'task/:taskName', element: <Task /> },
+          { path: 'info', element: <ChannelInfo /> },
+          { path: 'members', element: <ChannelMembers /> },
+          { path: 'setting', element: <ChannelSettings /> },
+          { path: 'create-task', element: <CreateTask /> }
+        ]
+      },
       { path: 'chat/:conversationId', element: <Chat /> },
       { path: 'create-workspace', element: <CreateWorkspace /> },
       { path: ':wkName/create-channel', element: <CreateChannel /> },
@@ -85,33 +100,4 @@ createRoot(document.getElementById('root')).render(
     </QueryClientProvider>
   </StrictMode>,
 )
-
-
-//
-// { index: true, element: <Home /> },
-// {
-//
-//         path: ':wkName', element: <Workspace />, children: [
-//           { path: 'create-project', element: <CreateProject /> },
-//         ]
-//       },
-//       {
-//         path: ':wkName/:channelName', element: <Chat />, children: [
-//           { index: true, element: <ProjectOverview /> },
-//           { path: 'board', element: <Board /> },
-//           { path: 'files', element: <Files /> },
-//           { path: 'discussion', element: <Discussion /> },
-//         ]
-//       },
-//       {
-//         path: ':wkName/:channelName/:taskId', element: <Task />,
-//       },
-//       {
-//         path: ':wkName/:prjName/add-new-task', element: <Create />
-//       },
-//       { path: ':wkName/notifications', element: <Notifications /> },
-//       {
-//         path: 'create-new-workspace', element: <Create />
-//       },
-//       { path: 'profile', element: <Profile /> },
 

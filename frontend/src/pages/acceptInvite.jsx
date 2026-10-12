@@ -32,7 +32,7 @@ export default function AcceptInvite() {
 		queryKey: ['invite', inviteId],
 		queryFn: async () => {
 			try {
-				const wkSpace = await instance.get(`workspaces/${inviteId}/pending-request`)
+				const wkSpace = await instance.get(`workspaces/${inviteId}/get-invite`)
 				return wkSpace?.data
 			} catch (error) {
 				console.error(error)
@@ -40,30 +40,25 @@ export default function AcceptInvite() {
 			}
 		}
 	})
-	const inviter = invite?.invitedBy?.user ?? {}
+	const inviter = invite?.inviter?.user ?? {}
+
 	useEffect(() => {
-		if (inviteDetail && inviteDetail?.email === invite?.email) return
-		setInvite({ token: token, id: inviteId, email: invite?.email })
-	}, [invite, inviteDetail])
+		if (inviteDetail?.email === invite?.inviteeEmail) return
+		setInvite({ token: token, id: inviteId, email: invite?.inviteeEmail })
+	}, [invite?.id, inviteDetail?.email])
 
 	const acceptOrDeclineInvite = useMutation({
 		mutationFn: async (status) => {
-			if (!user) {
-				navigate('/login')
-				return
-			}
 			const response = await instance.patch(`workspaces/${inviteId}/accept-invite/`, { token, token, status: status })
 			return response?.data
 		},
 		onSuccess: (mssg) => {
-			console.log(mssg?.detail)
 			if (mssg?.detail === 'Invite accepted') {
-				console.log('inside here')
 				setInvite({})
-				navigate('/dashboard')
+				navigate(`/${invite?.workspaceName}/general`)
 				return
 			}
-			navigate('/')
+			navigate('landing')
 		}
 	})
 
@@ -115,8 +110,8 @@ export default function AcceptInvite() {
 			</div>
 		)
 	}
-	if (user?.email != invite?.email) {
-		return (<WrongAccount onSwitchAccount={handleSwtich} onCancel={setCancel} inviteEmail={invite?.email} currentEmail={user?.email} />)
+	if (user?.email && user?.email != invite?.inviteeEmail) {
+		return (<WrongAccount onSwitchAccount={handleSwtich} onCancel={setCancel} inviteEmail={invite?.inviteeEmail} currentEmail={user?.email} />)
 	}
 
 	return (
@@ -174,7 +169,7 @@ export default function AcceptInvite() {
 								<div>
 
 									<h3 className="font-semibold text-lg text-white">
-										{invite?.workspace}
+										{invite?.workspaceName}
 									</h3>
 
 									<p className="text-sm text-zinc-500 mt-1">
@@ -190,13 +185,20 @@ export default function AcceptInvite() {
 
 						<p className="text-sm text-zinc-500 text-center mt-6">
 							Join this workspace to collaborate with
-							the team and access its projects and tasks.
+							the team and access its channels and tasks.
 						</p>
 
 
 						<Button
 							disabled={loading}
-							onClick={() => acceptOrDeclineInvite.mutate('accept')}
+							onClick={() => {
+								if (!user?.email) {
+									navigate('/login')
+									return
+								}
+								acceptOrDeclineInvite.mutate('accept')
+							}
+							}
 							className="w-full h-12 mt-7 rounded-xl bg-blue-500 hover:bg-blue-600"
 						>
 
@@ -238,3 +240,6 @@ export default function AcceptInvite() {
 		</div>
 	)
 }
+
+
+// "https://localhost:5173/accept-invite/?token=9GqIBHq_zEf2o1HIpUEfhZJrDSx0g7bdQSH3fYec7qs&invite=6"

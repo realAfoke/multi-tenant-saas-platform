@@ -4,13 +4,13 @@ from . import models
 
 
 admin.site.register(models.WorkSpace)
-admin.site.register(models.Project)
+admin.site.register(models.Channel)
 admin.site.register(models.Task)
 admin.site.register(models.Membership)
 admin.site.register(models.Comment)
 admin.site.register(models.InviteToken)
 admin.site.register(models.InviteTokenAuditLog)
 admin.site.register(models.Invite)
-admin.site.register(models.ProjectMember)
+admin.site.register(models.ChannelMember)
 admin.site.register(models.TaskMember)
-admin.site.register(models.ActivityLog)
+# admin.site.register(models.ActivityLog)

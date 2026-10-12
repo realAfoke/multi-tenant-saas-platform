@@ -8,13 +8,14 @@ import { useAppState } from "@/hooks/apptools"
 
 
 export default function Login() {
-	const [email, setEmail] = useState('user@example.com')
-	const [password, setPassword] = useState('user')
+	const [email, setEmail] = useState()
+	const [password, setPassword] = useState()
 	const navigate = useNavigate()
 	const { inviteDetail } = useAppState()
 	const queryClient = useQueryClient()
 	// const { data: user } = useQueryClient(fetchUserQueryOption())
 
+	console.log(inviteDetail)
 	const mutate = useMutation({
 		mutationFn: async () => {
 			await instance.post('auth/login/', { email: email, password: password })
@@ -27,14 +28,13 @@ export default function Login() {
 				navigate(`/accept-invite/?token=${inviteDetail?.token}&invite=${inviteDetail?.id}`)
 				return
 			}
-			navigate('/dashboard', { replace: true })
+			navigate('/', { replace: true })
 
 		}
 	})
 	return (
 		<div className="min-h-screen bg-zinc-950 text-white lg:grid lg:grid-cols-2">
 
-			{/* Left Side */}
 
 			<div className="hidden lg:flex flex-col justify-between p-16 bg-gradient-to-br from-zinc-950 via-zinc-900 to-blue-950">
 
@@ -100,7 +100,7 @@ export default function Login() {
 					</h2>
 
 					<p className="text-zinc-400 mt-2">
-						Sign in to continue to your workspace {inviteDetail && <span className="text-blue-400 text-sm">{inviteDetail?.email}</span>}
+						Sign in to continue to your workspace {inviteDetail?.email && <span className="text-blue-400 text-sm">{inviteDetail?.email}</span>}
 					</p>
 
 					<div className="mt-10 space-y-6">

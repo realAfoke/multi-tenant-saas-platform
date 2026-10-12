@@ -175,17 +175,17 @@ LOGGING={
         "version":1,
         "disable_existing_loggers":False,
         "handlers":{
-            "file":{
-                "class":"logging.FileHandler",
-                "filename":"logs/app.log",
-                },
+            # "file":{
+            #     "class":"logging.FileHandler",
+            #     "filename":"logs/app.log",
+            #     },
             "console":{
                 "class":"logging.StreamHandler",
 
                 }
             },
         "root":{
-            "handlers":["file","console"],
+            "handlers":["console"],
             "level":"INFO",
             },
         }

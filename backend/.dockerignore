@@ -1,0 +1,15 @@
+.env
+*.pem
+venv/
+**/__pycache__/
+
+#folders
+staticfiles/
+sent_emails/
+logs/
+media/
+*log
+*logs
+.git
+
+

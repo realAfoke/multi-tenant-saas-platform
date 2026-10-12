@@ -1,22 +1,29 @@
-import { Outlet } from "react-router-dom"
-import { useQuery } from "@tanstack/react-query"
+import { Outlet, useNavigate } from "react-router-dom"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useAppHook } from "@/hooks/appHook.js"
 import { fetchUserQueryOption, workspaceQueryOption, channelQueryOption, fetchRoleQueryOption, activityQueryOption, conversationsQueryOption } from "@/queryOptions/queryOptions"
-import { useParams, Navigate } from "react-router-dom"
+import { convertObjKeys, saveMessageOffline } from "@/utils/appUtil";
+import { useParams, Navigate, useLocation } from "react-router-dom"
 import { useAppState } from "@/hooks/apptools"
 import TopBar from "@/components/TopBar"
 import SideBar from "@/components/SideBar"
 import { useRealTimeUpdate } from "@/hooks/appHook.js"
-import MenuIcon from "@/components/MenuIcon"
 import { useEffect, useState } from "react"
 import AddPeople from "@/components/AddFriendUi"
+import { handleChannelUpdate } from "@/service/channel";
+import { handleConversationUpdate } from "@/service/conversation";
+import { handleMessageUpdate } from "@/service/message";
 
 
 export default function ProtectedRoute() {
-	const { wkName, channelName, taskId, userId } = useParams()
+	const location = useLocation()
+	const navigate = useNavigate()
+	const { wkName, channelName, taskId, conversationId } = useParams()
 	const [toggle, setToggle] = useState(false)
 	const [toggleWorkspace, setToggleWorkspace] = useState(false)
 	const [hidechannelDetail, setHidechannelDetail] = useState(false)
+	const queryClient = useQueryClient()
+	const isCreatePage = ['/create-workspace', `/${wkName}/create-channel`].includes(location.pathname)
 
 	const {
 		socket,
@@ -28,7 +35,8 @@ export default function ProtectedRoute() {
 		selectedWorkspace,
 		selectedChannel,
 		setView,
-		selectedDm
+		selectedDm,
+		setIndexedDB
 	} = useAppState()
 
 	const { data: userWorkspaces } = useQuery(workspaceQueryOption())
@@ -39,7 +47,7 @@ export default function ProtectedRoute() {
 	const { data: user } = useQuery(fetchUserQueryOption())
 
 	const { data: conversations } = useQuery(conversationsQueryOption())
-	useQuery(activityQueryOption('activity', selectedWorkspace?.id))
+	// useQuery(activityQueryOption('activity', selectedWorkspace?.id))
 
 	useAppHook(
 		workspaces,
@@ -52,53 +60,63 @@ export default function ProtectedRoute() {
 		taskId,
 		setTask,
 		setView,
-		userId,
+		conversationId,
 		conversations,
 		setSelectedDm,
 		selectedChannel,
-		selectedDm
+		selectedDm,
+		setIndexedDB,
+		navigate
 	)
-	useRealTimeUpdate(setSocket, workspaces,user)
+	useRealTimeUpdate(setSocket, workspaces)
 
 	// console.log('userWorkspaces:',userWorkspaces,'workspaces:',workspaces)
 	useQuery(fetchRoleQueryOption(selectedWorkspace?.id))
 
-	useEffect(() => {
-		if (!socket || channelName || userId) return
-		socket.onmessage = (e) => {
-			const data = JSON.parse(e.data)
-			console.log(data)
-		}
-	}, [socket])
 
-	const [showAddPeople, setShowAddPeople] = useState(false)
+	useEffect(() => {
+		if (!socket) return
+		const ws = socket
+		ws.onmessage = async (e) => {
+			const rawData = JSON.parse(e.data)
+			const camelCaseData = convertObjKeys(rawData)
+			console.log('camelcase:', camelCaseData)
+
+			switch (camelCaseData?.tag) {
+				// case 'channel': handleChannelUpdate(queryClient, camelCaseData)
+				// break;
+				case 'conversation': handleConversationUpdate(queryClient, camelCaseData, setWorkspace, setSelectedDm, user)
+					break;
+				case 'message': handleMessageUpdate(queryClient, camelCaseData, ws)
+					break;
+			}
+		}
+	}, [conversationId, socket])
+
+	// const [showAddPeople, setShowAddPeople] = useState(false)
 	if (!user) {
-		<Navigate to='/login' replace />
+		< Navigate to='/landing' replace />
 		return
 	}
-
 
 	return (
 		<div className={`flex h-screen bg-zinc-950 overflow-hidden relative`}>
 
 			{toggle &&
 				<div className="">
-					<SideBar
+					{!isCreatePage && <SideBar
 						setToggle={setToggle}
 						toggleWorkspace={toggleWorkspace}
 						handleToggleWorkspace={setToggleWorkspace}
-						setShowAddPeople={setShowAddPeople}
+					// setShowAddPeople={setShowAddPeople}
 					/>
+					}
 				</div>
 			}
 
 			<div className="flex flex-col flex-1 overflow-hidden relative">
-				<TopBar setToggle={setToggle} toggle={toggle} />
-				<main className="flex-1 overflow-auto scrollbar scrollbar-thin scrollbar-thumb-zinc-600 scrollbar-track-zinc-900 md:mx-[8rem] px-2">
-					<AddPeople
-						open={showAddPeople}
-						onOpenChange={setShowAddPeople}
-					/>
+				{!isCreatePage && <TopBar setToggle={setToggle} toggle={toggle} />}
+				<main className="flex-1 overflow-auto scrollbar scrollbar-thin scrollbar-thumb-zinc-600 scrollbar-track-zinc-900 px-5 w-full">
 					<Outlet context={{ setToggle, hidechannelDetail, setHidechannelDetail }} />
 				</main>
 			</div>
@@ -109,3 +127,4 @@ export default function ProtectedRoute() {
 
 
 
+// <main className="flex-1 self-center overflow-auto scrollbar scrollbar-thin scrollbar-thumb-zinc-600 scrollbar-track-zinc-900 px-5 w-[100%] md:w-[clamp(70%,80%,90%)]">

@@ -1,3 +1,4 @@
+import { getIndexedDb } from '@/utils/appUtil'
 import { create } from 'zustand'
 import { combine } from 'zustand/middleware'
 
@@ -20,6 +21,7 @@ const useAuthStore = create(combine({ user: '', }, (set, get) => (
 export default useAuthStore
 
 export const useAppStore = create(combine({
+	db: null,
 	view: '',
 	selectedDm: {},
 	selectedWorkspace: {
@@ -73,11 +75,13 @@ export const useAppStore = create(combine({
 					}
 				))
 			},
-			setView: (view) => set((state) => ({ view: view })),
-			setSelectedDm: (dm) => set((state) => ({ selectedDm: { ...state.selectedDm, ...dm } })),
+			setIndexedDB: (db) => set({ db: db }),
+			setView: (view) => set({ view: view }),
+			setSelectedDm: (dm) => set({ selectedDm: dm }),
 			getWorkspace: () => get().selectedWorkspace,
 			getChannel: () => get().selectedChannel,
 			getTask: () => get().selectedTask,
 			getDm: () => get().selectedDm,
+			getIndexedDb: () => get().db
 		}
 	)))

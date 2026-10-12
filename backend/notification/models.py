@@ -1,7 +1,7 @@
 from operator import mod
 from django.core.checks import messages
 from django.db import models
-from workspace.models import Membership, Project,WorkSpace,Task
+from workspace.models import Membership, Channel,WorkSpace,Task
 
 # Create your models here.
 #

@@ -11,7 +11,7 @@ from asgiref.sync import async_to_sync
 import logging
 
 import workspace
-from workspace.api.serializers import ActivityLogSerializer
+# from workspace.api.serializers import ActivityLogSerializer
 
 
 
@@ -34,20 +34,20 @@ def send_task_update(sender,instance,created,**kwargs):
             send_mass_mail(messages)
 
 
-@receiver(post_save,sender=models.Project,dispatch_uid='unique_project_activity')
-def send_project_activity(sender,instance,created,**kwargs):
-    channel=get_channel_layer()
-    if created:
-        member=instance.created_by.user
-        serializer=ActivityLogSerializer(data={
-            'workspace':instance.workspace.id,
-            'project':instance.id,
-            'action':'created',
-            'member':instance.created_by.id,
-            'message':f'A new project was created by {member.first_name} {member.last_name}'
-
-            })
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        async_to_sync(channel.group_send)(f'workspace_{instance.workspace.id}',{'type':'send.activity','activity':serializer.data})
-       
+# @receiver(post_save,sender=models.Channel,dispatch_uid='unique_project_activity')
+# def send_project_activity(sender,instance,created,**kwargs):
+#     channel=get_channel_layer()
+#     if created:
+#         member=instance.created_by.user
+#         serializer=ActivityLogSerializer(data={
+#             'workspace':instance.workspace.id,
+#             'project':instance.id,
+#             'action':'created',
+#             'member':instance.created_by.id,
+#             'message':f'A new project was created by {member.first_name} {member.last_name}'
+#
+#             })
+#         serializer.is_valid(raise_exception=True)
+#         serializer.save()
+#         async_to_sync(channel.group_send)(f'workspace_{instance.workspace.id}',{'type':'send.activity','activity':serializer.data})
+#

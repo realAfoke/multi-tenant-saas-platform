@@ -19,56 +19,6 @@ export default function AccountDetails() {
 		password: 'mrcrab',
 		confirmPassword: 'mrcrab'
 	})
-	// const createAccount = useMutation({
-	// 	mutationFn: async () => {
-	// 		console.log('A: mutation started')
-	//
-	// 		const { confirmPassword, workspace, ...data } = userData
-	// 		const payload = workspace ? { ...data, workspace } : data
-	//
-	// 		console.log('B: sending request', payload)
-	//
-	// 		try {
-	// 			const response = await instance.post('users/signup/', payload)
-	//
-	// 			console.log('C: axios resolved', response)
-	// 			console.log('D: status:', response.status)
-	// 			console.log('E: data:', response.data)
-	//
-	// 			return response.data
-	// 		} catch (error) {
-	// 			console.log('X: axios rejected')
-	// 			console.log('X error:', error)
-	// 			console.log('X response:', error?.response)
-	// 			console.log('X request:', error?.request)
-	// 			console.log('X message:', error?.message)
-	//
-	// 			throw error
-	// 		}
-	// 	},
-	//
-	// 	onSuccess: (data) => {
-	// 		console.log('SUCCESS FIRED:', data)
-	// 		console.log('inviteDetail:', inviteDetail)
-	//
-	// 		if (inviteDetail) {
-	// 			navigate(
-	// 				`/accept-invite/?token=${inviteDetail.token}&invite=${inviteDetail.id}`
-	// 			)
-	// 			return
-	// 		}
-	//
-	// 		navigate('/dashboard')
-	// 	},
-	//
-	// 	onError: (error) => {
-	// 		console.log('ON ERROR FIRED')
-	// 		console.log('error:', error)
-	// 		console.log('response:', error?.response)
-	// 		console.log('response data:', error?.response?.data)
-	// 		console.log('message:', error?.message)
-	// 	},
-	// })
 	const createAccount = useMutation({
 		mutationFn: async () => {
 			const { confirmPassword, workspace, ...data } = userData
@@ -77,12 +27,12 @@ export default function AccountDetails() {
 			return response.data
 		},
 		onSuccess: () => {
-			if (inviteDetail) {
+			if (inviteDetail?.id) {
 				navigate(`/accept-invite/?token=${inviteDetail?.token}&invite=${inviteDetail?.id}`)
 				return
 			}
 
-			navigate('/dashboard')
+			navigate('/')
 		},
 		onError: (error) => {
 			console.error(error?.response)

@@ -11,7 +11,7 @@ class Request:
 
 class ChatService:
     @staticmethod
-    def create_conversation(*,chat_type,name=None,workspace=None,project=None,participants=None):
+    def create_conversation(*,chat_type,name=None,workspace=None,channel=None,participants=None):
         with transaction.atomic():
             conversation_id=str(uuid4())
             if chat_type == 'direct':
@@ -27,7 +27,7 @@ class ChatService:
                         chat_type=chat_type,
                         name=name,
                         workspace=workspace,
-                        project=project,
+                        channel=channel,
                         conversation_id=conversation_id
                         )
             conversation.save()
@@ -36,7 +36,6 @@ class ChatService:
     @staticmethod
     def validate_conversation(*,message):
         with transaction.atomic():
-            manager=getat
             conversation_id=message.get('conversation',None)
             if not conversation_id:
                 conversation

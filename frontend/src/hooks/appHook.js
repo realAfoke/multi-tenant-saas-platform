@@ -1,31 +1,24 @@
 import { useEffect } from "react"
 import { instance } from "@/api/axios"
+import { getIndexedDb } from "@/utils/appUtil"
 
 export function useRealTimeUpdate(setSocket, workspaces) {
 	useEffect(() => {
-		if (!workspaces) return
-		const workspaceIds = [...new Set(Object.keys(workspaces ?? {}))].join(",")
-		const ws = new WebSocket(`wss://localhost/ws/user/?workspaces=${workspaceIds}`)
+		const ws = new WebSocket(`wss://localhost/ws/user/`)
 		ws.onopen = () => {
 			console.log('Connection successfull ')
 			setSocket(ws)
 		}
 
-		ws.onmessage = (e) => {
-			console.log(JSON.parse(e.data))
-		}
 		ws.onerror = (e) => {
 			console.error('Connection Error:', e)
 		}
 		ws.onclose = () => console.log('connection closed!!!')
 		return () => ws.close()
 	}, [workspaces])
-
-	// useEffect(() => {
-	// 	const db =indexedDB.open('orbit', 1)
-	// 	console.log(db)
-	// }, [])
 }
+
+
 export function useAppHook(
 	workspaces,
 	wkName,
@@ -37,23 +30,48 @@ export function useAppHook(
 	taskName,
 	setTask,
 	setView,
-	userId,
+	conversationId,
 	conversations,
 	setSelectedDm,
 	selectedChannel,
 	selectedDm,
+	setIndexedDB,
+	navigate
 ) {
 	useEffect(() => {
-		if (!selectedWorkspace?.id && wkName) {
-			const workspace = Object.values(workspaces ?? {}).find(wk => wk?.name === wkName)
-			if (workspace) {
-				setWorkspace({ ...workspace, show: true })
-			}
+		const indexDb = async () => {
+			const db = await getIndexedDb()
+			setIndexedDB(db)
 		}
-	}, [workspaces, selectedWorkspace, wkName])
+
+		indexDb()
+	},)
+	useEffect(() => {
+		if (selectedWorkspace?.id && !wkName) {
+			setWorkspace({})
+			return
+		}
+		const workspace = Object.values(workspaces ?? {}).find((wk) => {
+			return wk?.name === wkName
+		})
+		if (workspace) {
+			setWorkspace({ ...workspace, show: true })
+
+		}
+	}, [workspaces, wkName])
 
 	useEffect(() => {
-		if (!selectedChannel?.name && channelName) {
+		if (selectedChannel?.id && !channelName) {
+			setChannel({})
+			return
+		}
+		if (
+			channelName &&
+			(
+				!selectedChannel?.name ||
+				selectedChannel.name !== channelName
+			)
+		) {
 			const { channels = {} } = selectedWorkspace ?? {}
 			const channel = Object.values(channels)?.find(
 				obj => obj?.name === channelName
@@ -62,7 +80,8 @@ export function useAppHook(
 			setSelectedDm({})
 			setView('channel')
 		}
-	}, [selectedWorkspace])
+
+	}, [selectedWorkspace, channelName])
 
 	useEffect(() => {
 		if (!channel || !taskName) {
@@ -82,26 +101,30 @@ export function useAppHook(
 
 
 	useEffect(() => {
-		const fetchUser = async (userId) => {
+		if (selectedDm?.id && !conversationId) {
+			setSelectedDm({})
+			return
+		}
+		const fetchUser = async (conversationId) => {
 			try {
-				const response = await instance.get(`users/${userId}/`)
+				const response = await instance.get(`users/${conversationId}/`)
 				return response.data
 			} catch (error) {
 				console.error(error)
 			}
 		}
-		if (userId && !selectedDm?.id) {
+		if (conversationId && !selectedDm?.id) {
 
 			const setDm = async () => {
-				let user = conversations?.find(
-					conv => conv.receiver?.id === userId
+				let conversation = conversations?.find(
+					conv => conv?.id === Number(conversationId)
 				)
 
-				if (!user) {
-					user = await fetchUser(userId)
+				if (!conversation && conversations) {
+					conversation = await fetchUser(conversationId)
 				}
-				if (!user) return
-				setSelectedDm(user)
+				if (!conversation) return
+				setSelectedDm(conversation)
 				setChannel({})
 				setView('dm')
 			}
@@ -109,5 +132,5 @@ export function useAppHook(
 		}
 
 
-	}, [userId, conversations, setSelectedDm])
+	}, [conversationId, conversations, setSelectedDm])
 }

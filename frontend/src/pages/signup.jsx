@@ -41,7 +41,6 @@ export default function SignUp() {
 	return (
 		<div className="min-h-screen bg-zinc-950 text-white lg:grid lg:grid-cols-2">
 
-			{/* Branding */}
 
 			<div className="hidden lg:flex flex-col justify-between p-16 bg-gradient-to-br from-zinc-950 via-zinc-900 to-blue-950">
 
@@ -88,7 +87,7 @@ export default function SignUp() {
 						</h1>
 
 					</div>
-					{inviteDetail && <span className="text-blue-400 text-sm">creating account for invite email {inviteDetail?.email}</span>}
+					{inviteDetail?.id && <span className="text-blue-400 text-sm">creating account for invite email {inviteDetail?.email}</span>}
 
 					<div className="grid grid-cols-2 justify-between">
 						<div className={`${inviteDetail ? 'my-5' : ''} flex items-center gap-2 mb-10`}>

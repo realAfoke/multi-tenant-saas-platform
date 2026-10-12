@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { convertObjKeys } from "@/utils/appUtil";
+import { convertObjKeys, saveMessageOffline } from "@/utils/appUtil";
+import { SquarePilcrowIcon } from "lucide-react";
 
 export function useMessageHook({
 	socket,
@@ -9,32 +10,59 @@ export function useMessageHook({
 	setMessage,
 	messages,
 	ref,
+	chatType,
+	recipient,
+	setSelectedDm,
+	setChannel,
 }) {
-
-	const conversationId = selectedChannel?.conversation || selectedDm?.conversation
+	const conversation = selectedChannel?.conversation || selectedDm
+	const conversationId = conversation?.conversation || conversation?.id
 	useEffect(() => {
-		if (!socket || !conversationId) return
+		if (!socket) return
+		const unread = conversation?.unread
 		const ws = socket
-		ws.onmessage = (e) => {
-			const rawData = JSON.parse(e.data)
-			const camelCaseData = convertObjKeys(rawData)
-			queryClient.setQueryData(['messages', conversationId], (old) => {
-				//remember to create a message id store mapping for easy insert
-				const messgId = new Map(old?.map(obj => [obj.id || obj.clientId, obj]))
-				const incomingMessgKey = camelCaseData?.clientId ?? camelCaseData?.id
-				messgId.set(incomingMessgKey, camelCaseData)
-				return Array.from(messgId.values())
+		if (ws && ws.readyState === WebSocket.OPEN && unread >= 1) {
+			// console.log('bout send seen')
+			const SEEN = { conversation: conversationId, status: 'seen' }
+			if (chatType === 'chat') {
+				SEEN.receiver = recipient?.id
 			}
-			)
+			ws.send(JSON.stringify(SEEN))
+			if (selectedChannel?.id) {
+				setChannel({ ...selectedChannel, conversation: { ...selectedChannel?.conversation, unread: 0 } })
+				queryClient.setQueryData(['workspace'], (old) => {
+					const workspaces = old?.workspaces ?? {}
+					const workspace = workspaces?.[selectedChannel?.workspace] ?? {}
+					const channels = workspace?.channels ?? {}
+					return {
+						...(old ?? {}),
+						workspaces: {
+							...workspaces,
+							[selectedChannel?.workspace]: {
+								...workspace,
+								channels: {
+									...channels,
+									[selectedChannel?.id]: {
+										...selectedChannel,
+										conversation: {
+											...(selectedChannel?.conversation ?? {}),
+											unread: 0
+										}
+									}
+								}
+							}
+						}
+					}
+
+				})
+			}
+
 		}
-	}, [conversationId, socket, queryClient])
+	}, [messages])
 
 	useEffect(() => {
 		if (!selectedChannel?.id && !selectedDm?.id) return
-		const messageTemplate = { conversation: conversationId, clientId: crypto.randomUUID() }
-		if (selectedDm?.id) {
-			messageTemplate.receiver = selectedDm?.id
-		}
+		const messageTemplate = { conversation: conversationId, clientId: crypto.randomUUID(), status: 'pending' }
 		setMessage(messageTemplate)
 	}, [selectedChannel, selectedDm, conversationId, setMessage])
 
@@ -43,5 +71,6 @@ export function useMessageHook({
 			ref.current?.scrollIntoView();
 		}
 	}, [messages]);
+
 }
 

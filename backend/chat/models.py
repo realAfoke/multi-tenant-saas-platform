@@ -6,7 +6,7 @@ from django.db.models import constraints
 from django.db.models.fields import related
 from django.utils import choices
 from django.contrib.auth import get_user_model
-from workspace.models import Project,WorkSpace
+from workspace.models import Channel,WorkSpace
 
 
 # Create your models here.
@@ -17,16 +17,16 @@ from workspace.models import Project,WorkSpace
 User=get_user_model()
 
 class Conversation(models.Model):
-    chat_type=models.CharField(max_length=200,choices=[('Project','project'),('Direct','direct')])
+    chat_type=models.CharField(max_length=200,choices=[('Channel','channel'),('Direct','direct')])
     name=models.CharField(max_length=300,null=True,blank=True)
     conversation_id=models.UUIDField(editable=False,null=True,blank=True)
     workspace=models.ForeignKey(WorkSpace,related_name='workspace_conversation',on_delete=models.CASCADE,null=True,blank=True)
-    project=models.OneToOneField(Project,related_name='project_conversation',on_delete=models.CASCADE,null=True,blank=True)
+    channel=models.OneToOneField(Channel,related_name='channel_conversation',on_delete=models.CASCADE,null=True,blank=True)
     participants=models.ManyToManyField(User,related_name='conversation')
     last_read_mssg_id=models.ForeignKey('Message',related_name='lst_read_msg_id',on_delete=models.CASCADE,null=True,blank=True)
+    last_delivered_mssg_id=models.ForeignKey('Message',related_name='delivered_message',on_delete=models.CASCADE,null=True,blank=True)
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
-
 
     class Meta:
         db_table='conversation'
@@ -46,25 +46,25 @@ class Message(models.Model):
     class Meta:
         db_table='message'
 
-
-
     def __str__(self):
         return self.content
 
-
-class MessageReciept(models.Model):
+class ChannelReadStatus(models.Model):
     user=models.ForeignKey(User,related_name='user_reciept',on_delete=models.CASCADE)
-    message=models.ForeignKey(Message,related_name='message_reciept',on_delete=models.CASCADE)
+    message=models.ForeignKey(Message,related_name='message_reciept',on_delete=models.CASCADE,null=True,blank=True)
     conversation=models.ForeignKey(Conversation,related_name='conversation_reciept',on_delete=models.CASCADE)
-    status=models.CharField(max_length=200,choices=[('delivered','Delivered'),('read','Read'),('inactive','Inactive')])
     timestamp=models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table='message_reciept'
-        unique_together=('message','user')
+        db_table='channel_reciept'
+        constraints=[
+                models.UniqueConstraint(
+                    fields=['conversation','user'],name='uniqu_channel_reciept'
+                    )
+                ]
 
     def __str__(self):
-        return self.status
+        return self.user.first_name
 
 class Attachment(models.Model):
     message=models.ForeignKey(Message,related_name='attachement',on_delete=models.CASCADE)
@@ -104,7 +104,7 @@ class ConnectionRequest(models.Model):
     sender=models.ForeignKey(User,related_name='request_sender',on_delete=models.CASCADE)
     recipient=models.ForeignKey(User,related_name='request_recipient',on_delete=models.CASCADE)
     status=models.CharField(max_length=200,default='pending')
-    conversation=models.OneToOneField(Conversation,related_name='conversation_status',on_delete=models.CASCADE,null=True,blank=True)
+    conversation=models.ForeignKey(Conversation,related_name='connection_status',on_delete=models.CASCADE,null=True,blank=True)
     timestamp=models.DateTimeField(auto_now_add=True)
 
 

@@ -39,6 +39,7 @@ def send_task_nofitication(sender,instance,created,**kwargs):
         members=Membership.objects.filter(members_task__task=instance).exclude(user=instance.created_by.user)
         print('task member:',members)
         send_notification(members,instance,f'{instance.created_by} assigned you to a task','assignment')
+        return
 
     updater=getattr(instance,'_updated_by')
     members=Membership.objects.filter(members_task__task=instance).exclude(user=updater)

@@ -18,7 +18,7 @@ import SignEmail from './components/SignEmail.jsx'
 import VerifyEmail from './components/VerifyEmail.jsx'
 import AccountDetails from './components/AccountDetails.jsx'
 import AcceptInvite from './pages/acceptInvite.jsx'
-import TeamChat from './experiment/TempChat.jsx'
+// import TeamChat from './experiment/TempChat.jsx'
 import Chat from './components/ChatUi.jsx'
 import DashboardHome from './pages/dashboardHome.jsx'
 import CreateWorkspace from './pages/createWorkspace.jsx'
@@ -40,7 +40,7 @@ import ChannelSettings from './pages/channel/setting.jsx'
 const queryClient = new QueryClient()
 
 const routes = createBrowserRouter([
-  { path: 'team-chat', element: <TeamChat /> },
+  // { path: 'team-chat', element: <TeamChat /> },
 
   { path: 'accept-invite', element: <AcceptInvite /> },
 

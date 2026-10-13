@@ -6,7 +6,6 @@ import os
 load_dotenv()
 
 
-CORS_ALLOW_CREDENTIALS=True
 
 
 EMAIL_BACKEND='django.core.mail.backends.filebased.EmailBackend'

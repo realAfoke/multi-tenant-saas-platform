@@ -30,6 +30,7 @@ ALLOWED_HOSTS =[host.strip() for host in os.getenv('ALLOW_HOSTS',"").split(",") 
 
 CORS_ALLOWED_ORIGINS=[origin.strip() for origin in os.getenv('CORS_ALLOWED_ORIGINS','').split(',') if origin.strip()]
 
+CORS_ALLOW_CREDENTIALS=True
 
 # Application definition
 

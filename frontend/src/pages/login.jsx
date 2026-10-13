@@ -15,7 +15,6 @@ export default function Login() {
 	const queryClient = useQueryClient()
 	// const { data: user } = useQueryClient(fetchUserQueryOption())
 
-	console.log(inviteDetail)
 	const mutate = useMutation({
 		mutationFn: async () => {
 			await instance.post('auth/login/', { email: email, password: password })
@@ -33,7 +32,7 @@ export default function Login() {
 		}
 	})
 	return (
-		<div className="min-h-screen bg-zinc-950 text-white lg:grid lg:grid-cols-2">
+		<div className="min-h-screen overflow-hidden bg-zinc-950 text-white lg:grid lg:grid-cols-2">
 
 
 			<div className="hidden lg:flex flex-col justify-between p-16 bg-gradient-to-br from-zinc-950 via-zinc-900 to-blue-950">

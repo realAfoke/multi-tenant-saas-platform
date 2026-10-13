@@ -32,7 +32,7 @@ export default function SideBar() {
 					<a className="hover:text-white transition cursor-pointer">
 						About
 					</a>
-					<Link to="login" className="py-8 border-none">
+					<Link to="/login" className="py-8 border-none">
 						<Button
 							variant="ghost"
 							className=" md:hidden text-gray-300 bg-blue-500 w-full   rounded-full font-bold hover:text-white"
@@ -44,7 +44,7 @@ export default function SideBar() {
 
 
 				<div className="flex items-center gap-3">
-					<Link to="login" className="hidden md:block text-gray-300 hover:text-white">
+					<Link to="/login" className="hidden md:block text-gray-300 hover:text-white">
 						<Button
 							variant="ghost"
 							className="hover:bg-transparent hover:text-white text-gray-400"
@@ -55,7 +55,7 @@ export default function SideBar() {
 
 					<Button
 						className="rounded-full bg-blue-500 hover:bg-blue-600 px-6"
-		
+
 					>
 						Get Started
 					</Button>

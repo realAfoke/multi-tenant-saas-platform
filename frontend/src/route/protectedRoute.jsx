@@ -13,6 +13,7 @@ import AddPeople from "@/components/AddFriendUi"
 import { handleChannelUpdate } from "@/service/channel";
 import { handleConversationUpdate } from "@/service/conversation";
 import { handleMessageUpdate } from "@/service/message";
+import LandingPage from "@/pages/landing";
 
 
 export default function ProtectedRoute() {
@@ -94,13 +95,13 @@ export default function ProtectedRoute() {
 	}, [conversationId, socket])
 
 	// const [showAddPeople, setShowAddPeople] = useState(false)
-	if (!user) {
-		< Navigate to='/landing' replace />
-		return
-	}
+	// if (!user) {
+	// < Navigate to='/landing' replace />
+	// return
+	// }
 
-	return (
-		<div className={`flex h-screen bg-zinc-950 overflow-hidden relative`}>
+	return !user ? <LandingPage /> :
+		(<div className={`flex h-screen bg-zinc-950 overflow-hidden relative`}>
 
 			{toggle &&
 				<div className="">
@@ -122,7 +123,7 @@ export default function ProtectedRoute() {
 			</div>
 
 		</div>
-	)
+		)
 }
 
 

@@ -48,7 +48,7 @@ instance.interceptors.response.use((resp) => (resp), async (e) => {
 			if (window.location.pathname === '/login') {
 				return Promise.reject(e)
 			}
-			if (window.location.pathname.includes('accept-invite')) {
+			if (['accept-invite', '/'].includes(window.location.pathname)) {
 				return Promise.reject(e)
 			}
 			window.location.href = '/login'

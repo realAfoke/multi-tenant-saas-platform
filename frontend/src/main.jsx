@@ -10,7 +10,6 @@ import Profiles from './pages/profile.jsx'
 import Profile from './pages/mainProfile.jsx'
 // import App from './App.jsx'
 import ErrorPage from './components/Error.jsx'
-import LandingPage from './pages/landing.jsx'
 import Pricing from './pages/pricing.jsx'
 import Notifications from './pages/notification.jsx'
 import SignUp, { loader as signUpLoader } from './pages/signup.jsx'
@@ -58,7 +57,6 @@ const routes = createBrowserRouter([
     path: 'login', element: <Login />, errorElement: <ErrorPage />, loader: loginLoader
   },
 
-  { path: 'landing', element: <LandingPage /> },
 
   { path: '/pricing', element: <Pricing /> },
 

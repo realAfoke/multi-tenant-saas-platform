@@ -28,7 +28,18 @@ def verify_email(model,request):
     otp_key= 'email' if 'email' in query else 'phone'
     key=f'otp:{query[otp_key]}'
     cache.set(key,otp,timeout=300)
-    send_mail('EMAIL VERIFICATION CODE',f'Your Email verification is {otp}','noreply@example.com',[f'{query[otp_key]}'])
+    # send_mail('EMAIL VERIFICATION CODE',f'Your Email verification is {otp}','noreply@example.com',[f'{query[otp_key]}'])
+    send_mail(
+    'Verify Your Email Address',
+    f'Thank you for signing up!\n\n'
+    f'To verify your email address and complete your registration, '
+    f'please use the verification code below:\n\n'
+    f'{otp}\n\n'
+    f"If you didn't request this code, you can safely ignore this email.\n\n"
+    f'Best regards,\nThe Team',
+    'noreply@example.com',
+    [query[otp_key]],
+)
     return {"status":"otp sent to provided email"}
 
 def verify_otp(key,value):

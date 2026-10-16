@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres
+    image: postgres:18
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -14,20 +14,17 @@ services:
 
     volumes:
       - database_storage:/var/lib/postgresql
+    restart: unless-stopped
 
   backend:
     build: ./backend
     env_file: .env
-    ports:
-      - "8080:8000"
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_started
-    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
-    volumes:
-      - ./backend:/app
+    restart: unless-stopped
 
   frontend:
     build:
@@ -42,10 +39,13 @@ services:
     ports: 
     - "80:80"
     - "443:443"
+    restart: unless-stopped
 
 
   redis:
-    image: redis
+    image: redis:7-alpine
+
+    restart: unless-stopped
 
 volumes:
   database_storage:

@@ -145,6 +145,23 @@ AUTHENTICATION_BACKENDS=[
         'users.authentication.CustomAuthentication','django.contrib.auth.backends.ModelBackend'
         ]
 
+EMAIL_FILE_PATH=BASE_DIR / 'sent_emails'
+
+if DEBUG:
+    EMAIL_BACKEND='django.core.mail.backends.filebased.EmailBackend'
+else:
+    EMAIL_BACKEND="backend.config.settings.email_backend.ResendEmailBackend"
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME':os.getenv('DB_NAME') ,
+        'USER':os.getenv('DB_USER'),
+        'HOST':os.getenv('DB_HOST'),
+        'PASSWORD':os.getenv('DB_PASSWORD')
+    }
+}
+
 CACHE={
         'default':{
             'BACKEND':'django_redis.cache.RedisCache',

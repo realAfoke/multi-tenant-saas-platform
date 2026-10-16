@@ -18,6 +18,7 @@ services:
 
   backend:
     build: ./backend
+    image: backend
     env_file: .env
     depends_on:
       db:
@@ -27,6 +28,7 @@ services:
     restart: unless-stopped
 
   frontend:
+    image: frontend
     build:
       context: ./frontend
       args:

@@ -16,14 +16,13 @@ export default function WorkspaceInvitations() {
 				return response.data
 			} catch (error) {
 				console.error(error)
-				throw Error(error)
+				throw new Error(error.message, { cause: error })
 			}
 
 		}
 	})
-	console.log('invites:', invites)
 	const [openMemberMenu, setOpenMemberMenu] = useState(false)
-	const [hide, setHide] = useState(false)
+	const [hide] = useState(false)
 	return (
 		<section className="flex-1 flex flex-col min-w-0 pt-[5rem] h-screen overflow-hidden">
 

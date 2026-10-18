@@ -15,7 +15,7 @@ export default function ChannelMembers({ channel }) {
 				return response.data
 			} catch (err) {
 				console.error(err)
-				throw Error(err)
+				throw new Error(err.message, { cause: err })
 			}
 		},
 		enabled: !!selectedChannel?.id

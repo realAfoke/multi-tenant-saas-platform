@@ -8,7 +8,7 @@ import SignupBackWarning from "./Warning"
 import { useAppState } from "@/hooks/apptools"
 
 export default function AccountDetails() {
-	const { email, showBackWarning, handleChange, setStep } = useOutletContext()
+	const { email, showBackWarning, handleChange, restartSignup } = useOutletContext()
 	const navigate = useNavigate()
 	const { inviteDetail } = useAppState()
 	const [userData, setUserData] = useState({
@@ -21,7 +21,8 @@ export default function AccountDetails() {
 	})
 	const createAccount = useMutation({
 		mutationFn: async () => {
-			const { confirmPassword, workspace, ...data } = userData
+			const { workspace, ...data } = userData
+			delete data.confirmPassword
 			const payLoad = workspace ? { ...data, workspace } : data
 			const response = await instance.post(`users/signup/`, payLoad)
 			return response.data
@@ -42,8 +43,11 @@ export default function AccountDetails() {
 
 	return (
 		<>
-			<SignupBackWarning open={showBackWarning} onOpenChange={handleChange} onConfirm={setStep} />
-
+			<SignupBackWarning
+				open={showBackWarning}
+				onOpenChange={handleChange}
+				onConfirm={restartSignup}
+			/>
 			<p className="text-sm text-blue-400 font-medium">
 				Step 3 of 3
 			</p>

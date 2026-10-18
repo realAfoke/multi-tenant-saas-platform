@@ -1,14 +1,12 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { AlertCircle, LogOut, ArrowLeft } from "lucide-react"
-import { useNavigate } from "react-router-dom"
+import { AlertCircle, LogOut } from "lucide-react"
 
 export default function WrongAccount({
 	inviteEmail,
 	currentEmail,
 	onSwitchAccount,
 }) {
-	const navigate = useNavigate()
 	return (
 		<div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center px-6">
 

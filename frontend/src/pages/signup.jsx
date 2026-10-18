@@ -1,35 +1,32 @@
-import { useEffect, useState } from "react"
-import { Outlet, useNavigate } from "react-router-dom"
-import { useLocation, redirect } from "react-router-dom"
-import { instance } from "@/api/axios"
+import { useState } from "react"
+import { Outlet, useNavigate,useLocation } from "react-router-dom"
 import { useAppState } from "@/hooks/apptools"
 
 
 export default function SignUp() {
 	const navigate = useNavigate()
-	const [email, setEmail] = useState("")
-	const [showBackWarning, setShowBackWarning] = useState(false)
-	const [step, setStep] = useState('')
 	const { inviteDetail } = useAppState()
+	const [email, setEmail] = useState(() => inviteDetail?.email ?? "")
+	const [showBackWarning, setShowBackWarning] = useState(false)
 	const location = useLocation()
 
 	const paths = location.pathname.split('/').filter(path => path != '')
-
-	useEffect(() => {
-		switch (paths[1]) {
-			case 'otp-verification': setStep(2)
-				break;
-			case 'account-detail': setStep(3)
-				break
-			default: setStep(1)
-		}
-	}, [paths])
-
-	useEffect(() => {
-		if (inviteDetail?.email) {
-			setEmail(inviteDetail?.email)
-		}
-	}, [inviteDetail])
+	const restartSignup = () => {
+		navigate('/signup', { replace: true })
+	}
+	const step = {
+		'otp-verification': 2,
+		'account-detail': 3,
+	}[paths[1]] ?? 1
+	// useEffect(() => {
+	// 	switch (paths[1]) {
+	// 		case 'otp-verification': setStep(2)
+	// 			break;
+	// 		case 'account-detail': setStep(3)
+	// 			break
+	// 		default: setStep(1)
+	// 	}
+	// }, [paths])
 
 
 	const handleChange = () => {
@@ -103,20 +100,10 @@ export default function SignUp() {
 						</button>
 					</div>
 
-
-					<Outlet context={{ email, setEmail, showBackWarning, handleChange, setStep }} />
+					<Outlet context={{ email, setEmail, showBackWarning, handleChange, restartSignup }} />
 				</div>
 			</div>
 		</div>
 	)
 }
 
-
-export async function loader() {
-	try {
-		await instance.get('users/me')
-		return redirect('/dashboard')
-	} catch (error) {
-		console.error(error)
-	}
-}

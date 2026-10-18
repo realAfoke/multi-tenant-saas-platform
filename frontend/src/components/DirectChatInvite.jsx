@@ -1,48 +1,39 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import {
-	useQuery,
-	useQueryClient,
+	useQuery
 } from "@tanstack/react-query";
 import { instance } from "@/api/axios";
 import { useAppState } from "@/hooks/apptools";
 import { useNavigate } from "react-router-dom";
 
 
-const MOCK_USERS = [
-	{ id: "1", name: "Alex Rivera", email: "alex@company.com", avatar: "https://i.pravatar.cc/150?u=alex", status: "online" },
-	{ id: "2", name: "Jordan Lee", email: "jordan@company.com", avatar: "https://i.pravatar.cc/150?u=jordan", status: "offline" },
-	{ id: "3", name: "Sam Patel", email: "sam@company.com", avatar: "https://i.pravatar.cc/150?u=sam", status: "online" },
-	{ id: "4", name: "Taylor Kim", email: "taylor@company.com", avatar: "https://i.pravatar.cc/150?u=taylor", status: "away" },
-	{ id: "5", name: "Morgan Blake", email: "morgan@company.com", avatar: "https://i.pravatar.cc/150?u=morgan", status: "online" },
-	{ id: "6", name: "Casey Quinn", email: "casey@company.com", avatar: "https://i.pravatar.cc/150?u=casey", status: "offline" },
-];
 
-export default function InviteToDirectChat({ onInvite, onClose, existingChatUserIds = [], onOpenChange }) {
+export default function InviteToDirectChat({ onClose, onOpenChange }) {
 	const [query, setQuery] = useState("");
-	const [selectedUser, setSelectedUser] = useState(null);
-	const [isInviting, setIsInviting] = useState(false);
+	const [selectedUser] = useState(null);
+	const [isInviting] = useState(false);
 
-	const filteredUsers = useMemo(() => {
-		const lower = query.toLowerCase().trim();
-		return MOCK_USERS.filter(
-			(u) =>
-				!existingChatUserIds.includes(u.id) &&
-				(u.name.toLowerCase().includes(lower) ||
-					u.email.toLowerCase().includes(lower))
-		);
-	}, [query, existingChatUserIds]);
-
-	const handleInvite = async () => {
-		if (!selectedUser) return;
-		setIsInviting(true);
-		// Simulate API call
-		await new Promise((r) => setTimeout(r, 800));
-		onInvite?.(selectedUser);
-		setIsInviting(false);
-		setSelectedUser(null);
-		setQuery("");
-	};
-
+	// const filteredUsers = useMemo(() => {
+	// 	const lower = query.toLowerCase().trim();
+	// 	return MOCK_USERS.filter(
+	// 		(u) =>
+	// 			!existingChatUserIds.includes(u.id) &&
+	// 			(u.name.toLowerCase().includes(lower) ||
+	// 				u.email.toLowerCase().includes(lower))
+	// 	);
+	// }, [query, existingChatUserIds]);
+	//
+	// const handleInvite = async () => {
+	// 	if (!selectedUser) return;
+	// 	setIsInviting(true);
+	// 	// Simulate API call
+	// 	await new Promise((r) => setTimeout(r, 800));
+	// 	onInvite?.(selectedUser);
+	// 	setIsInviting(false);
+	// 	setSelectedUser(null);
+	// 	setQuery("");
+	// };
+	//
 	const statusColor = (status) => {
 		switch (status) {
 			case "online":
@@ -61,9 +52,6 @@ export default function InviteToDirectChat({ onInvite, onClose, existingChatUser
 		setChannel,
 	} = useAppState();
 
-	const [startSearch, setStartSearch] = useState(false);
-
-	const queryClient = useQueryClient();
 
 	const { data: queryResult, isFetching } = useQuery({
 		queryKey: ["user", query],
@@ -73,13 +61,10 @@ export default function InviteToDirectChat({ onInvite, onClose, existingChatUser
 				const response = await instance.get(
 					`chat/search-friend/?search=${query}`
 				);
-
-				setStartSearch(false);
-
 				return response.data;
 			} catch (err) {
 				console.error(err);
-				throw Error(err);
+				throw new Error(err.message, { cause: err })
 			}
 		},
 

@@ -3,19 +3,16 @@ import searchIcon from "@/assets/search1.svg"
 import cog from "@/assets/project.svg"
 import closeMenu from '@/assets/close.svg'
 import { useState, useRef, useEffect } from "react"
-import { Link, useNavigate, useParams } from "react-router-dom"
-import profile from "@/assets/profileIcon.svg"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { Link, useNavigate } from "react-router-dom"
+import { useQuery } from "@tanstack/react-query"
 import { workspaceQueryOption, fetchRoleQueryOption } from "@/queryOptions/queryOptions"
 import { useAppState } from "@/hooks/apptools"
 import Project from "./sidebar/Project"
 import {
 	Plus,
-	ChevronDown,
 	ChevronRight,
 	Settings,
 	UserPlus,
-	ArrowLeft
 } from "lucide-react"
 import DirectMessage from "./sidebar/DirectMessage"
 
@@ -24,11 +21,8 @@ export default function SideBar(props) {
 	const navigate = useNavigate()
 
 	const [showAddPeople, setShowAddPeople] = useState(false)
-	const [showWorkspaceList, setShowWorkspaceList] = useState(false)
 	const { setToggle, handleToggleWorkspace, toggleWorkspace } = props
 	const { setWorkspace, selectedWorkspace } = useAppState()
-	const [showOptions, setShowOptions] = useState(false)
-	const queryClient = useQueryClient()
 
 	const { data: userWorkspaces } = useQuery(workspaceQueryOption())
 	const { workspaces, ordering } = userWorkspaces ?? {}
@@ -36,18 +30,18 @@ export default function SideBar(props) {
 
 	const { data: profile } = useQuery(fetchRoleQueryOption(selectedWorkspace?.id))
 	const user = profile?.user
-	const openDM = (person) => {
-		setSelectedDM(person)
-		setView("dm")
-		setMessage("")
-	}
+	// const openDM = (person) => {
+	// 	setSelectedDM(person)
+	// 	setView("dm")
+	// 	setMessage("")
+	// }
 
 
 
 	useEffect(() => {
 		if (!selectedWorkspace?.show) return
 		handleToggleWorkspace(false)
-	}, [selectedWorkspace?.show])
+	}, [selectedWorkspace?.show,handleToggleWorkspace])
 
 
 	useEffect(() => {
@@ -59,7 +53,7 @@ export default function SideBar(props) {
 		}
 		document.addEventListener('click', handleClick)
 		return () => { document.removeEventListener('click', handleClick) }
-	}, [])
+	}, [setToggle])
 	return (
 		<div ref={ref} className={`py-3 flex h-full flex-col absolute text-white bg-zinc-900 shadow-lg border-r border-[#f6f3f438] px-2 w-[13rem] md:w-[18em] md:relative z-99 `}>
 			<div className="relative border-b border-zinc-800 pb-3 mb-3">

@@ -1,9 +1,7 @@
 import {
-	MoreHorizontal,
 	ListPlus,
 	Users,
 	Info,
-	Bell,
 	Settings,
 } from "lucide-react"
 import { useNavigate, useParams } from "react-router-dom"

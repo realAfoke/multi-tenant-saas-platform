@@ -102,7 +102,6 @@ export default function TaskChecklist() {
 				</div>
 			)}
 
-			{/* Add item */}
 			<div className="flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900 px-3">
 				<Plus className="h-4 w-4 shrink-0 text-zinc-600" />
 

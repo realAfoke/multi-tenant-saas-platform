@@ -1,4 +1,5 @@
 import { useEffect } from "react"
+import { convertObjKeys } from "@/utils/appUtil"
 
 export function useChannel(
 	socket,
@@ -15,12 +16,14 @@ export function useChannel(
 	useEffect(() => {
 		if (!socket) return
 		const ws = socket
-		ws.onmessage = (e) => {
+		const handleChannelMessage = (e) => {
 			const data = JSON.parse(e.data)
 			const cameCaseObj = convertObjKeys(data)
 			queryClient.setQueryData(['activity', 'channel-activity', data?.project], old => [cameCaseObj, ...(old ?? [])])
 		}
-	}, [socket])
+		ws.addEventListener('message', handleChannelMessage)
+		return () => ws.removeEventListener('message', handleChannelMessage)
+	}, [socket, queryClient])
 
 	useEffect(() => {
 
@@ -32,7 +35,7 @@ export function useChannel(
 			setChannel({ id: channel?.id, name: channel?.name, show: true })
 		}
 
-	}, [workspaces, selectedWorkspace, channelName])
+	}, [workspaces, selectedWorkspace, channelName, setChannel])
 
 	useEffect(() => {
 		if (pathNames.length == 3) {
@@ -40,13 +43,13 @@ export function useChannel(
 		} else {
 			setSelected(pathNames[pathNames.length - 1])
 		}
-	}, [pathNames])
+	}, [pathNames, setSelected])
 	useEffect(() => {
 		const timer = setTimeout(() => {
 			setSent(false)
 		}, [5000])
 		return () => clearTimeout(timer)
-	}, [sent])
+	}, [sent, setSent])
 
 
 }

@@ -3,7 +3,7 @@ import SendInviteDialog from "@/components/setting/SendInviteDialog"
 import UpdateMember from "@/components/setting/UpdateMember"
 import { useAppState } from "@/hooks/apptools"
 import { workspaceMemberQueryOption } from "@/queryOptions/queryOptions"
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 export default function WorkspaceMembers() {
 	const [showRemoveDialog, setShowRemoveDialog] = useState(false)

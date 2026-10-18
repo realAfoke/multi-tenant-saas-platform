@@ -1,6 +1,5 @@
 import { instance } from "@/api/axios"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { useState } from "react"
 
 
 export default function UpdateMember({ currentRole, workspace, memberId }) {
@@ -45,7 +44,7 @@ export default function UpdateMember({ currentRole, workspace, memberId }) {
 			<div className="my-1 border-t border-zinc-800" />
 
 			<button
-				onClick={() => setShowRemoveDialog(`${user?.firstName} ${user?.lastName}`)}
+				// onClick={() => setShowRemoveDialog(`${user?.firstName} ${user?.lastName}`)}
 				className="w-full text-left px-3 py-2 rounded-md text-xs text-red-400 hover:bg-red-500/10 transition"
 			>
 				Remove from workspace

@@ -29,9 +29,7 @@ const formatFileSize = (bytes) => {
 
 export default function StageTwo({
 	taskData,
-	updateTask,
 	setTaskData,
-	members = [],
 }) {
 	console.log(taskData)
 	const [checklistInput, setChecklistInput] = useState("")
@@ -72,18 +70,18 @@ export default function StageTwo({
 		}
 	}
 
-	const toggleMember = (memberId) => {
-		setTaskData((prev) => {
-			const exists = prev.members.includes(memberId)
-
-			return {
-				...prev,
-				members: exists
-					? prev.members.filter((id) => id !== memberId)
-					: [...prev.members, memberId],
-			}
-		})
-	}
+	// const toggleMember = (memberId) => {
+	// 	setTaskData((prev) => {
+	// 		const exists = prev.members.includes(memberId)
+	//
+	// 		return {
+	// 			...prev,
+	// 			members: exists
+	// 				? prev.members.filter((id) => id !== memberId)
+	// 				: [...prev.members, memberId],
+	// 		}
+	// 	})
+	// }
 
 	return (
 		<div className="space-y-6">

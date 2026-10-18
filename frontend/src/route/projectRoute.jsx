@@ -1,217 +1,217 @@
-import { useAppState } from "@/hooks/apptools";
-import { activityQueryOption, fetchRoleQueryOption, fetchUserQueryOption, channelQueryOption, workspaceQueryOption } from "@/queryOptions/queryOptions";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Outlet, useOutletContext, useParams } from "react-router-dom";
-import { PanelRightCloseIcon } from "lucide-react"
-import { useNavigate, useLocation } from "react-router-dom"
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import User from "@/components/User"
-import CreateTask from "@/components/CreateTask";
-import { Input } from "@/components/ui/input";
-import { instance } from "@/api/axios";
-import { useChannel } from "@/hooks/channelHook";
-
-export default function channelRoute() {
-	const [sent, setSent] = useState(false)
-	const [toggleCreateTask, setToggleCreateTask] = useState(false)
-	const [selected, setSelected] = useState('overview')
-	const navigate = useNavigate()
-	const location = useLocation()
-	const [email, setEmail] = useState('')
-	const { hidechannelDetail, setHidechannelDetail } = useOutletContext()
-	const queryClient = useQueryClient()
-
-	const pathNames = location.pathname.split('/').filter((ptName) => ptName != '')
-	const { data: user } = useQuery(fetchUserQueryOption())
-	const { channelName } = useParams()
-	const { selectedWorkspace, setChannel, selectedChannel, socket } = useAppState()
-	const { data: role } = useQuery(fetchRoleQueryOption(selectedWorkspace?.id))
-	const { data: allWorkspaces } = useQuery(workspaceQueryOption())
-	const { workspaces = {} } = allWorkspaces ?? {}
-	const { data: channel } = useQuery(channelQueryOption(selectedWorkspace?.id, selectedChannel?.id))
-	const [showMoreMembers, setShowMoreMembers] = useState(false)
-	const [activeTab, setActiveTab] = useState("members");
-	const { channelMembers } = channel ?? []
-	let memberDisplay = channelMembers?.length > 5 && !showMoreMembers ? channelMembers?.slice(0, 5) : channelMembers
-	const { data: channelActivities } = useQuery(activityQueryOption('channel-activity', channel?.id))
-
-	useChannel(
-		socket,
-		queryClient,
-		workspaces,
-		selectedWorkspace,
-		channelName,
-		setChannel,
-		pathNames,
-		setSelected,
-		sent,
-		setSent)
-	const mainTabs = ['board', 'files', 'discussion', 'timeline']
-
-	const tabs = [
-		{ id: "members", label: "Members" },
-		{ id: "requests", label: "Requests" },
-		{ id: "details", label: "channel Details" },
-	];
-
-
-
-
-	const sendInvite = useMutation({
-		mutationFn: async () => {
-			const inviteSent = await instance.post(`workspaces/${channel?.workspace}/invite/`, { email: email, channel: channel?.id })
-			return inviteSent?.data
-		},
-		onSuccess: () => {
-			setSent(true)
-		}
-	})
-	return (
-		<div className="space-y-8 relative">
-
-			<div className={`fixed w-full flex left-0  justify-center  md:-left-2 ${hidechannelDetail ? '-top-28 md:-top-15' : 'top-15'}`}>
-				<div className=" bg-zinc-950 flex-1 p-3 max-w-[calc(100%-10%)] md:max-w-[calc(100%-5%)] mx-auto">
-					<div className={`flex justify-between items-center mb-2`}>
-						<div>
-							<p onClick={() => navigate(`../${channel?.workspaceName}`)} className="text-blue-400 text-sm font-medium">
-								{channel?.workspaceName}
-							</p>
-
-							<div className="flex flex-wrap items-center gap-4 mt-2">
-
-								<h1 className="text-4xl font-bold text-white">
-									{channel?.name}
-								</h1>
-
-								<span className="px-3 py-1 rounded-full bg-green-500/20 text-green-300 text-sm">
-									Active
-								</span>
-
-							</div>
-
-							<p className="text-zinc-400 max-w-3xl mt-4 leading-relaxed">
-								{channel?.description}
-							</p>
-						</div>
-						{['admin', 'owner'].includes(role?.role) &&
-							<Button className="rounded-xl capitalize bg-blue-500 hover:bg-blue-600 h-11 px-6" onClick={() => setToggleCreateTask(prev => !prev)}>
-								New Task
-							</Button>
-						}
-
-					</div>
-					<div className={`border-b border-zinc-800 flex justify-between flex-1`}>
-						<div className="flex gap-8 overflow-x-auto">
-							<button className={`${selected == 'overview' ? 'border-b-2 border-blue-500 text-white' : 'text-zinc-500 hover:text-white'} pb-4 text-white font-medium whitespace-nowrap`} onClick={() => {
-								setSelected('overview')
-								navigate('./', { replace: true })
-							}}>
-								Overview
-							</button>
-
-							{mainTabs.map((tab) => (
-								<button key={tab} className={`${selected == tab ? 'border-b-2 border-blue-500 text-white' : 'text-zinc-500 hover:text-white'} pb-4 text-white font-medium whitespace-nowrap`} onClick={() => {
-									setSelected(tab)
-									navigate(`${tab}`, { replace: true })
-								}}>
-									{tab}
-								</button>
-
-							))}
-
-
-						</div>
-						<div className="flex">
-							<Button
-								variant="ghost"
-								size="icon"
-								className="text-zinc-500 hover:text-white"
-								onClick={() => setHidechannelDetail(prev => !prev)}
-							>
-								<PanelRightCloseIcon className="w-5 h-5 hover:bg-transparent" />
-							</Button>
-
-
-							<Button
-								variant="ghost"
-								size="icon"
-								className="text-zinc-500 hover:text-white"
-								onClick={() => setShowMoreMembers(prev => !prev)}
-							>
-								<PanelRightCloseIcon className="w-5 h-5 hover:bg-transparent" />
-							</Button>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			{/* Tabs */}
-
-			<div className={`grid my-2  ${showMoreMembers ? 'grid-cols-1 md:grid-cols-[1.6fr_0.7fr]' : 'grid-cols-1'} gap-3 `}>
-
-				<div className={`flex-1 ${hidechannelDetail ? '' : 'mt-[12rem] md:mt-[8rem]'}`}>
-					<Outlet context={{ channel, showMoreMembers, memberDisplay, setShowMoreMembers, channelMembers, hidechannelDetail }} />
-				</div>
-
-				{showMoreMembers &&
-					<div className="bg-zinc-900/50 pt-5 fixed top-11 backdrop-blur-sm bg-[rgba(0,0,0,0.5)] h-full overflow-hidden right-0">
-						<div className="flex border-b border-gray-700 bg-zinc-950 ">
-							{tabs.map((tab) => (
-								<button
-									key={tab.id}
-									onClick={() => setActiveTab(tab.id)}
-									className={`px-4 py-3 text-sm ${activeTab === tab.id
-										? "border-b-2 border-blue-500 text-white"
-										: "text-gray-400 hover:text-white"
-										}`}
-								>
-									{tab.label}
-								</button>
-							))}
-							<Button
-								variant="ghost"
-								size="icon"
-								className="text-zinc-500 hover:text-white"
-								onClick={() => setShowMoreMembers(prev => !prev)}
-							>
-								<PanelRightCloseIcon className="w-5 h-5 hover:bg-transparent" />
-							</Button>
-
-						</div>
-
-						<div className="p-3 border-l border-zinc-800">
-							{['owner', 'admin'].includes(role.role) && <div>
-								<div className="flex gap-2">
-									<Input className="p-4 h-10 rounded-sm text-white" placeholder="Enter email to send an invite" value={email} onChange={(e) => setEmail(e.target.value)} />
-									<Button className={`${sent ? 'bg-green-400 rounded-sm' : ''} text-white p-4`}
-										onClick={() => sendInvite.mutate()}>{sent ? 'sent' : 'send'}</Button>
-								</div>
-							</div>
-							}
-							{activeTab === "members" && (
-								<div className="max-h-64 overflow-auto my-5">
-									{memberDisplay?.map((member) => (
-										<User key={member.id} member={member} />
-									))}
-								</div>
-							)}
-
-							{activeTab === "requests" && <PendingRequests />}
-							{activeTab === "details" && <channelDetails />}
-						</div>
-					</div>
-
-				}
-
-			</div>
-
-			{toggleCreateTask && <div className={`overflow-auto h-screen absolute top-0 w-full left-0 backdrop-blur-sm bg-[rgba(0,0,0,0.4)] p-5`}>
-				<CreateTask channel={channel} handleCreateTask={setToggleCreateTask} />
-			</div>
-			}
-		</div >
-	)
-}
-
+// import { useAppState } from "@/hooks/apptools";
+// import { activityQueryOption, fetchRoleQueryOption, fetchUserQueryOption, channelQueryOption, workspaceQueryOption } from "@/queryOptions/queryOptions";
+// import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+// import { Outlet, useOutletContext, useParams } from "react-router-dom";
+// import { PanelRightCloseIcon } from "lucide-react"
+// import { useNavigate, useLocation } from "react-router-dom"
+// import { Button } from "@/components/ui/button";
+// import { useState } from "react";
+// import User from "@/components/User"
+// import CreateTask from "@/components/CreateTask";
+// import { Input } from "@/components/ui/input";
+// import { instance } from "@/api/axios";
+// import { useChannel } from "@/hooks/channelHook";
+//
+// export default function channelRoute() {
+// 	const [sent, setSent] = useState(false)
+// 	const [toggleCreateTask, setToggleCreateTask] = useState(false)
+// 	const [selected, setSelected] = useState('overview')
+// 	const navigate = useNavigate()
+// 	const location = useLocation()
+// 	const [email, setEmail] = useState('')
+// 	const { hidechannelDetail, setHidechannelDetail } = useOutletContext()
+// 	const queryClient = useQueryClient()
+//
+// 	const pathNames = location.pathname.split('/').filter((ptName) => ptName != '')
+// 	const { data: user } = useQuery(fetchUserQueryOption())
+// 	const { channelName } = useParams()
+// 	const { selectedWorkspace, setChannel, selectedChannel, socket } = useAppState()
+// 	const { data: role } = useQuery(fetchRoleQueryOption(selectedWorkspace?.id))
+// 	const { data: allWorkspaces } = useQuery(workspaceQueryOption())
+// 	const { workspaces = {} } = allWorkspaces ?? {}
+// 	const { data: channel } = useQuery(channelQueryOption(selectedWorkspace?.id, selectedChannel?.id))
+// 	const [showMoreMembers, setShowMoreMembers] = useState(false)
+// 	const [activeTab, setActiveTab] = useState("members");
+// 	const { channelMembers } = channel ?? []
+// 	let memberDisplay = channelMembers?.length > 5 && !showMoreMembers ? channelMembers?.slice(0, 5) : channelMembers
+// 	const { data: channelActivities } = useQuery(activityQueryOption('channel-activity', channel?.id))
+//
+// 	useChannel(
+// 		socket,
+// 		queryClient,
+// 		workspaces,
+// 		selectedWorkspace,
+// 		channelName,
+// 		setChannel,
+// 		pathNames,
+// 		setSelected,
+// 		sent,
+// 		setSent)
+// 	const mainTabs = ['board', 'files', 'discussion', 'timeline']
+//
+// 	const tabs = [
+// 		{ id: "members", label: "Members" },
+// 		{ id: "requests", label: "Requests" },
+// 		{ id: "details", label: "channel Details" },
+// 	];
+//
+//
+//
+//
+// 	const sendInvite = useMutation({
+// 		mutationFn: async () => {
+// 			const inviteSent = await instance.post(`workspaces/${channel?.workspace}/invite/`, { email: email, channel: channel?.id })
+// 			return inviteSent?.data
+// 		},
+// 		onSuccess: () => {
+// 			setSent(true)
+// 		}
+// 	})
+// 	return (
+// 		<div className="space-y-8 relative">
+//
+// 			<div className={`fixed w-full flex left-0  justify-center  md:-left-2 ${hidechannelDetail ? '-top-28 md:-top-15' : 'top-15'}`}>
+// 				<div className=" bg-zinc-950 flex-1 p-3 max-w-[calc(100%-10%)] md:max-w-[calc(100%-5%)] mx-auto">
+// 					<div className={`flex justify-between items-center mb-2`}>
+// 						<div>
+// 							<p onClick={() => navigate(`../${channel?.workspaceName}`)} className="text-blue-400 text-sm font-medium">
+// 								{channel?.workspaceName}
+// 							</p>
+//
+// 							<div className="flex flex-wrap items-center gap-4 mt-2">
+//
+// 								<h1 className="text-4xl font-bold text-white">
+// 									{channel?.name}
+// 								</h1>
+//
+// 								<span className="px-3 py-1 rounded-full bg-green-500/20 text-green-300 text-sm">
+// 									Active
+// 								</span>
+//
+// 							</div>
+//
+// 							<p className="text-zinc-400 max-w-3xl mt-4 leading-relaxed">
+// 								{channel?.description}
+// 							</p>
+// 						</div>
+// 						{['admin', 'owner'].includes(role?.role) &&
+// 							<Button className="rounded-xl capitalize bg-blue-500 hover:bg-blue-600 h-11 px-6" onClick={() => setToggleCreateTask(prev => !prev)}>
+// 								New Task
+// 							</Button>
+// 						}
+//
+// 					</div>
+// 					<div className={`border-b border-zinc-800 flex justify-between flex-1`}>
+// 						<div className="flex gap-8 overflow-x-auto">
+// 							<button className={`${selected == 'overview' ? 'border-b-2 border-blue-500 text-white' : 'text-zinc-500 hover:text-white'} pb-4 text-white font-medium whitespace-nowrap`} onClick={() => {
+// 								setSelected('overview')
+// 								navigate('./', { replace: true })
+// 							}}>
+// 								Overview
+// 							</button>
+//
+// 							{mainTabs.map((tab) => (
+// 								<button key={tab} className={`${selected == tab ? 'border-b-2 border-blue-500 text-white' : 'text-zinc-500 hover:text-white'} pb-4 text-white font-medium whitespace-nowrap`} onClick={() => {
+// 									setSelected(tab)
+// 									navigate(`${tab}`, { replace: true })
+// 								}}>
+// 									{tab}
+// 								</button>
+//
+// 							))}
+//
+//
+// 						</div>
+// 						<div className="flex">
+// 							<Button
+// 								variant="ghost"
+// 								size="icon"
+// 								className="text-zinc-500 hover:text-white"
+// 								onClick={() => setHidechannelDetail(prev => !prev)}
+// 							>
+// 								<PanelRightCloseIcon className="w-5 h-5 hover:bg-transparent" />
+// 							</Button>
+//
+//
+// 							<Button
+// 								variant="ghost"
+// 								size="icon"
+// 								className="text-zinc-500 hover:text-white"
+// 								onClick={() => setShowMoreMembers(prev => !prev)}
+// 							>
+// 								<PanelRightCloseIcon className="w-5 h-5 hover:bg-transparent" />
+// 							</Button>
+// 						</div>
+// 					</div>
+// 				</div>
+// 			</div>
+//
+// 			{/* Tabs */}
+//
+// 			<div className={`grid my-2  ${showMoreMembers ? 'grid-cols-1 md:grid-cols-[1.6fr_0.7fr]' : 'grid-cols-1'} gap-3 `}>
+//
+// 				<div className={`flex-1 ${hidechannelDetail ? '' : 'mt-[12rem] md:mt-[8rem]'}`}>
+// 					<Outlet context={{ channel, showMoreMembers, memberDisplay, setShowMoreMembers, channelMembers, hidechannelDetail }} />
+// 				</div>
+//
+// 				{showMoreMembers &&
+// 					<div className="bg-zinc-900/50 pt-5 fixed top-11 backdrop-blur-sm bg-[rgba(0,0,0,0.5)] h-full overflow-hidden right-0">
+// 						<div className="flex border-b border-gray-700 bg-zinc-950 ">
+// 							{tabs.map((tab) => (
+// 								<button
+// 									key={tab.id}
+// 									onClick={() => setActiveTab(tab.id)}
+// 									className={`px-4 py-3 text-sm ${activeTab === tab.id
+// 										? "border-b-2 border-blue-500 text-white"
+// 										: "text-gray-400 hover:text-white"
+// 										}`}
+// 								>
+// 									{tab.label}
+// 								</button>
+// 							))}
+// 							<Button
+// 								variant="ghost"
+// 								size="icon"
+// 								className="text-zinc-500 hover:text-white"
+// 								onClick={() => setShowMoreMembers(prev => !prev)}
+// 							>
+// 								<PanelRightCloseIcon className="w-5 h-5 hover:bg-transparent" />
+// 							</Button>
+//
+// 						</div>
+//
+// 						<div className="p-3 border-l border-zinc-800">
+// 							{['owner', 'admin'].includes(role.role) && <div>
+// 								<div className="flex gap-2">
+// 									<Input className="p-4 h-10 rounded-sm text-white" placeholder="Enter email to send an invite" value={email} onChange={(e) => setEmail(e.target.value)} />
+// 									<Button className={`${sent ? 'bg-green-400 rounded-sm' : ''} text-white p-4`}
+// 										onClick={() => sendInvite.mutate()}>{sent ? 'sent' : 'send'}</Button>
+// 								</div>
+// 							</div>
+// 							}
+// 							{activeTab === "members" && (
+// 								<div className="max-h-64 overflow-auto my-5">
+// 									{memberDisplay?.map((member) => (
+// 										<User key={member.id} member={member} />
+// 									))}
+// 								</div>
+// 							)}
+//
+// 							{activeTab === "requests" && <PendingRequests />}
+// 							{activeTab === "details" && <channelDetails />}
+// 						</div>
+// 					</div>
+//
+// 				}
+//
+// 			</div>
+//
+// 			{toggleCreateTask && <div className={`overflow-auto h-screen absolute top-0 w-full left-0 backdrop-blur-sm bg-[rgba(0,0,0,0.4)] p-5`}>
+// 				<CreateTask channel={channel} handleCreateTask={setToggleCreateTask} />
+// 			</div>
+// 			}
+// 		</div >
+// 	)
+// }
+//
 

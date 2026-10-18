@@ -1,14 +1,10 @@
 import { Card, CardContent, CardTitle, CardDescription } from "@/components/ui/card"
-import menuIcon from "@/assets/menu3.svg"
 import { Button } from "@/components/ui/button"
-import { Item, ItemGroup, ItemTitle } from "@/components/ui/item"
-import Footer from "@/components/Footer"
 import createProjectIcon from "@/assets/new-project.svg"
 import askToJoin from "@/assets/ask-to-join.svg"
 import commentCollaboration from "@/assets/comment-collaboration.svg"
 import roleBase from "@/assets/role-base.svg"
 import dashboardImg from "@/assets/dashboard.png"
-import collab from "@/assets/collab.jpg"
 import SideBar from "@/components/landingPage/SideBar"
 
 

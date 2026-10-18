@@ -1,4 +1,3 @@
-import { instance } from "@/api/axios"
 import { useAppState } from "@/hooks/apptools"
 import { useMutation } from "@tanstack/react-query"
 import { sendInviteMutationOption } from "@/mutationOptions/mutationOption"

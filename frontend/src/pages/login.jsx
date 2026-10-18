@@ -1,15 +1,15 @@
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { instance } from "@/api/axios"
-import { useNavigate, redirect, Link } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAppState } from "@/hooks/apptools"
 
 
 export default function Login() {
-	const [email, setEmail] = useState()
-	const [password, setPassword] = useState()
+	const [email, setEmail] = useState("")
+	const [password, setPassword] = useState("")
 	const navigate = useNavigate()
 	const { inviteDetail } = useAppState()
 	const queryClient = useQueryClient()
@@ -185,14 +185,7 @@ export default function Login() {
 }
 
 
-export async function loader() {
-	try {
-		await instance.get('users/me')
-		return redirect('/dashboard')
-	} catch (error) {
-		console.error(error)
-	}
-}
+
 // #070c587a
 //
 //

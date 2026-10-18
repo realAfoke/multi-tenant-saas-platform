@@ -40,7 +40,6 @@ export default function AssigneePicker({ members = [] }) {
 			</div>
 
 
-			{/* Selected members / trigger */}
 			<button
 				type="button"
 				onClick={() => setOpen((value) => !value)}
@@ -139,7 +138,6 @@ export default function AssigneePicker({ members = [] }) {
 											)}
 										</div>
 
-										{/* Selected */}
 										<div
 											className={`flex h-5 w-5 items-center justify-center rounded border ${isSelected
 												? "border-blue-500 bg-blue-600"
@@ -156,7 +154,6 @@ export default function AssigneePicker({ members = [] }) {
 						)}
 					</div>
 
-					{/* Footer */}
 					<div className="flex items-center justify-between border-t border-zinc-800 px-3 py-2">
 						<span className="text-xs text-zinc-600">
 							{selected.length} selected

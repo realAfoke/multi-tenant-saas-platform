@@ -12,7 +12,6 @@ export default function DirectMessage({ showAddPeople, setShowAddPeople }) {
 		setView('dm')
 		setSelectedDm(dm)
 		setChannel({})
-		console.log(dm)
 		navigate(`/chat/${dm?.id}`)
 	}
 	const { data: directMessages } = useQuery(conversationsQueryOption())

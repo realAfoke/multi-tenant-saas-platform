@@ -1,19 +1,18 @@
 import { Outlet, useNavigate } from "react-router-dom"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useAppHook } from "@/hooks/appHook.js"
-import { fetchUserQueryOption, workspaceQueryOption, channelQueryOption, fetchRoleQueryOption, activityQueryOption, conversationsQueryOption } from "@/queryOptions/queryOptions"
-import { convertObjKeys, saveMessageOffline } from "@/utils/appUtil";
-import { useParams, Navigate, useLocation } from "react-router-dom"
+import { fetchUserQueryOption, workspaceQueryOption, channelQueryOption, fetchRoleQueryOption, conversationsQueryOption } from "@/queryOptions/queryOptions"
+import { useParams, useLocation } from "react-router-dom"
 import { useAppState } from "@/hooks/apptools"
 import TopBar from "@/components/TopBar"
 import SideBar from "@/components/SideBar"
 import { useRealTimeUpdate } from "@/hooks/appHook.js"
 import { useEffect, useState } from "react"
-import AddPeople from "@/components/AddFriendUi"
-import { handleChannelUpdate } from "@/service/channel";
+// import { handleChannelUpdate } from "@/service/channel";
 import { handleConversationUpdate } from "@/service/conversation";
 import { handleMessageUpdate } from "@/service/message";
 import LandingPage from "@/pages/landing";
+import { convertObjKeys } from "@/utils/appUtil"
 
 
 export default function ProtectedRoute() {
@@ -78,7 +77,7 @@ export default function ProtectedRoute() {
 	useEffect(() => {
 		if (!socket) return
 		const ws = socket
-		ws.onmessage = async (e) => {
+		const handleRealTimeUpdate = async (e) => {
 			const rawData = JSON.parse(e.data)
 			const camelCaseData = convertObjKeys(rawData)
 			console.log('camelcase:', camelCaseData)
@@ -92,7 +91,9 @@ export default function ProtectedRoute() {
 					break;
 			}
 		}
-	}, [conversationId, socket])
+		ws.addEventListener('update', handleRealTimeUpdate)
+		return () => ws.removeEventListener('update', handleRealTimeUpdate)
+	}, [conversationId, socket, queryClient, setWorkspace, setSelectedDm, user])
 
 	// const [showAddPeople, setShowAddPeople] = useState(false)
 	// if (!user) {

@@ -123,7 +123,7 @@ export function updateProjectMutationOption(queryClient) {
 }
 
 
-export function addMemberMutationOption() {
+export function addMemberMutationOption(wk, data) {
 	return mutationOptions({
 		mutationFn: async () => {
 			try {
@@ -131,7 +131,7 @@ export function addMemberMutationOption() {
 				return inviteSent?.data
 			} catch (error) {
 				console.error(error)
-				throw Error(error)
+				throw new Error(error.message, { cause: error })
 			}
 		}
 	})

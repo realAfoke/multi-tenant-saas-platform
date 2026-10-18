@@ -3,9 +3,10 @@ import { instance } from "@/api/axios"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect } from "react"
 import ChatUi from "./ChatUi"
+import { convertObjKeys } from "@/utils/appUtil"
 
 export default function ChannelChat() {
-	const { socket,selectedChannel, selectedWorkspace } = useAppState()
+	const { socket, selectedChannel, selectedWorkspace } = useAppState()
 	const queryClient = useQueryClient()
 
 	const { data: messages } = useQuery({
@@ -16,7 +17,7 @@ export default function ChannelChat() {
 				return response.data
 			} catch (error) {
 				console.error(error)
-				throw Error(error)
+				throw new Error(error.message, { cause: error })
 			}
 		},
 		enabled: !!selectedChannel?.id
@@ -24,14 +25,17 @@ export default function ChannelChat() {
 
 	useEffect(() => {
 		if (!socket) return
-		socket.onmessage = (e) => {
+		const handleMessage = (e) => {
 			let data = JSON.parse(e.data)
 			const converted = convertObjKeys(data)
 			if (data?.project === selectedChannel?.id && data?.workspace === selectedWorkspace?.id) {
 				queryClient.setQueryData(['discussion', selectedWorkspace?.id, selectedChannel?.id], old => [...(old ?? []), converted])
 			}
+
 		}
-	}, [socket, queryClient])
+		socket.addEventListener('message', handleMessage)
+		return () => socket.removeEventListener('message', handleMessage)
+	}, [socket, queryClient, selectedChannel?.id, selectedWorkspace?.id])
 
 	return (
 		<ChatUi messages={messages} />

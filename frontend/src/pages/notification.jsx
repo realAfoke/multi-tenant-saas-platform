@@ -1,20 +1,17 @@
 import {
 	Bell,
-	Check,
 	MessageCircle,
 	CheckCircle2,
 	UserPlus,
-	CalendarDays,
 	AtSign,
 	Clock,
 	MoreHorizontal,
 } from "lucide-react"
-import { notificationQueryOption } from "@/queryOptions/queryOptions"
+// import { notificationQueryOption } from "@/queryOptions/queryOptions"
 import { useAppState } from "@/hooks/apptools"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { Button } from "@/components/ui/button"
+// import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { dateFormatter } from "@/utils/appUtil"
-import { markNotificationMutationOption } from "@/mutationOptions/mutationOption"
+// import { markNotificationMutationOption } from "@/mutationOptions/mutationOption"
 
 import { Link } from "react-router-dom"
 
@@ -24,7 +21,7 @@ export default function Notifications() {
 
 	// const markNotification = useMutation(markNotificationMutationOption(selectedWorkspace?.id))
 	const notifications = []
-	const markNofitification = []
+	// const markNofitification = []
 
 	// const notifications = [
 	// 	{
@@ -139,9 +136,9 @@ export default function Notifications() {
 
 							key={notification.id}
 							onClick={() => {
-								setOpen(false)
-								if (notification.read) return
-								markNotification.mutate(notification?.id)
+								// setOpen(false)
+								// if (notification.read) return
+								// markNotification.mutate(notification?.id)
 							}
 							}
 

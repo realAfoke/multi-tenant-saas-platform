@@ -15,7 +15,7 @@ export function useRealTimeUpdate(setSocket, workspaces) {
 		}
 		ws.onclose = () => console.log('connection closed!!!')
 		return () => ws.close()
-	}, [workspaces])
+	}, [workspaces, setSocket])
 }
 
 
@@ -36,7 +36,6 @@ export function useAppHook(
 	selectedChannel,
 	selectedDm,
 	setIndexedDB,
-	navigate
 ) {
 	useEffect(() => {
 		const indexDb = async () => {
@@ -58,7 +57,7 @@ export function useAppHook(
 			setWorkspace({ ...workspace, show: true })
 
 		}
-	}, [workspaces, wkName])
+	}, [workspaces, wkName, selectedWorkspace?.id, setWorkspace])
 
 	useEffect(() => {
 		if (selectedChannel?.id && !channelName) {
@@ -80,8 +79,7 @@ export function useAppHook(
 			setSelectedDm({})
 			setView('channel')
 		}
-
-	}, [selectedWorkspace, channelName])
+	}, [selectedWorkspace, channelName, selectedChannel?.id, selectedChannel?.name, setChannel, setSelectedDm, setView])
 
 	useEffect(() => {
 		if (!channel || !taskName) {
@@ -96,7 +94,7 @@ export function useAppHook(
 		if (task) {
 			setTask({ id: task?.id, title: task?.title, show: false })
 		}
-	}, [channel, taskName])
+	}, [channel, taskName, setTask])
 
 
 
@@ -130,7 +128,5 @@ export function useAppHook(
 			}
 			setDm()
 		}
-
-
-	}, [conversationId, conversations, setSelectedDm])
+	}, [conversationId, conversations, selectedDm?.id, setSelectedDm, setChannel, setView])
 }

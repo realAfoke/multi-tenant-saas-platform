@@ -1,18 +1,19 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import Login, { loader as loginLoader } from './pages/login.jsx'
+import Login from './pages/login.jsx'
+import { loginLoader } from './pages/loginLoader.js'
 import ProtectedRoute from './route/protectedRoute.jsx'
 import './index.css'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import Task from './pages/task.jsx'
 import Profiles from './pages/profile.jsx'
 import Profile from './pages/mainProfile.jsx'
-// import App from './App.jsx'
 import ErrorPage from './components/Error.jsx'
 import Pricing from './pages/pricing.jsx'
-import Notifications from './pages/notification.jsx'
-import SignUp, { loader as signUpLoader } from './pages/signup.jsx'
+// import Notifications from './pages/notification.jsx'
+import SignUp from './pages/signup.jsx'
+import { signUpLoader } from './pages/signupLoader.js'
 import SignEmail from './components/SignEmail.jsx'
 import VerifyEmail from './components/VerifyEmail.jsx'
 import AccountDetails from './components/AccountDetails.jsx'
@@ -39,8 +40,6 @@ import ChannelSettings from './pages/channel/setting.jsx'
 const queryClient = new QueryClient()
 
 const routes = createBrowserRouter([
-  // { path: 'team-chat', element: <TeamChat /> },
-
   { path: 'accept-invite', element: <AcceptInvite /> },
 
   {

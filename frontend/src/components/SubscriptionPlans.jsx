@@ -1,5 +1,5 @@
-import { ItemGroup, Item, ItemTitle, ItemContent } from "./ui/item"
-import { CardDescription, Card, CardTitle, CardContent } from "./ui/card"
+import { ItemGroup, Item, ItemContent } from "./ui/item"
+import { Card, CardTitle, CardContent } from "./ui/card"
 import { Button } from "./ui/button"
 export default function Plan(props) {
 	const { plan = {}, handleCheckout } = props ?? {}

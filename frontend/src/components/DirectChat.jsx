@@ -6,7 +6,7 @@ import { useEffect } from "react";
 
 
 export default function DirectChat() {
-	const { socket, selectedDm, selectedChannel, setMessage } = useAppState()
+	const { selectedDm, selectedChannel, setMessage } = useAppState()
 
 	const { data: messages } = useQuery({
 		queryKey: ['directMessages', selectedDm?.conversation],
@@ -17,7 +17,7 @@ export default function DirectChat() {
 				return response.data
 			} catch (err) {
 				console.error(err)
-				throw Error(err)
+				throw new Error(err.message, { cause: err })
 			}
 		},
 		enabled: !!selectedDm?.conversation

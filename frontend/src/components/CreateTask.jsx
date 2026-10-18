@@ -1,7 +1,6 @@
 import { useState } from "react"
 import { ArrowLeft, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useNavigate } from "react-router-dom"
 import { useAppState } from "@/hooks/apptools"
 import { instance } from "@/api/axios"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
@@ -10,7 +9,6 @@ import StageTwo from "./StageTwo"
 import StageThree from "./StageThree"
 
 export default function CreateTask({
-	project,
 	members,
 	handleCreateTask,
 }) {
@@ -50,9 +48,6 @@ export default function CreateTask({
 		}
 	}
 
-	const handleSubmit = () => {
-		// Keep your existing mutation here
-	}
 	const createTask = useMutation({
 		mutationFn: async () => {
 			const response = await instance.post(`workspaces/channel/${selectedChannel?.id}/tasks/`, { ...taskData, channel: selectedChannel?.id })
@@ -67,7 +62,7 @@ export default function CreateTask({
 					...old ?? {},
 					tasks: newUpdate
 				}
-				console.log('ret:',ret)
+				console.log('ret:', ret)
 				return ret
 			})
 		}
@@ -145,7 +140,6 @@ export default function CreateTask({
 				)}
 			</div>
 
-			{/* Footer */}
 			<div className="px-4 py-4 md:px-8">
 				<div className="mx-auto flex max-w-4xl items-center justify-between">
 					<Button

@@ -13,6 +13,8 @@ export default function Create() {
 	const { selectedWorkspace, selectedProject, selectedTask } = useAppState()
 	const navigate = useNavigate()
 	const queryClient = useQueryClient()
+	const [projectName, setProjectName] = useState('')
+	const [description, setDescription] = useState('')
 
 	// console.log('q:',queryClient)
 	const createProject = useMutation(createProjectMutationOption(queryClient))
@@ -30,7 +32,7 @@ export default function Create() {
 			navigate('/dashboard/create-new-workspace', { replace: true })
 		}
 
-	}, [selectedWorkspace?.name, selectedProject?.name, selectedTask?.name])
+	}, [selectedWorkspace?.name, selectedProject?.name, selectedTask?.name, navigate])
 
 	return (
 		<div className="flex flex-col h-screen items-center py-10">
@@ -47,7 +49,7 @@ export default function Create() {
 							<label className="text-white">
 								Project Name
 							</label>
-							<Input placeholder='enter project name' className='bg-[#fffefe30] border-0 text-white outline-none rounded-sm p-3 py-5' value={name} onChange={(e) => setName(e.target.value)} />
+							<Input placeholder='enter project name' className='bg-[#fffefe30] border-0 text-white outline-none rounded-sm p-3 py-5' value={projectName} onChange={(e) => setProjectName(e.target.value)} />
 						</div>
 						<div className="*:my-2 flex flex-col">
 							<label className="text-white">

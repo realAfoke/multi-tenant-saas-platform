@@ -1,6 +1,4 @@
 import { useEffect } from "react";
-import { convertObjKeys, saveMessageOffline } from "@/utils/appUtil";
-import { SquarePilcrowIcon } from "lucide-react";
 
 export function useMessageHook({
 	socket,
@@ -12,7 +10,6 @@ export function useMessageHook({
 	ref,
 	chatType,
 	recipient,
-	setSelectedDm,
 	setChannel,
 }) {
 	const conversation = selectedChannel?.conversation || selectedDm
@@ -58,7 +55,7 @@ export function useMessageHook({
 			}
 
 		}
-	}, [messages])
+	}, [messages, chatType, selectedChannel?.id, queryClient, conversation?.unread, recipient?.id, selectedChannel, conversationId, setChannel,socket])
 
 	useEffect(() => {
 		if (!selectedChannel?.id && !selectedDm?.id) return
@@ -70,7 +67,7 @@ export function useMessageHook({
 		if (ref.current) {
 			ref.current?.scrollIntoView();
 		}
-	}, [messages]);
+	}, [messages,ref]);
 
 }
 

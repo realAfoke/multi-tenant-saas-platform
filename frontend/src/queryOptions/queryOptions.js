@@ -11,7 +11,7 @@ export function conversationsQueryOption() {
 				return response.data
 			} catch (err) {
 				console.error(err)
-				throw Error(err)
+				throw new Error(err.message, { cause: err })
 			}
 		}
 	})
@@ -26,7 +26,7 @@ export function activityQueryOption(route, id) {
 				return response.data
 			} catch (error) {
 				console.error(error)
-				throw Error(error)
+				throw new Error(error.message, { cause: error })
 			}
 		},
 		enabled: !!id
@@ -43,7 +43,7 @@ export function notificationQueryOption(wk) {
 				return response.data
 			} catch (error) {
 				console.error(error)
-				throw Error(error)
+				throw new Error(error.message, { cause: error })
 			}
 		},
 		enabled: !!wk
@@ -73,7 +73,7 @@ async function getUser() {
 		return user?.data
 	} catch (error) {
 		console.error(error)
-		throw new Error(error)
+		throw new Error(error.message, { cause: error })
 	}
 }
 
@@ -94,9 +94,9 @@ export function workspaceQueryOption() {
 					workspaces: Object.fromEntries(workspaces?.map((obj) => [obj?.id, obj])),
 					ordering: workspaces?.map((obj) => obj?.id)
 				}
-			} catch (err) {
-				console.error(err)
-				throw new Error(err)
+			} catch (error) {
+				console.error(error)
+				throw new Error(error.message, { cause: error })
 			}
 		}
 	})
@@ -133,7 +133,7 @@ async function taskFn(wk, prjId) {
 		}
 	} catch (error) {
 		console.error(error)
-		throw new Error(error)
+		throw new Error(error.message, { cause: error })
 	}
 }
 
@@ -148,7 +148,7 @@ export function selectedTaskQueryOption(wk, chl, tk) {
 				return response.data
 			} catch (error) {
 				console.error(error)
-				throw Error(error)
+				throw new Error(error.message, { cause: error })
 			}
 		},
 		enabled: !!tk
@@ -163,8 +163,9 @@ export function commentQueryOption(taskId) {
 				const [taskId,] = queryKey
 				const comments = await instance.get(`workspaces/${taskId}/comments/`)
 				return comments.data
-			} catch (err) {
-				console.error(err)
+			} catch (error) {
+				console.error(error)
+				throw new Error(error.message, { cause: error })
 			}
 		},
 		enabled: !!taskId
@@ -186,7 +187,7 @@ async function getDashboardData(id) {
 		return data?.data
 	} catch (error) {
 		console.error(error)
-		return error
+		throw new Error(error.message, { cause: error })
 	}
 }
 
@@ -202,7 +203,7 @@ export function workspaceMemberQueryOption(id) {
 			}
 			catch (error) {
 				console.error(error)
-				throw Error(error)
+				throw new Error(error.message, { cause: error })
 			}
 		},
 		enabled: !!id

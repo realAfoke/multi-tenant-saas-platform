@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom"
 
 export default function NestedList(props) {
 	const navigate = useNavigate()
-	const { selectedProject, selectedWorkspace, setWorkspace } = useAppState()
+	const { selectedProject, selectedWorkspace } = useAppState()
 	const { list, isWorkspace, isProject } = props
 	const workspaceRoute = `${isWorkspace ? list?.name : selectedWorkspace?.name}`
 	const projectRoute = `${workspaceRoute}${isProject ? '/' + list?.name : selectedProject ? '/' + selectedProject?.name : ''}`
@@ -14,7 +14,7 @@ export default function NestedList(props) {
 			<ItemContent>
 				<ItemTitle className="lowercase w-full text-sm" onClick={() => {
 					// setter({ id: Number(list?.id), name: list?.name || list?.title, show: true })
-					setWorkspace({ ...main, show: true })
+					// setWorkspace({ ...main, show: true })
 					const route = isWorkspace ? workspaceRoute : isProject ? projectRoute : taskRoute
 					navigate(route.trim())
 				}}>

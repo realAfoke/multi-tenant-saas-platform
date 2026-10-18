@@ -3,7 +3,7 @@ import { useAppState } from "@/hooks/apptools"
 import { Hash, Plus, ChevronDown } from "lucide-react"
 import { useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { channelQueryOption } from "@/queryOptions/queryOptions"
 
 
@@ -27,7 +27,6 @@ export default function Project() {
 			show: true
 		})
 	}
-	const queryClient = useQueryClient()
 	// const channel = queryClient.getQueryData([selectedWorkspace?.id, "channel", selectedChannel?.id,])
 	const { data: channel } = useQuery(channelQueryOption(selectedWorkspace?.id, selectedChannel?.id))
 	const channelTask = channel?.tasks ?? []

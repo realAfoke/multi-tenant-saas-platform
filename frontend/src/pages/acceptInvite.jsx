@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { useParams, useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
@@ -9,7 +9,7 @@ import {
 	Loader2,
 	AlertCircle,
 } from "lucide-react"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import { instance } from "@/api/axios"
 import { useSearchParams } from "react-router-dom"
 import WrongAccount from "@/components/WrongAccount"
@@ -17,14 +17,13 @@ import { fetchUserQueryOption } from "@/queryOptions/queryOptions"
 import { useAppState } from "@/hooks/apptools"
 
 export default function AcceptInvite() {
-	const [cancel, setCancel] = useState(false)
 	const [searchParams] = useSearchParams()
 	const token = searchParams.get('token')
 	const inviteId = searchParams.get('invite')
 	const { setInvite, inviteDetail } = useAppState()
 	const navigate = useNavigate()
 
-	const [loading, setLoading] = useState(false)
+	const [loading] = useState(false)
 
 	const { data: user } = useQuery(fetchUserQueryOption())
 
@@ -36,7 +35,7 @@ export default function AcceptInvite() {
 				return wkSpace?.data
 			} catch (error) {
 				console.error(error)
-				throw Error(error)
+				throw new Error(error.message, { cause: error })
 			}
 		}
 	})
@@ -45,11 +44,11 @@ export default function AcceptInvite() {
 	useEffect(() => {
 		if (inviteDetail?.email === invite?.inviteeEmail) return
 		setInvite({ token: token, id: inviteId, email: invite?.inviteeEmail })
-	}, [invite?.id, inviteDetail?.email])
+	}, [invite?.id, inviteDetail?.email, setInvite, token, invite.inviteeEmail, inviteId])
 
 	const acceptOrDeclineInvite = useMutation({
 		mutationFn: async (status) => {
-			const response = await instance.patch(`workspaces/${inviteId}/accept-invite/`, { token, token, status: status })
+			const response = await instance.patch(`workspaces/${inviteId}/accept-invite/`, { token: token, status: status })
 			return response?.data
 		},
 		onSuccess: (mssg) => {
@@ -69,9 +68,9 @@ export default function AcceptInvite() {
 			return logout?.data
 		} catch (error) {
 			console.error(error)
+			throw new Error(error.message,{cause:error})
 		}
 	}
-	const handleCancel = () => { }
 
 
 	if (!invite?.isValid) {
@@ -111,7 +110,7 @@ export default function AcceptInvite() {
 		)
 	}
 	if (user?.email && user?.email != invite?.inviteeEmail) {
-		return (<WrongAccount onSwitchAccount={handleSwtich} onCancel={setCancel} inviteEmail={invite?.inviteeEmail} currentEmail={user?.email} />)
+		return (<WrongAccount onSwitchAccount={handleSwtich} inviteEmail={invite?.inviteeEmail} currentEmail={user?.email} />)
 	}
 
 	return (

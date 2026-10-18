@@ -1,10 +1,8 @@
 import {
 	Bell,
-	Check,
 	MessageCircle,
 	UserPlus,
 	CalendarDays,
-	AtSign,
 } from "lucide-react"
 
 import {
@@ -14,10 +12,10 @@ import {
 } from "@/components/ui/popover"
 import { useParams, useNavigate, Link } from "react-router-dom"
 import { useEffect, useState } from "react"
-import { notificationQueryOption } from "@/queryOptions/queryOptions"
 import { useAppState } from "@/hooks/apptools"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQueryClient } from "@tanstack/react-query"
 import { dateFormatter } from "@/utils/appUtil"
+import { useMutation } from "@tanstack/react-query"
 import { markNotificationMutationOption } from "@/mutationOptions/mutationOption"
 
 
@@ -28,15 +26,17 @@ export default function NotificationPopover() {
 	useEffect(() => {
 		if (!socket) return
 		const ws = socket
-		ws.onmessage = (e) => {
+		const handleNotification = (e) => {
 			const newData = JSON.parse(e.data)
 			if (newData?.type !== 'notification') return
 			const { data = {} } = newData
 			queryClient.setQueryData(['notification', 'workspace', selectedWorkspace?.id], (old) => [data, ...(old ?? [])])
 		}
-	}, [socket])
+		ws.addEventListener('notification', handleNotification)
+
+		return () => ws.removeEventListener('notification', handleNotification)
+	}, [socket, queryClient, selectedWorkspace?.id])
 	const notifications = []
-	const markNofitification = []
 
 	// const { data: notifications } = useQuery(notificationQueryOption(selectedWorkspace?.id))
 	const noOfUnread = notifications?.filter((notification) => !notification?.read)?.length
@@ -44,7 +44,7 @@ export default function NotificationPopover() {
 	const navigate = useNavigate()
 	const [open, setOpen] = useState(false)
 
-	// const markNotification = useMutation(markNotificationMutationOption(selectedWorkspace?.id, queryClient))
+	const markNotification = useMutation(markNotificationMutationOption(selectedWorkspace?.id, queryClient))
 
 	return (
 		<Popover open={open} onOpenChange={setOpen} className="">

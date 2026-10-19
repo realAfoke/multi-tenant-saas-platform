@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - run touch .env
+      - run: touch .env
       - run: docker compose build
 
   images:

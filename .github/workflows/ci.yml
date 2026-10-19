@@ -9,7 +9,7 @@ on:
 jobs:
   frontend:
     runs-on: ubuntu-24.04
-    defauts:
+    defaults:
       run:
         working-directory: frontend
     steps:

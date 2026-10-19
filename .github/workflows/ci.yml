@@ -51,6 +51,7 @@ jobs:
         with:
           context: ./backend
           push: true
+          labels: org.opencontainers.image.source=https://github.com/${{github.repository}}
           tags: |
             ${{env.PREFIX}}-backend-${{github.sha}}
             ${{env.PREFIX}}-backend:latest
@@ -58,6 +59,7 @@ jobs:
         with:
           context: ./frontend
           push: true
+          labels: org.opencontainers.image.source=https://github.com/${{github.repository}}
           build-args: |
             VITE_API_URL: ${{vars.VITE_API_URL}}
             VITE_API_WS_URL: ${{vars.VITE_API_WS_URL}}
@@ -74,6 +76,9 @@ jobs:
       SSH_KEY: ${{secrets.EC2_SSH_KEY}}
       HOST: ${{secrets.EC2_HOST}}
       USER: ${{secrets.EC2_USER}}
+      GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      GH_ACTOR: ${{github.actor}}
+      TAGS: ${{github.sha}}
     steps:
       - name: Set up ssh
         run: |
@@ -82,11 +87,19 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts
 
+      - name: Login to docker
+        run: |
+          echo "$GH_TOKEN" | ssh -i ~/.ssh/deploy_key "$USER@$HOST" \ "docker login ghcr.io -u $GH_ACTOR --password-stdin"
       - name: Deploy
         run: |
-          ssh -i ~/.ssh/deploy_key "$USER@$HOST" '
+          ssh -i ~/.ssh/deploy_key "$USER@$HOST" "
           cd ~/multi-tenant-saas-platform &&
           git pull origin master &&
-          docker compose up -d --build && 
+          IMAGE_TAG=$TAG docker compose pull &&
+          IMAGE_TAG=$TAG docker compose pull up -d
           docker image prune -f
-          '
+          "
+
+      - name: Log server  out of GHCR
+        if:always()
+        run: ssh -i ~/.ssh/deploy_key "$USER@$HOST" "docker logout ghcr.io"

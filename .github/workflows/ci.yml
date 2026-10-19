@@ -78,7 +78,7 @@ jobs:
       USER: ${{secrets.EC2_USER}}
       GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
       GH_ACTOR: ${{github.actor}}
-      TAGS: ${{github.sha}}
+      TAG: ${{github.sha}}
     steps:
       - name: Set up ssh
         run: |
@@ -93,10 +93,11 @@ jobs:
       - name: Deploy
         run: |
           ssh -i ~/.ssh/deploy_key "$USER@$HOST" "
+          set -e
           cd ~/multi-tenant-saas-platform &&
           git pull origin master &&
           IMAGE_TAG=$TAG docker compose pull &&
-          IMAGE_TAG=$TAG docker compose pull up -d
+          IMAGE_TAG=$TAG docker compose up -d
           docker image prune -f
           "
 

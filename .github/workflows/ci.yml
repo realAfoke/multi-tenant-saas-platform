@@ -62,7 +62,7 @@ jobs:
             VITE_API_URL: ${{vars.VITE_API_URL}}
             VITE_API_WS_URL: ${{vars.VITE_API_WS_URL}}
           tags: |
-            ${{env.PREFIX}}-frontend-$${{github.sha}}
+            ${{env.PREFIX}}-frontend-${{github.sha}}
             ${{env.PREFIX}}-frontend:latest
 
 

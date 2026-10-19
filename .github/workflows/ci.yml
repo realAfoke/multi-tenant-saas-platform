@@ -101,5 +101,5 @@ jobs:
           "
 
       - name: Log server  out of GHCR
-        if:always()
+        if: always()
         run: ssh -i ~/.ssh/deploy_key "$USER@$HOST" "docker logout ghcr.io"

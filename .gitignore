@@ -45,3 +45,4 @@ media/
 
 frontend/certs/
 *.pem
+.github/workflows/auto-merge-pr.yml

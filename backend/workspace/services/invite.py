@@ -83,7 +83,7 @@ class InviteService:
             email = EmailMultiAlternatives(
                 subject=subject,
                 body=text_content,
-                from_email='@noreply.com',
+                from_email='noreply@ighoreality.cyou',
                 to=[invitee_email],
             )
             email.attach_alternative(html_content, "text/html")

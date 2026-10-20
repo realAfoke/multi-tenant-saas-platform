@@ -89,7 +89,7 @@ class ResendEmailBackend(BaseEmailBackend):
 
             try:
                 payload=self._build_payload(message)
-                result=resend.Email.send(payload)
+                result=resend.Emails.send(payload)
                 if not result or not result.get("id"):
                     raise RuntimeError(
                             "Resend returned no email ID"

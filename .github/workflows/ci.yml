@@ -98,7 +98,8 @@ jobs:
           ssh -i ~/.ssh/deploy_key "$USER@$HOST" "
           set -e
           cd ~/multi-tenant-saas-platform &&
-          git pull origin master &&
+          git fetch origin && 
+          git reset --hard origin/master
           IMAGE_TAG=$TAG docker compose pull &&
           IMAGE_TAG=$TAG docker compose up -d
           docker image prune -f

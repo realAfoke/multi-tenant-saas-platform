@@ -37,9 +37,6 @@ services:
     depends_on:
       backend:
         condition: service_started
-
-    ports: 
-    - "80:80"
     restart: unless-stopped
 
 
@@ -48,5 +45,20 @@ services:
 
     restart: unless-stopped
 
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+
 volumes:
+  caddy_data:
+  caddy_config:
   database_storage:

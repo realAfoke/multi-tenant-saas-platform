@@ -152,7 +152,7 @@ if DEBUG:
     EMAIL_BACKEND='django.core.mail.backends.filebased.EmailBackend'
     EMAIL_FILE_PATH=BASE_DIR /'data'/'sent_emails'
 else:
-    EMAIL_BACKEND="backend.config.settings.email_backend.ResendEmailBackend"
+    EMAIL_BACKEND="config.settings.email_backend.ResendEmailBackend"
 
 DATABASES = {
     'default': {

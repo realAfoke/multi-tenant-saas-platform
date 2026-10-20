@@ -37,7 +37,7 @@ def verify_email(model,request):
     f'{otp}\n\n'
     f"If you didn't request this code, you can safely ignore this email.\n\n"
     f'Best regards,\nThe Team',
-    'noreply@example.com',
+    'noreply@ighoreality.cyou',
     [query[otp_key]],
 )
     return {"status":"otp sent to provided email"}

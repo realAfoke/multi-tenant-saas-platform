@@ -1,3 +1,3 @@
-ighoreality.cyou{
+ighoreality.cyou {
 reverse_proxy frontend:80
 }

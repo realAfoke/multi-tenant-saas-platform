@@ -49,6 +49,8 @@ jobs:
           password: ${{secrets.GITHUB_TOKEN}}
       - uses: docker/build-push-action@v6
         with:
+          provenance: false
+          sbom: false
           context: ./backend
           push: true
           labels: org.opencontainers.image.source=https://github.com/${{github.repository}}
@@ -57,6 +59,8 @@ jobs:
             ${{env.PREFIX}}-backend:latest
       - uses: docker/build-push-action@v6
         with:
+          provenance: false
+          sbom: false
           context: ./frontend
           push: true
           labels: org.opencontainers.image.source=https://github.com/${{github.repository}}

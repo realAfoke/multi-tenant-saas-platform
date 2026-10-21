@@ -12,12 +12,12 @@ export default function AccountDetails() {
 	const navigate = useNavigate()
 	const { inviteDetail } = useAppState()
 	const [userData, setUserData] = useState({
-		firstName: 'mr',
-		lastName: 'crab',
+		firstName: '',
+		lastName: '',
 		email: email,
 		workspace: '',
-		password: 'mrcrab',
-		confirmPassword: 'mrcrab'
+		password: '',
+		confirmPassword: ''
 	})
 	const createAccount = useMutation({
 		mutationFn: async () => {
@@ -62,7 +62,6 @@ export default function AccountDetails() {
 
 			<div className="space-y-5 mt-8">
 
-				{/* Name */}
 				<div className="grid grid-cols-2 gap-5 mt-10">
 
 					<div>
@@ -98,7 +97,6 @@ export default function AccountDetails() {
 
 				</div>
 
-				{/* Email */}
 
 				<div>
 
@@ -114,7 +112,6 @@ export default function AccountDetails() {
 					/>
 				</div>
 
-				{/* Password */}
 				<div className="grid grid-cols-2 gap-4">
 					<div>
 
@@ -157,7 +154,6 @@ export default function AccountDetails() {
 					</div>
 				</div>
 
-				{/* Workspace */}
 
 				<div>
 

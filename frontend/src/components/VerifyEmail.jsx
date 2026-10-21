@@ -7,7 +7,7 @@ import { instance } from "@/api/axios"
 
 export default function VerifyEmail() {
 	const [otp, setOtp] = useState(["", "", "", "", "", ""])
-	const { email, setStep } = useOutletContext()
+	const { email } = useOutletContext()
 	const navigate = useNavigate()
 
 	const handleChange = (value, index) => {
@@ -29,7 +29,6 @@ export default function VerifyEmail() {
 			return confrim?.data
 		},
 		onSuccess: () => {
-			setStep(3)
 			navigate('../account-detail')
 		}
 	})

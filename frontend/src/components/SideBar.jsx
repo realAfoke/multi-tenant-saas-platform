@@ -41,7 +41,7 @@ export default function SideBar(props) {
 	useEffect(() => {
 		if (!selectedWorkspace?.show) return
 		handleToggleWorkspace(false)
-	}, [selectedWorkspace?.show,handleToggleWorkspace])
+	}, [selectedWorkspace?.show, handleToggleWorkspace])
 
 
 	useEffect(() => {
@@ -55,7 +55,7 @@ export default function SideBar(props) {
 		return () => { document.removeEventListener('click', handleClick) }
 	}, [setToggle])
 	return (
-		<div ref={ref} className={`py-3 flex h-full flex-col absolute text-white bg-zinc-900 shadow-lg border-r border-[#f6f3f438] px-2 w-[13rem] md:w-[18em] md:relative z-99 `}>
+		<div ref={ref} className={`py-3 flex h-full flex-col absolute text-white bg-zinc-900 shadow-lg border-r border-[#f6f3f438] px-2 w-[13rem] md:w-[18em] md:relative z-9999 `}>
 			<div className="relative border-b border-zinc-800 pb-3 mb-3">
 				<div className="flex items-center justify-between flex-1">
 

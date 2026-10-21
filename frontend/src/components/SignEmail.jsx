@@ -9,10 +9,8 @@ import { instance } from "@/api/axios"
 
 
 export default function SignEmail() {
-	const { email, setEmail, setStep } = useOutletContext()
+	const { email, setEmail } = useOutletContext()
 	const navigate = useNavigate()
-	// const handleContinue = () => {
-	// }
 
 	const verifyEmail = useMutation({
 		mutationFn: async () => {
@@ -20,7 +18,6 @@ export default function SignEmail() {
 			return verify?.data
 		},
 		onSuccess: () => {
-			setStep(2)
 			navigate('otp-verification')
 		}
 	})

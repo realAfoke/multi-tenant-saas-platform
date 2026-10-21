@@ -46,3 +46,5 @@ media/
 frontend/certs/
 *.pem
 .github/workflows/auto-merge-pr.yml
+docker-compose.dev.yml
+nginx.dev.conf

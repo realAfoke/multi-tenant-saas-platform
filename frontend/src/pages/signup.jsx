@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Outlet, useNavigate,useLocation } from "react-router-dom"
+import { Outlet, useNavigate, useLocation } from "react-router-dom"
 import { useAppState } from "@/hooks/apptools"
 
 
@@ -18,16 +18,6 @@ export default function SignUp() {
 		'otp-verification': 2,
 		'account-detail': 3,
 	}[paths[1]] ?? 1
-	// useEffect(() => {
-	// 	switch (paths[1]) {
-	// 		case 'otp-verification': setStep(2)
-	// 			break;
-	// 		case 'account-detail': setStep(3)
-	// 			break
-	// 		default: setStep(1)
-	// 	}
-	// }, [paths])
-
 
 	const handleChange = () => {
 		setShowBackWarning(false)

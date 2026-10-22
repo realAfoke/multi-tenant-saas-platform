@@ -63,19 +63,19 @@ export function fetchRoleQueryOption(id) {
 export function fetchUserQueryOption() {
 	return queryOptions({
 		queryKey: ['user'],
-		queryFn: getUser,
+		queryFn: async () => {
+			try {
+				const user = await instance.get('users/me')
+				return user?.data
+			} catch (error) {
+				console.error(error)
+				throw new Error(error.message, { cause: error })
+			}
+		}
 	})
 }
 
-async function getUser() {
-	try {
-		const user = await instance.get('users/me')
-		return user?.data
-	} catch (error) {
-		console.error(error)
-		throw new Error(error.message, { cause: error })
-	}
-}
+
 
 export function workspaceQueryOption() {
 	return queryOptions({

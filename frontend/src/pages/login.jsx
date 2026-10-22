@@ -8,8 +8,8 @@ import { useAppState } from "@/hooks/apptools"
 
 
 export default function Login() {
-	const [email, setEmail] = useState("")
-	const [password, setPassword] = useState("")
+	const [email, setEmail] = useState("francinesmith@gmail.com")
+	const [password, setPassword] = useState("franny")
 	const navigate = useNavigate()
 	const { inviteDetail } = useAppState()
 	const queryClient = useQueryClient()
@@ -19,10 +19,9 @@ export default function Login() {
 		mutationFn: async () => {
 			await instance.post('auth/login/', { email: email, password: password })
 		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: ['user']
-			})
+		onSuccess: async () => {
+			const user = await instance.get('users/me')
+			queryClient.setQueryData(['user'], old => ({ ...old, ...user.data }))
 			if (inviteDetail?.token) {
 				navigate(`/accept-invite/?token=${inviteDetail?.token}&invite=${inviteDetail?.id}`)
 				return

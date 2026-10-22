@@ -34,6 +34,8 @@ import ChannelMembers from './pages/channelMember.jsx'
 import Channel from './pages/channel/channnel.jsx'
 import ChannelInfo from './pages/channel/channelInfo.jsx'
 import ChannelSettings from './pages/channel/setting.jsx'
+import LandingPage from './pages/landing.jsx'
+import { landingPageLoader } from './pages/landingPageLoader.js'
 
 
 
@@ -41,6 +43,7 @@ const queryClient = new QueryClient()
 
 const routes = createBrowserRouter([
   { path: 'accept-invite', element: <AcceptInvite /> },
+  { path: 'landing', element: <LandingPage />, loader: landingPageLoader },
 
   {
     path: 'signup', element: <SignUp />, loader: signUpLoader, children: [

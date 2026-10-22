@@ -46,6 +46,7 @@ export function useAppHook(
 		indexDb()
 	},)
 	useEffect(() => {
+		console.log('effect:',wkName)
 		if (selectedWorkspace?.id && !wkName) {
 			setWorkspace({})
 			return

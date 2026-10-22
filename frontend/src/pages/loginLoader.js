@@ -4,7 +4,7 @@ import { instance } from "@/api/axios"
 export async function loginLoader() {
 	try {
 		await instance.get("users/me")
-		return redirect("/dashboard")
+		return redirect("/")
 	} catch (error) {
 		console.error(error)
 	}

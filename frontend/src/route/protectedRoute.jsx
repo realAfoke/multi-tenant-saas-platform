@@ -11,7 +11,7 @@ import { useEffect, useState } from "react"
 // import { handleChannelUpdate } from "@/service/channel";
 import { handleConversationUpdate } from "@/service/conversation";
 import { handleMessageUpdate } from "@/service/message";
-import LandingPage from "@/pages/landing";
+import { Navigate } from "react-router-dom"
 import { convertObjKeys } from "@/utils/appUtil"
 
 
@@ -96,13 +96,12 @@ export default function ProtectedRoute() {
 	}, [conversationId, socket, queryClient, setWorkspace, setSelectedDm, user])
 
 	// const [showAddPeople, setShowAddPeople] = useState(false)
-	// if (!user) {
-	// < Navigate to='/landing' replace />
-	// return
-	// }
+	if (!user?.id) {
+		return < Navigate to='/landing' replace />
+	}
 
-	return !user ? <LandingPage /> :
-		(<div className={`flex h-screen bg-zinc-950 overflow-hidden relative`}>
+	return (
+		<div className={`flex h-screen bg-zinc-950 overflow-hidden relative`}>
 
 			{toggle &&
 				<div className="">
@@ -124,9 +123,6 @@ export default function ProtectedRoute() {
 			</div>
 
 		</div>
-		)
+	)
 }
 
-
-
-// <main className="flex-1 self-center overflow-auto scrollbar scrollbar-thin scrollbar-thumb-zinc-600 scrollbar-track-zinc-900 px-5 w-[100%] md:w-[clamp(70%,80%,90%)]">

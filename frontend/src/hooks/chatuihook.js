@@ -19,7 +19,6 @@ export function useMessageHook({
 		const unread = conversation?.unread
 		const ws = socket
 		if (ws && ws.readyState === WebSocket.OPEN && unread >= 1) {
-			// console.log('bout send seen')
 			const SEEN = { conversation: conversationId, status: 'seen' }
 			if (chatType === 'chat') {
 				SEEN.receiver = recipient?.id

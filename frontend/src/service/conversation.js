@@ -1,7 +1,7 @@
 
 
 export function handleConversationUpdate(queryClient, incomingUpdate, setWorkspace, setSelectedDm, user) {
-	console.log('incomig:', incomingUpdate)
+	// console.log('incomig:', incomingUpdate)
 	if (incomingUpdate?.chatType === 'channel') {
 		queryClient.setQueryData(['workspace'], (old) => {
 			const ordering = old?.ordering ?? []

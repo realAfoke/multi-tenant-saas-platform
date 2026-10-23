@@ -80,7 +80,7 @@ export default function ProtectedRoute() {
 		const handleRealTimeUpdate = async (e) => {
 			const rawData = JSON.parse(e.data)
 			const camelCaseData = convertObjKeys(rawData)
-			console.log('camelcase:', camelCaseData)
+			// console.log('camelcase:', camelCaseData)
 
 			switch (camelCaseData?.tag) {
 				// case 'channel': handleChannelUpdate(queryClient, camelCaseData)
@@ -91,7 +91,7 @@ export default function ProtectedRoute() {
 					break;
 			}
 		}
-		ws.addEventListener('update', handleRealTimeUpdate)
+		ws.addEventListener('message', handleRealTimeUpdate)
 		return () => ws.removeEventListener('update', handleRealTimeUpdate)
 	}, [conversationId, socket, queryClient, setWorkspace, setSelectedDm, user])
 

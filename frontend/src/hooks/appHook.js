@@ -15,7 +15,7 @@ export function useRealTimeUpdate(setSocket, workspaces) {
 		}
 		ws.onclose = () => console.log('connection closed!!!')
 		return () => ws.close()
-	}, [workspaces, setSocket])
+	}, [workspaces])
 }
 
 
@@ -46,7 +46,6 @@ export function useAppHook(
 		indexDb()
 	},)
 	useEffect(() => {
-		console.log('effect:',wkName)
 		if (selectedWorkspace?.id && !wkName) {
 			setWorkspace({})
 			return

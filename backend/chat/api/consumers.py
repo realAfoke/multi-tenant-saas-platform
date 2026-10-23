@@ -35,7 +35,6 @@ class ServerRealTimeUpdate(AsyncWebsocketConsumer):
         # user is member instance not a direct user instance
         scope=getattr(self,'scope')
         self.user=scope['user']
-        print('self user:',self.user)
         if not self.user.is_authenticated:
             await self.close()
             return
@@ -60,10 +59,9 @@ class ServerRealTimeUpdate(AsyncWebsocketConsumer):
 
     async def receive(self, text_data: str | None = None, bytes_data: bytes | None = None) -> None:
         received_data=json.loads(text_data)
-        # print('RECEIVED DATA:',received_data)
+        # print('RECEIVED DATA:',received_data,flush=True)
         receiver_id=received_data.get('receiver',None)
         await self.validate_conversation(received_data)
-        print('data:',received_data)
         is_new_conversation=received_data.pop('new_conversation',None)
         message=await self.serialize_data(received_data)
         if message is None:
@@ -90,7 +88,8 @@ class ServerRealTimeUpdate(AsyncWebsocketConsumer):
                 await self.channel_layer.group_send(self.group_name,{'type':'send.message','message':message})
                 return
 
-            if message['tag'] == 'conversation':
+            if message.get("tag",None) == 'conversation':
+                print('HI INSIDE>>>>>>>>.')
                 await self.channel_layer.group_send(self.group_name,{'type':'send.message','message':message})
                 return
             conversation_id=message.get('conversation') or message.get('id')
@@ -141,6 +140,7 @@ class ServerRealTimeUpdate(AsyncWebsocketConsumer):
     def validate_conversation(self, message):
         with transaction.atomic():
             conversation_id = message.get('conversation')
+            print('message:',message)
             if conversation_id is None:
                 raise ValidationError('Conversation ID not sent')
             conversation = Conversation.objects.filter(

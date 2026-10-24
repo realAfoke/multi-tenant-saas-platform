@@ -80,6 +80,7 @@ export default function ProtectedRoute() {
 
 			switch (camelCaseData?.tag) {
 				case 'channel': handleChannelUpdate(queryClient, camelCaseData)
+					break;
 				case 'member': handleChannelMembers(queryClient, camelCaseData)
 					break;
 				case 'conversation': handleConversationUpdate(queryClient, camelCaseData, setWorkspace, setSelectedDm, user)

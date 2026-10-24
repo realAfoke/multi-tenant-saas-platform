@@ -11,8 +11,9 @@ import { useEffect, useState } from "react"
 // import { handleChannelUpdate } from "@/service/channel";
 import { handleConversationUpdate } from "@/service/conversation";
 import { handleMessageUpdate } from "@/service/message";
-import { Navigate } from "react-router-dom"
 import { convertObjKeys } from "@/utils/appUtil"
+import handleChannelMembers from "@/service/channelMember"
+import { handleChannelUpdate } from "@/service/channel"
 
 
 export default function ProtectedRoute() {
@@ -40,14 +41,10 @@ export default function ProtectedRoute() {
 	} = useAppState()
 
 	const { data: userWorkspaces } = useQuery(workspaceQueryOption())
-
 	const { data: channel } = useQuery(channelQueryOption(selectedWorkspace?.id, selectedChannel?.id))
 	const { workspaces } = userWorkspaces ?? {}
-
 	const { data: user } = useQuery(fetchUserQueryOption())
-
 	const { data: conversations } = useQuery(conversationsQueryOption())
-	// useQuery(activityQueryOption('activity', selectedWorkspace?.id))
 
 	useAppHook(
 		workspaces,
@@ -68,9 +65,9 @@ export default function ProtectedRoute() {
 		setIndexedDB,
 		navigate
 	)
+
 	useRealTimeUpdate(setSocket, workspaces)
 
-	// console.log('userWorkspaces:',userWorkspaces,'workspaces:',workspaces)
 	useQuery(fetchRoleQueryOption(selectedWorkspace?.id))
 
 
@@ -80,11 +77,11 @@ export default function ProtectedRoute() {
 		const handleRealTimeUpdate = async (e) => {
 			const rawData = JSON.parse(e.data)
 			const camelCaseData = convertObjKeys(rawData)
-			// console.log('camelcase:', camelCaseData)
 
 			switch (camelCaseData?.tag) {
-				// case 'channel': handleChannelUpdate(queryClient, camelCaseData)
-				// break;
+				case 'channel': handleChannelUpdate(queryClient, camelCaseData)
+				case 'member': handleChannelMembers(queryClient, camelCaseData)
+					break;
 				case 'conversation': handleConversationUpdate(queryClient, camelCaseData, setWorkspace, setSelectedDm, user)
 					break;
 				case 'message': handleMessageUpdate(queryClient, camelCaseData, ws)
@@ -95,10 +92,6 @@ export default function ProtectedRoute() {
 		return () => ws.removeEventListener('update', handleRealTimeUpdate)
 	}, [conversationId, socket, queryClient, setWorkspace, setSelectedDm, user])
 
-	// const [showAddPeople, setShowAddPeople] = useState(false)
-	if (!user?.id) {
-		return < Navigate to='/landing' replace />
-	}
 
 	return (
 		<div className={`flex h-screen bg-zinc-950 overflow-hidden relative`}>
@@ -125,4 +118,6 @@ export default function ProtectedRoute() {
 		</div>
 	)
 }
+
+
 

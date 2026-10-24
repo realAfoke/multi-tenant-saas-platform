@@ -4,11 +4,9 @@
 
 
 export function handleChannelUpdate(queryClient, incomingUpdate) {
-	// console.log('incoming chnnel')
 	queryClient.setQueryData(
 		['workspace'],
 		(old) => {
-			console.log('incoming channel:', incomingUpdate)
 			const workspaces = (old?.workspaces) ?? {}
 			const workspace = workspaces?.[incomingUpdate?.workspace] ?? {}
 			const channels = workspace?.channels ?? {}
@@ -27,9 +25,9 @@ export function handleChannelUpdate(queryClient, incomingUpdate) {
 					}
 				},
 			}
-			return update
 			// console.log('old:', old)
 			// console.log('update:', update)
+			return update
 		}
 	)
 }

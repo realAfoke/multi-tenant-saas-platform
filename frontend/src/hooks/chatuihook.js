@@ -54,7 +54,7 @@ export function useMessageHook({
 			}
 
 		}
-	}, [messages, chatType, selectedChannel?.id, queryClient, conversation?.unread, recipient?.id, selectedChannel, conversationId, setChannel,socket])
+	}, [messages, chatType, selectedChannel?.id, queryClient, conversation?.unread, recipient?.id, selectedChannel, conversationId, setChannel, socket])
 
 	useEffect(() => {
 		if (!selectedChannel?.id && !selectedDm?.id) return
@@ -66,7 +66,7 @@ export function useMessageHook({
 		if (ref.current) {
 			ref.current?.scrollIntoView();
 		}
-	}, [messages,ref]);
+	}, [messages, ref]);
 
 }
 

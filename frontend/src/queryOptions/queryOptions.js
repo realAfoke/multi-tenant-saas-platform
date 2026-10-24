@@ -211,4 +211,21 @@ export function workspaceMemberQueryOption(id) {
 }
 
 
-
+export function channelMembersQueryOption(id) {
+	return queryOptions(
+		{
+			queryKey: ['channel', id],
+			queryFn: async ({ queryKey }) => {
+				const [, id] = queryKey
+				try {
+					const response = await instance.get(`workspaces/${id}/channel-members/`)
+					return response.data
+				} catch (err) {
+					console.error(err)
+					throw new Error(err.message, { cause: err })
+				}
+			},
+			enabled: !!id
+		}
+	)
+}

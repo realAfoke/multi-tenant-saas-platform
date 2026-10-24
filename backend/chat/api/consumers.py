@@ -89,7 +89,6 @@ class ServerRealTimeUpdate(AsyncWebsocketConsumer):
                 return
 
             if message.get("tag",None) == 'conversation':
-                print('HI INSIDE>>>>>>>>.')
                 await self.channel_layer.group_send(self.group_name,{'type':'send.message','message':message})
                 return
             conversation_id=message.get('conversation') or message.get('id')
@@ -127,6 +126,12 @@ class ServerRealTimeUpdate(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps(channel))
 
 
+    async def send_member(self,event):
+        member=event['member']
+        member['tag']='member'
+        await self.send(text_data=json.dumps(member))
+
+
     async def send_notification(self,event):
         notification=event['notification']
         notification['tag']='notification'
@@ -140,7 +145,6 @@ class ServerRealTimeUpdate(AsyncWebsocketConsumer):
     def validate_conversation(self, message):
         with transaction.atomic():
             conversation_id = message.get('conversation')
-            print('message:',message)
             if conversation_id is None:
                 raise ValidationError('Conversation ID not sent')
             conversation = Conversation.objects.filter(

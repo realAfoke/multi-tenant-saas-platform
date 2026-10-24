@@ -18,13 +18,20 @@ UserModel=get_user_model()
 
 class MembershipSerializer(serializers.ModelSerializer):
     user=serializers.SerializerMethodField()
+    channels=serializers.SerializerMethodField()
     class Meta:
         model=models.Membership
-        fields=['id','role','user']
+        fields=['id','role','user','channels']
 
     def get_user(self,obj):
         user=obj.user
         return {'id':user.id,'first_name':user.first_name,'last_name':user.last_name,'email':user.email}
+
+    def get_channels(self,obj):
+        channels=obj.members_channel.all()
+        if channels:
+            return [channel.id for channel in channels]
+        return None
  
 class CommentSerializer(serializers.ModelSerializer):
     user=MembershipSerializer(read_only=True)
@@ -137,7 +144,8 @@ class TaskSerializer(serializers.ModelSerializer):
 
 
 class ChannelMemberSerializer(serializers.ModelSerializer):
-    member=MembershipSerializer()
+    member=MembershipSerializer(read_only=True)
+    member_id=serializers.PrimaryKeyRelatedField(queryset=models.Membership.objects.all(),source='member',write_only=True)
     class Meta:
         model=models.ChannelMember
         fields='__all__'
@@ -220,7 +228,9 @@ class ChannelSerializer(serializers.ModelSerializer):
 
     def get_conversation(self,obj):
         from chat.api.serializers import ConversationSerializer
-        convo=obj.channel_conversation
+        convo=getattr(obj,'channel_conversation',None)
+        if convo is None:
+            return None
         return ConversationSerializer(convo,context=self.context).data
 
     # def get_unread(self,obj):

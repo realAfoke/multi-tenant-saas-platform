@@ -32,13 +32,16 @@ export default function TopBar({ setToggle, toggle }) {
 						variant="ghost"
 						size="icon"
 						className="text-zinc-500 hover:text-white"
-						onClick={() => setShowChannelMenu(prev => !prev)}
+						onClick={(e) => {
+							e.stopPropagation()
+							setShowChannelMenu(prev => !prev)
+						}}
 					>
 						<MoreHorizontal className="w-5 h-5" />
 					</Button>
 
 					{showChannelMenu && view === "channel" && (
-						<ChannelMenu channel={selectedChannel} />
+						<ChannelMenu channel={selectedChannel} setShowChannelMenu={setShowChannelMenu} />
 					)}
 				</div>
 			</div>

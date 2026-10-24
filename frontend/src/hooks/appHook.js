@@ -15,7 +15,7 @@ export function useRealTimeUpdate(setSocket, workspaces) {
 		}
 		ws.onclose = () => console.log('connection closed!!!')
 		return () => ws.close()
-	}, [workspaces, setSocket])
+	}, [workspaces])
 }
 
 

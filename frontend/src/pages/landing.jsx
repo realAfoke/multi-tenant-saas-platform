@@ -8,8 +8,6 @@ import dashboardImg from "@/assets/dashboard.png"
 import SideBar from "@/components/landingPage/SideBar"
 
 
-
-
 export default function LandingPage() {
 	return (
 		<div className="bg-black">

@@ -62,8 +62,6 @@ export default function Chat() {
 
 	return (
 		<div className="flex-1 h-screen md:px-6 flex flex-col pt-[4rem] px-auto relative shrink-0">
-
-			{/* Floating User Profile */}
 			{selectedUser && (
 				<div
 					style={{
@@ -80,11 +78,9 @@ export default function Chat() {
 				</div>
 			)}
 
-			{/* Messages Area */}
 			<div className="px-3 md:px-6 flex-1 overflow-auto pt-[5rem] scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-zinc-900">
 				<div className="overflow-auto mx-auto max-w-4xl">
 
-					{/* Header */}
 					<div className="pb-5 border-b border-zinc-800">
 						{view === "dm" && selectedDm ? (
 							<>
@@ -114,7 +110,6 @@ export default function Chat() {
 						)}
 					</div>
 
-					{/* Messages List */}
 					<div className="flex flex-col gap-5 mt-5">
 						{messages?.map((message) => {
 							const sender = message?.channelId ? message?.sender?.user : currentUser
@@ -147,7 +142,6 @@ export default function Chat() {
 										}
 									`}
 								>
-									{/* Avatar (only in channel) */}
 									{view === "channel" && (
 										<button
 											className="flex w-9 h-9 md:w-7 md:h-7 shrink-0 rounded-full bg-blue-500 items-center justify-center text-sm font-semibold text-white"
@@ -164,7 +158,6 @@ export default function Chat() {
 										</button>
 									)}
 
-									{/* Message Content */}
 									<div
 										className={`flex flex-col ${view === "dm"
 											? message?.sender === currentUser?.id
@@ -196,7 +189,6 @@ export default function Chat() {
 					onClose={() => setSelectedUser(null)}
 				/>
 			)}
-			{/* Message Input */}
 			<div className="md:px-6 md:pb-5 pt-5">
 				<div className="max-w-4xl mx-auto">
 					<div className="rounded-xl border border-zinc-800 bg-zinc-900 p-2">

@@ -4,14 +4,46 @@ import {
 	Info,
 	Settings,
 } from "lucide-react"
+import { useEffect, useRef } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 
-export default function ChannelMenu({ channel }) {
+export default function ChannelMenu({ channel, setShowChannelMenu }) {
+	const ref = useRef(null)
 	const navigate = useNavigate()
 	const { wkName, channelName } = useParams()
+	useEffect(() => {
+		const toggleOfChannelMenu = (e) => {
+			if (ref.current && !ref.current.contains(e.target)) {
+				setShowChannelMenu(false)
+			}
+		}
+		document.addEventListener('click', toggleOfChannelMenu)
+		return () => document.removeEventListener('click', toggleOfChannelMenu)
+	})
+	const menuList = [
+		{
+			content: 'Create task',
+			icon: <ListPlus className="h-4 w-4 text-zinc-500" />,
+			link: 'create-task'
+		},
+		{
+			content: 'View members',
+			icon: <Users className="h-4 w-4 text-zinc-500" />,
+			link: 'members'
+		},
+		{
+			content: 'Channel info',
+			icon: <Info className="h-4 w-4 text-zinc-500" />,
+			link: 'info'
+		},
+		{
+			content: 'Channel settings',
+			icon: <Settings className="h-4 w-4 text-zinc-500" />,
+			link: 'setting'
+		}
+	]
 	return (
-		<div className="absolute right-0 top-12 z-50 w-64 overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900 shadow-2xl">
-			{/* Channel header */}
+		<div ref={ref} className="absolute right-0 top-12 z-50 w-64 overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900 shadow-2xl">
 			<div className="border-b border-zinc-800 px-4 py-3">
 				<p className="text-sm font-medium text-white">
 					#{channel?.name}
@@ -22,30 +54,22 @@ export default function ChannelMenu({ channel }) {
 				</p>
 			</div>
 
-			{/* Actions */}
 			<div className="p-1.5">
-				<button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white" onClick={() => navigate(`/${wkName}/${channelName}/create-task`)}>
-					<ListPlus className="h-4 w-4 text-zinc-500" />
-					<span>Create task</span>
-				</button>
+				{
+					menuList.map((list) => (
+						<button key={list.content} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white" onClick={(e) => {
+							e.stopPropagation()
+							navigate(`/${wkName}/${channelName}/${list.link}`)
+							setShowChannelMenu(false)
+						}}>
+							{list.icon}
+							<span>{list.content}</span>
+						</button>
 
-				<button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white" onClick={() => navigate(`/${wkName}/${channelName}/members`)}>
-					<Users className="h-4 w-4 text-zinc-500" />
-					<span>View members</span>
-				</button>
-
-				<button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white" onClick={() => navigate(`/${wkName}/${channelName}/info`)}>
-					<Info className="h-4 w-4 text-zinc-500" />
-					<span>Channel info</span>
-				</button>
-
-				<div className="my-1 border-t border-zinc-800" />
-
-				<button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white" onClick={() => navigate(`/${wkName}/${channelName}/setting`)}>
-					<Settings className="h-4 w-4 text-zinc-500" />
-					<span>Channel settings</span>
-				</button>
+					))
+				}
 			</div>
 		</div>
 	)
 }
+

@@ -1,18 +1,37 @@
-import RemoveUserDialog from "@/components/setting/RemoveUserDialog"
+import { instance } from "@/api/axios"
 import SendInviteDialog from "@/components/setting/SendInviteDialog"
 import UpdateMember from "@/components/setting/UpdateMember"
 import { useAppState } from "@/hooks/apptools"
 import { workspaceMemberQueryOption } from "@/queryOptions/queryOptions"
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import { useState } from "react"
+import { useParams } from "react-router-dom"
+import RemoveUserDialog from "@/components/setting/RemoveUserDialog"
+
+
 export default function WorkspaceMembers() {
 	const [showRemoveDialog, setShowRemoveDialog] = useState(false)
 	const [showInvite, setShowInvite] = useState(false)
 	const [openMemberMenu, setOpenMemberMenu] = useState(false)
-	const { selectedWorkspace } = useAppState()
 
+	const { selectedWorkspace, selectedChannel } = useAppState()
+	const { channelName } = useParams()
 
-	const { data: members } = useQuery(workspaceMemberQueryOption(selectedWorkspace?.id))
+	const { data: members } = useQuery(
+		workspaceMemberQueryOption(selectedWorkspace?.id)
+	)
+
+	const updateChannelMemberShip = useMutation({
+		mutationFn: async ({ member }) => {
+			console.log('hi inside mutate')
+			console.log('member:', member)
+			console.log('instance:', instance.base)
+			console.log('instance:', instance)
+			const response = await instance.post(`workspaces/${selectedChannel?.id}/channel-members/`, { memberId: member?.id })
+			return response.data
+		}
+	})
+
 	return (
 		<section className="flex-1 min-w-0 h-screen flex flex-col pt-[5rem]">
 			<div>
@@ -27,7 +46,10 @@ export default function WorkspaceMembers() {
 						</p>
 					</div>
 
-					<button className="h-9 px-4 rounded-lg bg-blue-500 hover:bg-blue-600 text-sm font-medium text-white transition" onClick={() => setShowInvite(prev => !prev)}>
+					<button
+						className="h-9 px-4 rounded-lg bg-blue-500 hover:bg-blue-600 text-sm font-medium text-white transition"
+						onClick={() => setShowInvite(prev => !prev)}
+					>
 						Invite people
 					</button>
 				</div>
@@ -43,7 +65,7 @@ export default function WorkspaceMembers() {
 							strokeLinecap="round"
 							strokeLinejoin="round"
 							strokeWidth={2}
-							d="m21 21-4.35-4.35m2.1-5.4a7.5 7.5 0 1 1-15 0 7.5 7.5 0 0 1 15 0Z"
+							d="m21 21-4.35-4.35m2.1-5.4a7.5 7.5 0 1 1-15 0"
 						/>
 					</svg>
 
@@ -51,21 +73,20 @@ export default function WorkspaceMembers() {
 						type="text"
 						placeholder="Search members..."
 						className="
-									w-full h-10 rounded-lg
-									border border-zinc-800
-									bg-zinc-900
-									pl-9 pr-3
-									text-sm text-white
-									placeholder:text-zinc-600
-									outline-none
-									focus:border-zinc-600
-								"
+							w-full h-10 rounded-lg
+							border border-zinc-800
+							bg-zinc-900
+							pl-9 pr-3
+							text-sm text-white
+							placeholder:text-zinc-600
+							outline-none
+							focus:border-zinc-600
+						"
 					/>
 				</div>
 			</div>
 
 			<div className="flex-1 rounded-xl border border-zinc-800 h-screen overflow-auto pb-5">
-
 				<div className="hidden sm:grid grid-cols-[1fr_120px_40px] gap-4 px-5 py-3 bg-zinc-900/70 border-b border-zinc-800">
 					<p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
 						Member
@@ -75,14 +96,27 @@ export default function WorkspaceMembers() {
 						Role
 					</p>
 				</div>
+
 				{members?.map((member) => {
 					const user = member?.user ?? {}
 					const role = member?.role
 					const initial = user?.firstName?.[0]?.toUpperCase()
+
 					return (
-						< div key={member?.id} className="grid grid-cols-1 sm:grid-cols-[1fr_120px_40px] gap-3 sm:gap-4 items-center px-5 py-4 bg-zinc-900/40 border-b border-zinc-800" >
+						<div
+							key={member?.id}
+							className="
+								grid grid-cols-1
+								sm:grid-cols-[1fr_120px_40px]
+								gap-3 sm:gap-4
+								items-center
+								px-5 py-4
+								bg-zinc-900/40
+								border-b border-zinc-800
+							"
+						>
 							<div className="flex items-center gap-3 min-w-0">
-								<div className="w-9 h-9 rounded-full bg-zinc-700 flex items-center justify-center text-sm font-semibold text-zinc-200">
+								<div className="w-9 h-9 shrink-0 rounded-full bg-zinc-700 flex items-center justify-center text-sm font-semibold text-zinc-200">
 									{initial}
 								</div>
 
@@ -100,28 +134,87 @@ export default function WorkspaceMembers() {
 							<span className="text-xs text-zinc-400">
 								{role}
 							</span>
-							{role !== 'owner' &&
-								<div className="relative">
+
+							{channelName ? (
+								<div className="flex justify-end sm:justify-center">
 									<button
-										onClick={() => setOpenMemberMenu((prev) => prev === member?.id ? false : member?.id)}
-										className="flex w-8 h-8 items-center justify-center rounded-md text-zinc-600 hover:text-zinc-300 hover:bg-zinc-800 transition"
+										className="
+												h-8 px-3
+												rounded-lg
+												bg-blue-500
+												hover:bg-blue-600
+												text-xs font-medium
+												text-white
+												whitespace-nowrap
+												transition
+											"
+										onClick={() => {
+											console.log('clicked')
+											updateChannelMemberShip.mutate({ member })
+										}}
 									>
-										•••
+										Add
 									</button>
-									{openMemberMenu === member?.id && <UpdateMember currentRole={role} workspace={selectedWorkspace} memberId={member?.id} />}
 								</div>
+							) : (
+								<div className="relative flex justify-center">
+									{role !== 'owner' &&
+										<button
+											onClick={() =>
+												setOpenMemberMenu(prev =>
+													prev === member?.id
+														? false
+														: member?.id
+												)
+											}
+											className="
+												flex w-8 h-8
+												items-center justify-center
+												rounded-md
+												text-zinc-600
+												hover:text-zinc-300
+												hover:bg-zinc-800
+												transition
+											"
+										>
+											•••
+										</button>
+									}
+
+									{openMemberMenu === member?.id && (
+										<UpdateMember
+											currentRole={role}
+											workspace={selectedWorkspace}
+											memberId={member?.id}
+										/>
+									)}
+								</div>
+							)
 							}
 						</div>
 					)
 				})}
 			</div>
-			{
-				showRemoveDialog && <RemoveUserDialog setShowRemoveDialog={setShowRemoveDialog} member={showRemoveDialog} />
-			}
-			{showInvite && <SendInviteDialog handleShowInvite={setShowInvite} />}
-		</section >
+
+			{showRemoveDialog && (
+				<RemoveUserDialog
+					setShowRemoveDialog={setShowRemoveDialog}
+					member={showRemoveDialog}
+				/>
+			)}
+
+			{showInvite && (
+				<SendInviteDialog handleShowInvite={setShowInvite} />
+			)}
+		</section>
 	)
 }
+
+
+// <button className="h-9 px-4 rounded-lg bg-blue-500 hover:bg-blue-600 text-sm font-medium text-white transition" onClick={() => setShowInvite(prev => !prev)}>
+// 						Invite people
+// 					</button> :
+//
 
 // <div className="min-h-screen bg-zinc-950 overflow-y-auto px-4 py-10">
 // 		<div className="w-full max-w-5xl mx-auto">

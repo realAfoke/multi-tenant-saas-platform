@@ -16,7 +16,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.views import APIView
 from rest_framework import permissions
 # from workspace.services.workspace import create_work_space
-from channels.layers import get_channel_layer
+from channels.layers import channel_layers, get_channel_layer
 from workspace.services.invite import InviteService
 import logging
 import pprint
@@ -93,7 +93,6 @@ class GetCreateChannelView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        pprint.pprint(serializer.validated_data)
         members=serializer.validated_data.get('member',None)
         
         members_ids=[]
@@ -103,7 +102,6 @@ class GetCreateChannelView(generics.ListCreateAPIView):
                 members_ids.append(member.user.id)
                 serializer.data['tag']='new channel'
                 async_to_sync(channel.group_send)(f'user_{member.user.id}',{'type':'send.channel','channel':serializer.data})
-        print('members ids:',members_ids)
 
     # def perform_create(self, serializer):
     #     serializer.save(channel_members=self.request.data.get('channel_members'))
@@ -115,7 +113,7 @@ class ChannelDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes=[IsChannelMember]
 
 
-class ChannelMembers(generics.ListAPIView):
+class ChannelMembers(generics.ListCreateAPIView):
     manager=getattr(models.ChannelMember,'objects')
     queryset=manager.all()
     serializer_class=ChannelMemberSerializer
@@ -124,6 +122,18 @@ class ChannelMembers(generics.ListAPIView):
     def get_queryset(self):
         return self.manager.filter(channel=self.kwargs.get('pk'))
 
+    def perform_create(self, serializer):
+        channel=get_channel_layer()
+        serializer.save(channel_id=self.kwargs['pk'])
+        workspace=models.WorkSpace.objects.filter(channels=self.kwargs['pk']).first()
+        if workspace:
+            async_to_sync(channel.group_send)(f'workspace_{workspace.id}',{'type':'send.member',"member":serializer.data})
+        ##send channel to newly added member
+        channel_data=models.Channel.objects.filter(id=self.kwargs['pk']).first()
+        serializer=ChannelSerializer(channel_data,context={'request':self.request})
+        user=self.request.data.get('member_id')
+        group_name=f'user_{user}'
+        async_to_sync(channel.group_send)(group_name,{"type":"send.channel","channel":serializer.data})
 
 class GetCreateTaskView(generics.ListCreateAPIView):
     queryset=models.Task.objects.all()

@@ -19,7 +19,6 @@ export function useMessageHook({
 		const unread = conversation?.unread
 		const ws = socket
 		if (ws && ws.readyState === WebSocket.OPEN && unread >= 1) {
-			// console.log('bout send seen')
 			const SEEN = { conversation: conversationId, status: 'seen' }
 			if (chatType === 'chat') {
 				SEEN.receiver = recipient?.id
@@ -55,7 +54,7 @@ export function useMessageHook({
 			}
 
 		}
-	}, [messages, chatType, selectedChannel?.id, queryClient, conversation?.unread, recipient?.id, selectedChannel, conversationId, setChannel,socket])
+	}, [messages, chatType, selectedChannel?.id, queryClient, conversation?.unread, recipient?.id, selectedChannel, conversationId, setChannel, socket])
 
 	useEffect(() => {
 		if (!selectedChannel?.id && !selectedDm?.id) return
@@ -67,7 +66,7 @@ export function useMessageHook({
 		if (ref.current) {
 			ref.current?.scrollIntoView();
 		}
-	}, [messages,ref]);
+	}, [messages, ref]);
 
 }
 

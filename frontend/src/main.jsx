@@ -1,39 +1,44 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import Login from './pages/login.jsx'
-import { loginLoader } from './pages/loginLoader.js'
-import ProtectedRoute from './route/protectedRoute.jsx'
-import './index.css'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import Task from './pages/task.jsx'
-import Profiles from './pages/profile.jsx'
-import Profile from './pages/mainProfile.jsx'
+
+import AccountDetails from './components/AccountDetails.jsx'
+import AcceptInvite from './pages/acceptInvite.jsx'
+import Chat from './components/ChatUi.jsx'
+import CreateTask from './components/CreateTask.jsx'
+import ChannelMembers from './pages/channel/channelMember.jsx'
+import Channel from './pages/channel/channnel.jsx'
+import ChannelInfo from './pages/channel/channelInfo.jsx'
+import ChannelSettings from './pages/channel/setting.jsx'
+import CreateWorkspace from './pages/createWorkspace.jsx'
+import CreateChannel from './pages/createChannel.jsx'
+import DashboardHome from './pages/dashboardHome.jsx'
 import ErrorPage from './components/Error.jsx'
+import Login from './pages/login.jsx'
+import LandingPage from './pages/landing.jsx'
+import Profiles from './pages/profile.jsx'
 import Pricing from './pages/pricing.jsx'
-// import Notifications from './pages/notification.jsx'
+import ProtectedRoute from './route/protectedRoute.jsx'
+import Profile from './pages/mainProfile.jsx'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import SignUp from './pages/signup.jsx'
 import { signUpLoader } from './pages/signupLoader.js'
 import SignEmail from './components/SignEmail.jsx'
+import Task from './pages/task.jsx'
+
+import { loginLoader } from './pages/loginLoader.js'
+import { protectedRouteLoader } from './pages/protecteLoader.js'
+import './index.css'
+// import Notifications from './pages/notification.jsx'
 import VerifyEmail from './components/VerifyEmail.jsx'
-import AccountDetails from './components/AccountDetails.jsx'
-import AcceptInvite from './pages/acceptInvite.jsx'
 // import TeamChat from './experiment/TempChat.jsx'
-import Chat from './components/ChatUi.jsx'
-import DashboardHome from './pages/dashboardHome.jsx'
-import CreateWorkspace from './pages/createWorkspace.jsx'
-import CreateChannel from './pages/createChannel.jsx'
 import WorkspaceSettings from './pages/settings/workspaceSettings.jsx'
 import WorkspaceGeneral from './pages/settings/workspaceGeneral.jsx'
 import WorkspaceMembers from './pages/settings/workspaceMember.jsx'
 import WorkspaceInvitations from './pages/settings/workspaceInvite.jsx'
 import WkChannel from './pages/settings/channels.jsx'
 // import CreateTask from './components/Tsk.jsx'
-import CreateTask from './components/CreateTask.jsx'
-import ChannelMembers from './pages/channelMember.jsx'
-import Channel from './pages/channel/channnel.jsx'
-import ChannelInfo from './pages/channel/channelInfo.jsx'
-import ChannelSettings from './pages/channel/setting.jsx'
+import { landingPageLoader } from './pages/landingPageLoader.js'
 
 
 
@@ -41,6 +46,7 @@ const queryClient = new QueryClient()
 
 const routes = createBrowserRouter([
   { path: 'accept-invite', element: <AcceptInvite /> },
+  { path: 'landing', element: <LandingPage />, loader: landingPageLoader },
 
   {
     path: 'signup', element: <SignUp />, loader: signUpLoader, children: [
@@ -60,7 +66,7 @@ const routes = createBrowserRouter([
   { path: '/pricing', element: <Pricing /> },
 
   {
-    path: '/', element: <ProtectedRoute />, errorElement: <ErrorPage />,
+    path: '/', element: <ProtectedRoute />, loader: protectedRouteLoader, errorElement: <ErrorPage />,
     children: [
       { index: true, element: <DashboardHome /> },
       {

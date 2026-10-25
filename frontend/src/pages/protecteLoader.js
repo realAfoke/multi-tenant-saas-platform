@@ -7,6 +7,6 @@ export async function protectedRouteLoader() {
 		await instance.get('users/me')
 	} catch (error) {
 		console.error(error)
-		redirect('/landing')
+		return redirect('/landing')
 	}
 }

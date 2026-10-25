@@ -9,7 +9,7 @@ import { instance } from "@/api/axios"
 
 
 export default function SignEmail() {
-	const { email, setEmail } = useOutletContext()
+	const { email, setEmail, setError } = useOutletContext()
 	const navigate = useNavigate()
 
 	const verifyEmail = useMutation({
@@ -19,6 +19,9 @@ export default function SignEmail() {
 		},
 		onSuccess: () => {
 			navigate('otp-verification')
+		},
+		onError: (err) => {
+			setError(err.response.data[0])
 		}
 	})
 	return (
@@ -54,6 +57,7 @@ export default function SignEmail() {
 					className="
 								mt-2
 								h-12
+		px-3
 								bg-zinc-900
 								border-zinc-800
 								text-white

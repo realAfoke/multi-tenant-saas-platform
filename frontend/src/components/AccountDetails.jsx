@@ -8,7 +8,7 @@ import SignupBackWarning from "./Warning"
 import { useAppState } from "@/hooks/apptools"
 
 export default function AccountDetails() {
-	const { email, showBackWarning, handleChange, restartSignup } = useOutletContext()
+	const { email, showBackWarning, handleChange, restartSignup, setError } = useOutletContext()
 	const navigate = useNavigate()
 	const { inviteDetail } = useAppState()
 	const [userData, setUserData] = useState({
@@ -36,7 +36,7 @@ export default function AccountDetails() {
 			navigate('/')
 		},
 		onError: (error) => {
-			console.error(error?.response)
+			setError(error.response.data[0])
 		}
 
 	})
@@ -71,7 +71,7 @@ export default function AccountDetails() {
 						</label>
 
 						<Input
-							className="mt-2 h-12 bg-zinc-900 border-zinc-800 text-white"
+							className="mt-2 h-12 px-3 bg-zinc-900 border-zinc-800 text-white"
 							placeholder="John"
 							value={userData?.firstName}
 							onChange={(e) => setUserData(prev => ({ ...prev, firstName: e.target.value }))}
@@ -87,7 +87,7 @@ export default function AccountDetails() {
 						</label>
 
 						<Input
-							className="mt-2 h-12 bg-zinc-900 border-zinc-800 text-white"
+							className="mt-2 h-12 px-3 bg-zinc-900 border-zinc-800 text-white"
 							placeholder="Doe"
 							value={userData?.lastName}
 							onChange={(e) => setUserData(prev => ({ ...prev, lastName: e.target.value }))}
@@ -104,7 +104,7 @@ export default function AccountDetails() {
 						Email
 					</label>
 					<Input
-						className="mt-2 h-12 bg-zinc-900 border-zinc-800 text-white"
+						className="mt-2 h-12 bg-zinc-900 px-3 border-zinc-800 text-white"
 						placeholder="john@example.com"
 						value={userData?.email}
 						onChange={(e) => setUserData(prev => ({ ...prev, email: e.target.value }))}
@@ -120,7 +120,7 @@ export default function AccountDetails() {
 						</label>
 						<Input
 							type="password"
-							className="mt-2 h-12 bg-zinc-900 border-zinc-800 text-white"
+							className="mt-2 h-12 px-3 bg-zinc-900 border-zinc-800 text-white"
 							value={userData?.password}
 							onChange={(e) => setUserData(prev => ({ ...prev, password: e.target.value }))}
 
@@ -138,9 +138,7 @@ export default function AccountDetails() {
 							type="password"
 							value={userData.confirmPassword}
 							onChange={(e) => setUserData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-
-
-							className="mt-2 h-12 bg-zinc-900 border-zinc-800"
+							className="mt-2 h-12 px-3 bg-zinc-900 border-zinc-800"
 						/>
 
 						{userData.confirmPassword &&
@@ -161,7 +159,7 @@ export default function AccountDetails() {
 						Workspace name
 					</label>
 					<Input
-						className="mt-2 h-12 bg-zinc-900 border-zinc-800 text-white"
+						className="mt-2 h-12 px-3 bg-zinc-900 border-zinc-800 text-white"
 						placeholder="optional"
 						value={userData?.workspace}
 						onChange={(e) => setUserData(prev => ({ ...prev, workspace: e.target.value }))}

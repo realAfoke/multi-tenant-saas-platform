@@ -17,13 +17,11 @@ def verify_email(model,request):
         pattern=r'^[a-zA-Z0-9.%_+-]+@[a-zA-Z0-9.%+_-]+\.[a-zA-Z]{2,}$'
         match =re.match(pattern,request.data.get('email'))
         if not match:
-            logger.info('inside here')
-            logger.info(f'email:{request.data.get("email")}')
-            raise ValidationError('invalid crendentials') 
+            raise ValidationError('Please enter a valid email address') 
         query['email']=request.data.get('email')
     is_used=model.objects.filter(**query).exists()
     if is_used:
-        raise ValidationError('Invalid credentials')
+        raise ValidationError('An account with this email already exists. Please log in instead')
     otp=random.randint(100000,999999)
     otp_key= 'email' if 'email' in query else 'phone'
     key=f'otp:{query[otp_key]}'

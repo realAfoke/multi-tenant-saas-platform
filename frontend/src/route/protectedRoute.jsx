@@ -93,7 +93,6 @@ export default function ProtectedRoute() {
 		return () => ws.removeEventListener('update', handleRealTimeUpdate)
 	}, [conversationId, socket, queryClient, setWorkspace, setSelectedDm, user])
 
-
 	return (
 		<div className={`flex h-screen bg-zinc-950 overflow-hidden relative`}>
 
@@ -108,17 +107,12 @@ export default function ProtectedRoute() {
 					}
 				</div>
 			}
-
 			<div className="flex flex-col flex-1 overflow-hidden relative">
 				{!isCreatePage && <TopBar setToggle={setToggle} toggle={toggle} />}
 				<main className="flex-1 overflow-auto scrollbar scrollbar-thin scrollbar-thumb-zinc-600 scrollbar-track-zinc-900 px-5 w-full">
 					<Outlet context={{ setToggle, hidechannelDetail, setHidechannelDetail }} />
 				</main>
 			</div>
-
 		</div>
 	)
 }
-
-
-

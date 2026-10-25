@@ -9,6 +9,7 @@ export default function SignUp() {
 	const [email, setEmail] = useState(() => inviteDetail?.email ?? "")
 	const [showBackWarning, setShowBackWarning] = useState(false)
 	const location = useLocation()
+	const [error, setError] = useState(false)
 
 	const paths = location.pathname.split('/').filter(path => path != '')
 	const restartSignup = () => {
@@ -74,6 +75,8 @@ export default function SignUp() {
 						</h1>
 
 					</div>
+					{error && <div className="text-red-400 text-sm">{error}</div>}
+
 					{inviteDetail?.id && <span className="text-blue-400 text-sm">creating account for invite email {inviteDetail?.email}</span>}
 
 					<div className="grid grid-cols-2 justify-between">
@@ -90,7 +93,7 @@ export default function SignUp() {
 						</button>
 					</div>
 
-					<Outlet context={{ email, setEmail, showBackWarning, handleChange, restartSignup }} />
+					<Outlet context={{ email, setEmail, showBackWarning, handleChange, restartSignup, setError }} />
 				</div>
 			</div>
 		</div>

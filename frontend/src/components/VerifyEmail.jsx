@@ -7,7 +7,7 @@ import { instance } from "@/api/axios"
 
 export default function VerifyEmail() {
 	const [otp, setOtp] = useState(["", "", "", "", "", ""])
-	const { email } = useOutletContext()
+	const { email, setError } = useOutletContext()
 	const navigate = useNavigate()
 
 	const handleChange = (value, index) => {
@@ -30,6 +30,9 @@ export default function VerifyEmail() {
 		},
 		onSuccess: () => {
 			navigate('../account-detail')
+		},
+		onError: (err) => {
+			setError(err.response.data[0])
 		}
 	})
 	return (

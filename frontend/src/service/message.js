@@ -8,7 +8,7 @@ export async function handleMessageUpdate(queryClient, incomingUpdate, ws) {
 		const exists = old?.findIndex((msg => msg?.clientId === incomingUpdate?.clientId))
 
 		if (exists !== -1) {
-			return old.map((msg) => {
+			return old?.map((msg) => {
 				return msg?.clientId === incomingUpdate?.clientId ? { ...msg, ...incomingUpdate } : msg
 			})
 		}
@@ -16,7 +16,7 @@ export async function handleMessageUpdate(queryClient, incomingUpdate, ws) {
 	}
 	)
 	if (ws && ws.readyState === WebSocket.OPEN) {
-		const data = { messageId: incomingUpdate?.id, status: 'received', conversation: incomingUpdate?.conversation }
+		const data = { messageId: incomingUpdate?.id, status: 'received', conversation: incomingUpdate?.conversation, chat_type: incomingUpdate?.channelId ? 'channel' : 'direct' }
 		if (!incomingUpdate?.channel) {
 			data['receiver'] = incomingUpdate?.sender
 		}

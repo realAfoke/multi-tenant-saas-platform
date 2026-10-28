@@ -8,6 +8,7 @@ from django.db import transaction
 from django.dispatch import receiver
 from django.forms import ValidationError
 from django.http import request
+from django.utils import connection
 from django.utils.html import json
 from urllib.parse import parse_qs
 from asgiref.sync import sync_to_async
@@ -15,14 +16,13 @@ from chat.api.serializers import ConversationSerializer, MessageSerializer
 from channels.db import database_sync_to_async
 from django.db.models import Q
 from chat.models import ConnectionRequest, Conversation
-
 from chat.service.chat import ChatService
 from chat.service.connection_request import ConnectionRequestService
 from chat.service.consumer import ConsumerService
 import workspace
 from workspace.models import Membership, WorkSpace
 import pprint
-
+from django.core.cache import cache
 
 
 User=get_user_model()
@@ -54,12 +54,20 @@ class ServerRealTimeUpdate(AsyncWebsocketConsumer):
 
         self.group_name=f'user_{self.user.id}'
         await self.channel_layer.group_add(self.group_name,self.channel_name)
+        connection_list=await sync_to_async(cache.get)("connection_list")
+        # if connection_list:
+        #     connection_list.append({"user":self.user.id,"channel":self.channel_name})
+        # else:
+        #     connection_list=[{"user":self.user.id,"channel":self.channel_name}]
+        if connection_list:
+            connection_list[str(self.user.id)]=self.channel_name
+        else:
+            connection_list={f"{self.user.id}":self.channel_name}
+        await sync_to_async(cache.set)("connection_list",connection_list)
         await self.accept()
-
 
     async def receive(self, text_data: str | None = None, bytes_data: bytes | None = None) -> None:
         received_data=json.loads(text_data)
-        # print('RECEIVED DATA:',received_data,flush=True)
         receiver_id=received_data.get('receiver',None)
         await self.validate_conversation(received_data)
         is_new_conversation=received_data.pop('new_conversation',None)
@@ -83,15 +91,19 @@ class ServerRealTimeUpdate(AsyncWebsocketConsumer):
                     )
         else:
             #broadcast back to sender server has received and sent messg
+            conversation_id=message.get('conversation') or message.get('id')
             if is_new_conversation:
-                await self.channel_layer.group_send(f'user_{is_new_conversation}',{'type':'send.message','message':message})
-                await self.channel_layer.group_send(self.group_name,{'type':'send.message','message':message})
-                return
+                await self.channel_layer.group_add(f"conversation_{conversation_id}",self.channel_name)
+                ## add second user to conversation channel group
+                ## get user channel
+                connection_list=await sync_to_async(cache.get)("connection_list")
+                user_two_channel=connection_list.get(str(is_new_conversation))
+                if user_two_channel:
+                    await self.channel_layer.group_add(f"conversation_{conversation_id}",user_two_channel)
 
             if message.get("tag",None) == 'conversation':
                 await self.channel_layer.group_send(self.group_name,{'type':'send.message','message':message})
                 return
-            conversation_id=message.get('conversation') or message.get('id')
             await self.channel_layer.group_send(f'conversation_{conversation_id}',{'type':'send.message','message':message})
 
 
@@ -147,9 +159,7 @@ class ServerRealTimeUpdate(AsyncWebsocketConsumer):
             conversation_id = message.get('conversation')
             if conversation_id is None:
                 raise ValidationError('Conversation ID not sent')
-            conversation = Conversation.objects.filter(
-                    id=conversation_id
-                ).first()
+            conversation = Conversation.objects.filter(id=conversation_id,chat_type=message.get('chat_type',None)).first()
             if conversation:
                 connection = ConnectionRequest.objects.filter(
                     conversation=conversation
@@ -165,6 +175,4 @@ class ServerRealTimeUpdate(AsyncWebsocketConsumer):
                 message['new_conversation']=conversation_id
             message['conversation'] = conversation.id
             return message
-
-
 ##CONTINUE WORKING ON CONVERSATION AND CONNECTION REQUEST FOR NEW DIRECT CHAT

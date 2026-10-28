@@ -19,7 +19,7 @@ export function useMessageHook({
 		const unread = conversation?.unread
 		const ws = socket
 		if (ws && ws.readyState === WebSocket.OPEN && unread >= 1) {
-			const SEEN = { conversation: conversationId, status: 'seen' }
+			const SEEN = { conversation: conversationId, status: 'seen', chat_type: selectedChannel?.id ? 'channel' : 'direct' }
 			if (chatType === 'chat') {
 				SEEN.receiver = recipient?.id
 			}
@@ -58,7 +58,7 @@ export function useMessageHook({
 
 	useEffect(() => {
 		if (!selectedChannel?.id && !selectedDm?.id) return
-		const messageTemplate = { conversation: conversationId, clientId: crypto.randomUUID(), status: 'pending' }
+		const messageTemplate = { conversation: conversationId, clientId: crypto.randomUUID(), status: 'pending', chat_type: selectedDm?.id ? 'direct' : 'channel' }
 		setMessage(messageTemplate)
 	}, [selectedChannel, selectedDm, conversationId, setMessage])
 

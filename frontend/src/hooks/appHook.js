@@ -4,6 +4,7 @@ import { getIndexedDb } from "@/utils/appUtil"
 
 export function useRealTimeUpdate(setSocket, workspaces) {
 	useEffect(() => {
+		console.log('rendered!!!')
 		const ws = new WebSocket(`wss://localhost/ws/user/`)
 		ws.onopen = () => {
 			console.log('Connection successfull ')
@@ -119,6 +120,7 @@ export function useAppHook(
 				)
 
 				if (!conversation && conversations) {
+					console.log('inside')
 					conversation = await fetchUser(conversationId)
 				}
 				if (!conversation) return

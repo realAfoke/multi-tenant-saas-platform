@@ -1,8 +1,11 @@
+import { instance } from "@/api/axios"
 import { fetchUserQueryOption } from "@/queryOptions/queryOptions"
 import { useQuery } from "@tanstack/react-query"
+import { useNavigate } from "react-router-dom"
 export default function Profile() {
 	const { data: user } = useQuery(fetchUserQueryOption())
 	const initial = user?.firstName?.[0]?.toUpperCase()
+	const navigate=useNavigate()
 	return (
 		<div className="min-h-screen bg-zinc-950 overflow-y-auto px-4 py-10 mt-[5rem]">
 			<div className="w-full max-w-2xl mx-auto">
@@ -125,6 +128,21 @@ export default function Profile() {
 						</button>
 
 					</div>
+				</div>
+				<div className="flex justify-end py-3">
+					<button className="bg-red-500 text-white py-2 px-4 outline-0 border-none rounded-sm text-sm" onClick={async () => {
+						try {
+							const response = await instance.post('users/logout/', {})
+							navigate('/landing')
+
+						} catch (error) {
+
+						}
+
+					}
+					}>
+						Log out
+					</button>
 				</div>
 
 			</div>

@@ -45,7 +45,7 @@ class ConversationSerializer(serializers.ModelSerializer):
 
     def get_unread(self,obj):
         user=self.context['request'].user
-        if obj.chat_type == 'Direct' and getattr(obj,'last_read_mssg_id'):
+        if obj.chat_type == 'direct' and getattr(obj,'last_read_mssg_id'):
             unread=obj.conversation_message.filter(id__gt=obj.last_read_mssg_id.id).exclude(sender=user) 
             return unread.count() if unread else None
         last_mssg=Message.objects.filter(conversation=obj).order_by('-id').first()

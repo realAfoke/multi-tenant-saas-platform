@@ -39,6 +39,7 @@ import WorkspaceInvitations from './pages/settings/workspaceInvite.jsx'
 import WkChannel from './pages/settings/channels.jsx'
 // import CreateTask from './components/Tsk.jsx'
 import { landingPageLoader } from './pages/landingPageLoader.js'
+import ForgotPassword from './components/ForgotPassword.jsx'
 
 
 
@@ -47,6 +48,7 @@ const queryClient = new QueryClient()
 const routes = createBrowserRouter([
   { path: 'accept-invite', element: <AcceptInvite /> },
   { path: 'landing', element: <LandingPage />, loader: landingPageLoader },
+  { path: 'forgot-password', element: <ForgotPassword /> },
 
   {
     path: 'signup', element: <SignUp />, loader: signUpLoader, children: [

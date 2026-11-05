@@ -1,7 +1,10 @@
+from urllib.parse import urlencode
+from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.decorators import api_view
 from rest_framework import generics, permissions,status
+from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from users.services.auth import verify_email,verify_otp
 from django.contrib.auth import get_user_model
@@ -12,10 +15,16 @@ from users.api.serializers import UserSerializer,LoginSerializer
 import logging
 from workspace.api.serializers import MembershipSerializer
 from workspace.models import Membership
- 
+from django.core.cache import cache
+import os
+from dotenv import load_dotenv
+import secrets
+from django.core.mail import send_mail
 
 # Create your views here.
 
+
+load_dotenv()
 User=get_user_model()
 
 logger=logging.getLogger(__name__)
@@ -144,3 +153,27 @@ class GetUserView(generics.RetrieveAPIView):
         serializer_class=UserSerializer
         permission_classes=[permissions.IsAuthenticated]
 
+
+class SendRestPasswordLinkView(APIView):
+        def post(self,request,*args,**kwargs):
+                email=request.data.get('email')
+                print("email:",email)
+                user=User.objects.filter(email=email).first()
+                if user:
+                        token=secrets.token_urlsafe(32)
+                        query_params={"id":user.id,"token":token}
+                        link=(f'{os.getenv("CLIENT","https://localhost:5173")}'f'/reset-password?{urlencode(query_params)}')
+                        cache.set(f"reset_{user.email}",token,60*30)
+                        send_mail("Reset your password",f"""
+                                  We received a request to reset the password associatd with your account.
+                                  Click the button below to create a new password:
+                                  [Reset Password]({link})
+                                  the link will expire in 30 minutes
+                                  if you did'nt request for a password reset kindly ignore this email.Your password will remain unchanged
+
+                                  Best regards
+                                  Nexflux
+                                  """,'noreply@ighoreality.cyou',[user.email])
+                print("about to send link")
+                return Response({"status":"A reset link has been sent to your email"})
+                        

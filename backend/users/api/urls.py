@@ -11,5 +11,6 @@ urlpatterns=[
         path('refresh-token/',views.RefreshTokenView.as_view(),name='refresh_view'),
         path('me/',views.Me.as_view(),name='me_view'),
         path('<int:pk>/',views.GetUserView.as_view()),
-        path('send-reset-link',views.SendRestPasswordLinkView.as_view()),
+        path('send-reset-link/',views.SendRestPasswordLinkView.as_view()),
+        path('reset-password/',views.ChangePassword.as_view()),
         ]

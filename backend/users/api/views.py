@@ -1,5 +1,8 @@
 from urllib.parse import urlencode
 from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import ValidationError as DRFValidationError
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.contrib.auth.password_validation import validate_password
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.decorators import api_view
@@ -20,6 +23,7 @@ import os
 from dotenv import load_dotenv
 import secrets
 from django.core.mail import send_mail
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 
 # Create your views here.
 
@@ -153,27 +157,48 @@ class GetUserView(generics.RetrieveAPIView):
         serializer_class=UserSerializer
         permission_classes=[permissions.IsAuthenticated]
 
-
 class SendRestPasswordLinkView(APIView):
         def post(self,request,*args,**kwargs):
+                token_generator=PasswordResetTokenGenerator()
                 email=request.data.get('email')
-                print("email:",email)
+                if email is None:
+                        raise DRFValidationError("email is required")
                 user=User.objects.filter(email=email).first()
                 if user:
-                        token=secrets.token_urlsafe(32)
-                        query_params={"id":user.id,"token":token}
+                        token=token_generator.make_token(user)
+                        # token=secrets.token_urlsafe(32)
+                        query_params={"token":token,"uid":user.id}
                         link=(f'{os.getenv("CLIENT","https://localhost:5173")}'f'/reset-password?{urlencode(query_params)}')
-                        cache.set(f"reset_{user.email}",token,60*30)
+                        # cache.set(f"reset_{user.email}",token,60*30)
                         send_mail("Reset your password",f"""
                                   We received a request to reset the password associatd with your account.
                                   Click the button below to create a new password:
                                   [Reset Password]({link})
                                   the link will expire in 30 minutes
                                   if you did'nt request for a password reset kindly ignore this email.Your password will remain unchanged
-
                                   Best regards
                                   Nexflux
                                   """,'noreply@ighoreality.cyou',[user.email])
-                print("about to send link")
                 return Response({"status":"A reset link has been sent to your email"})
-                        
+
+class ChangePassword(APIView):
+        def patch(self,request,*args,**kwargs):
+                token_generator=PasswordResetTokenGenerator()
+                token=request.data.get('token')
+                pk=request.data.get('id')
+                password=request.data.get('password')
+                if not all([pk,token,password]):
+                        raise DRFValidationError("id,token and password are required")
+                try:
+                        user=User.objects.get(id=pk)
+                except User.DoesNotExist:
+                        raise DRFValidationError("Invalid password reset link")
+                if not token_generator.check_token(user,token):
+                        raise DRFValidationError("Invalid reset link")
+                try:
+                        validate_password(password,user)
+                except DjangoValidationError as e:
+                        raise DRFValidationError({"password":e.messages})
+                user.set_password(password)
+                user.save()
+                return Response({"message":"password changed successfully"})

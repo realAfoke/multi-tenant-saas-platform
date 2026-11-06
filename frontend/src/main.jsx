@@ -25,33 +25,26 @@ import SignUp from './pages/signup.jsx'
 import { signUpLoader } from './pages/signupLoader.js'
 import SignEmail from './components/SignEmail.jsx'
 import Task from './pages/task.jsx'
-
 import { loginLoader } from './pages/loginLoader.js'
 import { protectedRouteLoader } from './pages/protecteLoader.js'
 import './index.css'
-// import Notifications from './pages/notification.jsx'
 import VerifyEmail from './components/VerifyEmail.jsx'
-// import TeamChat from './experiment/TempChat.jsx'
 import WorkspaceSettings from './pages/settings/workspaceSettings.jsx'
 import WorkspaceGeneral from './pages/settings/workspaceGeneral.jsx'
 import WorkspaceMembers from './pages/settings/workspaceMember.jsx'
 import WorkspaceInvitations from './pages/settings/workspaceInvite.jsx'
 import WkChannel from './pages/settings/channels.jsx'
-// import CreateTask from './components/Tsk.jsx'
 import { landingPageLoader } from './pages/landingPageLoader.js'
 import ForgotPassword from './components/ForgotPassword.jsx'
 import ResetPassword from './components/ResetPassword.jsx'
 
 
-
 const queryClient = new QueryClient()
-
 const routes = createBrowserRouter([
   { path: 'accept-invite', element: <AcceptInvite /> },
   { path: 'landing', element: <LandingPage />, loader: landingPageLoader },
   { path: 'forgot-password', element: <ForgotPassword /> },
   { path: 'reset-password', element: <ResetPassword /> },
-
   {
     path: 'signup', element: <SignUp />, loader: signUpLoader, children: [
       { index: true, element: <SignEmail /> },
@@ -107,4 +100,4 @@ createRoot(document.getElementById('root')).render(
     </QueryClientProvider>
   </StrictMode>,
 )
-
+// https://localhost:5173/reset-password?id=2&token=J9ofhx9XGyJMrh6P7aX1ED2SVAq210-F9dH-0UmEmdo

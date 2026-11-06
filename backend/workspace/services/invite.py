@@ -12,6 +12,11 @@ from urllib.parse import urlencode
 from django.core.mail import EmailMultiAlternatives
 from workspace.models import Membership,InviteToken
 from django.db import transaction
+import os
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 logger=logging.getLogger(__name__)
 
@@ -56,7 +61,7 @@ class InviteService:
             query_params={
                     'token':invite_token,'invite':id
                     }
-            link="https://localhost:5173/accept-invite/?"+urlencode(query_params)
+            link=f'{os.getenv("CLIENT","https://localhost:5173")}/accept-invite/?'+urlencode(query_params)
 
             subject=f'{sender_name} has invited you to join {workspace_name}'
 

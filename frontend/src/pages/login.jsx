@@ -138,7 +138,7 @@ export default function Login() {
 
 							<div className="text-right mt-3">
 
-								<button className="text-sm text-blue-400 hover:text-blue-300">
+								<button className="text-sm text-blue-400 hover:text-blue-300" onClick={() => navigate('/forgot-password')}>
 									Forgot password ?
 								</button>
 

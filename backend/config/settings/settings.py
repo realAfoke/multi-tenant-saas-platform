@@ -32,6 +32,8 @@ CORS_ALLOWED_ORIGINS=[origin.strip() for origin in os.getenv('CORS_ALLOWED_ORIGI
 
 CORS_ALLOW_CREDENTIALS=True
 
+PASSWORD_RESET_TIMEOUT = 60*30
+
 # Application definition
 
 INSTALLED_APPS = [

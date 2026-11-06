@@ -176,7 +176,7 @@ class SendRestPasswordLinkView(APIView):
                         <body>
                         <p>We recieve a request to reset the password associated with your account.</p>
                         <p>Click the button below to create a new password.</p>
-                        <a href={link} style="display:inline-block;padding:12px 14px;background-color:#2563eb;color:white;text-decoration:none;border-radius:6px,font-weight:bold">
+                        <a href="{link}" style="display:inline-block;padding:12px 14px;background-color:#2563eb;color:white;text-decoration:none;border-radius:6px,font-weight:bold">
                         Reset password
                         </a>
                         <p>This link will expire in 30 minutes.</p>

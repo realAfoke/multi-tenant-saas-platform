@@ -1,5 +1,6 @@
 from urllib.parse import urlencode
 from django.shortcuts import get_object_or_404
+from pygments.formatters import html
 from rest_framework.exceptions import ValidationError as DRFValidationError
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.contrib.auth.password_validation import validate_password
@@ -170,15 +171,27 @@ class SendRestPasswordLinkView(APIView):
                         query_params={"token":token,"uid":user.id}
                         link=(f'{os.getenv("CLIENT","https://localhost:5173")}'f'/reset-password?{urlencode(query_params)}')
                         # cache.set(f"reset_{user.email}",token,60*30)
-                        send_mail("Reset your password",f"""
-                                  We received a request to reset the password associatd with your account.
-                                  Click the button below to create a new password:
-                                  [Reset Password]({link})
-                                  the link will expire in 30 minutes
-                                  if you did'nt request for a password reset kindly ignore this email.Your password will remain unchanged
-                                  Best regards
-                                  Nexflux
-                                  """,'noreply@ighoreality.cyou',[user.email])
+                        subject="Reset your password"
+                        message=f"""
+                        <html>
+                        <body>
+                        <p>We recieve a request to reset the password associated with your account.</p>
+                        <p>Click the button below to create a new password.</p>
+                        <a href={link} style="display:inline-block;padding:12px 14px;background-color:#2563eb;color:white;text-decoration:none;border-radius:6px,font-weight:bold">
+                        Reset password
+                        </a>
+                        <p>This link will expire in 30 minutes.</p>
+                        <p>If you did'nt request for a passwor reset kindly ignnore this email.Your password will remain unchanged</p>
+                        <p>Best regards,<br>Nextflux</b></p>
+                        </body>
+                        </html>
+                        """
+                        
+                        send_mail(subject,
+                                  f"reset your password using this link:{link}",
+                                  'noreply@ighoreality.cyou',
+                                  [user.email],
+                                  html_message=message)
                 return Response({"status":"A reset link has been sent to your email"})
 
 class ChangePassword(APIView):

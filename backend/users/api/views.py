@@ -1,6 +1,5 @@
 from urllib.parse import urlencode
 from django.shortcuts import get_object_or_404
-from pygments.formatters import html
 from rest_framework.exceptions import ValidationError as DRFValidationError
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.contrib.auth.password_validation import validate_password

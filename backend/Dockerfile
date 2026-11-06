@@ -15,5 +15,5 @@ COPY --chown=appuser:appuser . .
 
 USER appuser
 
-CMD ["daphne","-b","0.0.0.0","8000","config.asgi:application"]
-# CMD ["sh","build.sh"]
+# CMD ["daphne","-b","0.0.0.0","8000","config.asgi:application"]
+CMD ["sh","build.sh"]

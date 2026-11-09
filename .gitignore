@@ -23,6 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 
+dev-compose.yml
+
 # env
 env
 env/
@@ -48,3 +50,4 @@ frontend/certs/
 .github/workflows/auto-merge-pr.yml
 docker-compose.dev.yml
 nginx.dev.conf
+dev.nginx.conf

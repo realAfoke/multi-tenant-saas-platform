@@ -74,7 +74,6 @@ class TaskSerializer(serializers.ModelSerializer):
         if '_existing' in validated_data.keys():
             return validated_data.get('_existing')
         user=self.context['request'].user
-        print('VALIDATED DATA:',validated_data)
         creater=user.user_membership.filter(members_channel__channel=validated_data.get('channel')).first()
         task_members=validated_data.pop('members',None)
         validated_data['created_by']=creater
@@ -104,7 +103,6 @@ class TaskSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         user=self.context['request'].user
-        print('ATTRS:',attrs)
         if self.instance:
              member=self.instance.channel.channel_member.filter(member__user=user).first()
              if not member.role in ['admin','owner']:
@@ -277,8 +275,8 @@ class WorkSpaceSerializer(serializers.ModelSerializer):
         owner=self.context['request'].user
         if '_existing' in validated_data:
             return validated_data['_existing']
-        manger=getattr(models.WorkSpace,'objects')
-        workspace=manger.create(**validated_data)
+        manager=getattr(models.WorkSpace,'objects')
+        workspace=manager.create(**validated_data)
         member=models.Membership(workspace=workspace,user=owner,role='owner')
         member.save()
         ## create general channel on workspace creation

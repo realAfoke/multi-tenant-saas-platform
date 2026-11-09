@@ -1,4 +1,4 @@
-from os import write
+from django.db import transaction
 from rest_framework import serializers
 from django.contrib.auth import get_user_model,authenticate
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer 
@@ -9,7 +9,7 @@ from rest_framework.exceptions import ValidationError
 from chat.models import Conversation
 from workspace.models import WorkSpace,Membership
 import logging
-from workspace.api.serializers import MembershipSerializer
+from workspace.api.serializers import MembershipSerializer,WorkSpaceSerializer
 from django.db.models import Q
 
 
@@ -33,16 +33,17 @@ class UserSerializer(serializers.ModelSerializer):
         fields=['id','password','email','phone','first_name','last_name','username','username','workspace','conversation','date_joined','updated_on']
 
     def create(self, validated_data):
-        if validated_data.get('_existing',None):
-            return validated_data['_existing']
-        workspace=validated_data.pop('workspace',None)
-        user=User.objects.create_user(**validated_data)
-        if workspace:
-            workspace=workspace(name=workspace)
-            workspace.save()
-            memb=Membership(workspace=workspace,user=user,role='owner')
-            memb.save()
-        return user
+        with transaction.atomic():
+            if validated_data.get('_existing',None):
+                return validated_data['_existing']
+            workspace=validated_data.pop('workspace',None)
+            user=User.objects.create_user(**validated_data)
+            if workspace:
+                self.context['request'].user=user
+                serializer=WorkSpaceSerializer(data={"name":workspace},context=self.context)
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+            return user
 
     # def get_membership(self,obj):
     #     user=self.context['request'].user

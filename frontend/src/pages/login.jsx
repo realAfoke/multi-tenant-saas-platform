@@ -8,12 +8,11 @@ import { useAppState } from "@/hooks/apptools"
 
 
 export default function Login() {
-	const [email, setEmail] = useState("francinesmith@gmail.com")
-	const [password, setPassword] = useState("franny")
+	const [email, setEmail] = useState("")
+	const [password, setPassword] = useState("")
 	const navigate = useNavigate()
 	const { inviteDetail } = useAppState()
 	const queryClient = useQueryClient()
-	// const { data: user } = useQueryClient(fetchUserQueryOption())
 
 	const mutate = useMutation({
 		mutationFn: async () => {

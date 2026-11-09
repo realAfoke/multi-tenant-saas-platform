@@ -1,10 +1,11 @@
 
 import { useState } from "react"
 import { Button } from "../ui/button"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import menuIcon from "@/assets/menu3.svg"
 export default function SideBar() {
 	const [toggleMenu, setToggleMenu] = useState(false)
+	const navigate = useNavigate()
 	return (
 		< div className="fixed top-0 left-0 w-full z-50 bg-black/80 backdrop-blur-md border-b border-zinc-900" >
 
@@ -32,26 +33,22 @@ export default function SideBar() {
 					<a className="hover:text-white transition cursor-pointer">
 						About
 					</a>
-					<Link to="/login" className="py-8 border-none">
-						<Button
-							variant="ghost"
-							className=" md:hidden text-gray-300 bg-blue-500 w-full   rounded-full font-bold hover:text-white"
-						>
-							Login
-						</Button>
-					</Link>
+					<Button onClick={() => navigate('login')}
+						variant="ghost"
+						className=" md:hidden text-gray-300 bg-blue-500 w-full   rounded-full font-bold hover:text-white"
+					>
+						Login
+					</Button>
 				</div>
 
 
 				<div className="flex items-center gap-3">
-					<Link to="/login" className="hidden md:block text-gray-300 hover:text-white">
-						<Button
-							variant="ghost"
-							className="hover:bg-transparent hover:text-white text-gray-400"
-						>
-							Login
-						</Button>
-					</Link>
+					<Button onClick={() => navigate("login")}
+						variant="ghost"
+						className="hidden md:block hover:bg-transparent hover:text-white text-gray-400"
+					>
+						Login
+					</Button>
 
 					<Button
 						className="rounded-full bg-blue-500 hover:bg-blue-600 px-6"

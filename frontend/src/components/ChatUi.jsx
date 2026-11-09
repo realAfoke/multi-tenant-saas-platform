@@ -193,8 +193,7 @@ export default function Chat() {
 				<div className="max-w-4xl mx-auto">
 					<div className="rounded-xl border border-zinc-800 bg-zinc-900 p-2">
 						<div className="flex items-end gap-2">
-							<Button
-								variant="ghost"
+							<Button variant="ghost"
 								size="icon"
 								className="text-zinc-500 hover:text-white flex-shrink-0"
 							>
@@ -254,6 +253,27 @@ export default function Chat() {
 							</Button>
 
 							<Button
+								onClick={async () => {
+									console.log("clicked")
+
+									const ws = socket
+									if (ws && ws.readyState === WebSocket.OPEN) {
+										ws.send(JSON.stringify(message))
+										const sentMessage = { ...message, sender: currentUser?.id }
+										queryClient.setQueryData(
+											["messages", sentMessage?.conversation],
+											(old) => [...(old ?? []), sentMessage]
+										)
+										setMessage((prev) => ({
+											...prev,
+											clientId: crypto.randomUUID(),
+											content: "",
+										}))
+										await saveMessageOffline(sentMessage, chatType)
+									}
+
+								}}
+
 								disabled={!message?.content?.trim()}
 								size="icon"
 								className="flex-shrink-0 bg-blue-500 hover:bg-blue-600"

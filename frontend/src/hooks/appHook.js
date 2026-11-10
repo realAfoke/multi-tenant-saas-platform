@@ -4,7 +4,7 @@ import { getIndexedDb } from "@/utils/appUtil"
 
 export function useRealTimeUpdate(setSocket, workspaces) {
 	useEffect(() => {
-		const ws = new WebSocket(`${import.meta.env.VITE_API_WS_URL}ws/user/`)
+		const ws = new WebSocket(`${import.meta.env.VITE_API_WS_URL}user/`)
 		ws.onopen = () => {
 			console.log('Connection successfull ')
 			setSocket(ws)
